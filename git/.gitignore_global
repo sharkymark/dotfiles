@@ -9,6 +9,7 @@ ehthumbs.db
 Thumbs.db
 
 # fish-related
+.vim/bundle
 fish_history
 config.fish.backup
 
