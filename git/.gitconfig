@@ -1,3 +1,6 @@
 [user]
     name = Mark Milligan
     email = mtm20176@gmail.com
+
+[core]
+	excludesfile = ~/.gitignore_global
