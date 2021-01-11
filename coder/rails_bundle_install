@@ -1,0 +1,31 @@
+#
+# Use Bundler to bundle install the necessary gems after a container rebuild
+#
+
+REPO_1_PATH=$HOME/soysoys
+REPO_2_PATH=$HOME/fifthster
+REPO_3_PATH=$HOME/rubyonrails
+BUNDLE_COMMAND="bundle install"
+
+if [ -d $REPO_1_PATH ]; then
+    echo "Directory for soysoys Ruby on Rails repo exists."
+    cd $REPO_1_PATH
+    $BUNDLE_COMMAND
+fi 
+
+if [ -d $REPO_2_PATH ]; then
+    echo "Directory for fifthster Ruby on Rails repo exists."
+    cd $REPO_2_PATH
+    $BUNDLE_COMMAND
+fi 
+
+if [ -d $REPO_3_PATH ]; then
+    echo "Directory for ranker Ruby on Rails repo exists."
+    cd $REPO_3_PATH
+    $BUNDLE_COMMAND
+fi
+
+cd "$HOME"
+
+printf "\n\n"
+echo "finished bundling - go rails s -p <some port> -b 0.0.0.0"
