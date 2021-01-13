@@ -107,7 +107,7 @@ configure_dotfiles
 # Add shell commands below if this environment has a unique personalization.  #
 #                                                                             #
 ###############################################################################
-echo "** persaonlizations **"
+echo "** personalizations **"
 echo "fish shell STEP"
 
 FISH_BINARY=/usr/bin/fish
