@@ -107,8 +107,19 @@ configure_dotfiles
 # Add shell commands below if this environment has a unique personalization.  #
 #                                                                             #
 ###############################################################################
- echo "Mark's personalizations"
- echo "installing fish and changing shell"
-sudo apt-get update
-sudo apt-get install -y fish
-sudo chsh -s /usr/bin/fish $USER
+echo "** persaonlizations **"
+echo "fish shell STEP"
+
+FISH_BINARY=/usr/bin/fish
+FISH_PATH=/usr/bin
+
+if [ ! -f $FISH_BINARY ] ; then
+    apt-get update
+    apt-get install -y fish
+    echo "installing fish in $FISH_PATH"
+else
+    echo "fish already installed"
+fi
+
+echo "changing shell"
+chsh -s /usr/bin/fish $USER
