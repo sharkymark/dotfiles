@@ -18,6 +18,8 @@ config.fish.backup
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
+# Java-related
+/.gradle
 # Ruby on Rails-related
 
 # Ignore bundler config
