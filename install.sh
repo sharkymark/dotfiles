@@ -8,13 +8,21 @@ echo "STEP: .gitconfig and .gitignore_global"
 cp -r ~/dotfiles/git/.gitconfig ~/dotfiles/git/.gitignore_global ~
 
 echo "STEP: copy config.json to code-server directory"
-PATH_CS_1="$HOME/.local/share/code-server/User"
+PATH_CS_1="$HOME/.local/share/code-server"
+PATH_CS_2="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/Library/Application Support/Code/User"
 COMMAND="cp ./Code/User/settings.json"
 
 if [ -d $PATH_CS_1 ]; then
     echo 'code-server folder exists, copying settings.json'
-    $COMMAND $PATH_CS_1
+    if [ -d $PATH_CS_2 ]; then
+    echo "User directory found"
+        $COMMAND $PATH_CS_2
+    else
+        echo "User directory not found, make directory"
+        mkdir "$PATH_CS_1"/User
+        $COMMAND $PATH_CS_2
+    fi
 fi
 
 if [ -d "$PATH_VS_1" ]; then
