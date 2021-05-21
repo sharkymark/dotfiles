@@ -13,6 +13,9 @@ If locally installed VS Code, this file is located:
     // disable home screen
         "workbench.startupEditor": "none",
 
+    // move sidebar to the right
+        "workbench.sideBar.location": "right",
+
     // Allow Coder to watch my use of code-server
         "telemetry.enableTelemetry": true,
     
