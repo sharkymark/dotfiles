@@ -9,7 +9,7 @@ cp -r ~/dotfiles/git/.gitconfig ~/dotfiles/git/.gitignore_global ~
 
 echo "copy config.json to code-server directory"
 PATH_CS_1="$HOME/.local/share/code-server/User"
-PATH_VS_1="$HOME/Library/Application Support/Code/User"
+PATH_VS_1=$HOME/Library/Application\ Support/Code/User
 COMMAND_1="cp $HOME/dotfiles/Code/User/settings.json ."
 
 if [ -d $PATH_CS_1 ]; then
