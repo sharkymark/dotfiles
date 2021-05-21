@@ -8,24 +8,19 @@ echo ".gitconfig and .gitignore_global"
 cp -r ~/dotfiles/git/.gitconfig ~/dotfiles/git/.gitignore_global ~
 
 echo "copy config.json to code-server directory"
-PATH_CS_1="$HOME/.local/share/code-server"
-PATH_CS_2="$HOME/.local/share/code-server/User"
+PATH_CS_1="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/.config/Code/User"
-COMMAND_1="cp ~/dotfiles/Code/User/settings.json ."
+COMMAND_1="cp $HOME/dotfiles/Code/User/settings.json ."
 
 if [ -d $PATH_CS_1 ]; then
-    if [ -d $PATH_CS_2 ]; then
-        echo 'code-server VS Code settings.json already exists'
-        $COMMAND_1
-    else
-        mkdir $PATH_CS_2
-        cd $PATH_CS_2
-        $COMMAND_1 
-    fi
+    echo 'code-server VS Code settings.json already exists'
+    cd $PATH_CS_1
+    $COMMAND_1
 fi
 
 if [ -d $PATH_VS_1 ]; then
     echo 'VS Code settings.json already exists'
+    cd $PATH_VS_1
     $COMMAND_1 
 fi
 
