@@ -10,6 +10,9 @@ If locally installed VS Code, this file is located:
 
 {
 
+    // disable home screen
+    "workbench.startupEditor": "none",
+
     // Allow Coder to watch my use of code-server
         "telemetry.enableTelemetry": true,
     
