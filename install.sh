@@ -5,7 +5,7 @@ echo "install.sh"
 echo "Copying dotfiles ..."
 
 echo "STEP: .gitconfig and .gitignore_global"
-cp -r ~/dotfiles/git/.gitconfig ~/dotfiles/git/.gitignore_global ~
+cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
 echo "STEP: copy config.json to code-server directory"
 PATH_CS_1="$HOME/.local/share/code-server"
