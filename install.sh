@@ -39,13 +39,21 @@ FISH_PATH=/usr/bin
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [ ! -f $FISH_BINARY ] ; then
-        sudo apt-get update
-        sudo apt-get install -y fish
         echo "installing fish in $FISH_PATH"
+        if [ -f "/etc/arch-release" ]; then
+            sudo pacman -S fish --noconfirm
+        elif [ -f "/etc/lsb-release" ]; then
+            sudo apt-get update
+            sudo apt-get install -y fish   
+        fi
     else
         echo "fish already installed"
     fi
 fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install fish
+fi 
 
 
 # locations for VS Code settings.json
