@@ -11,5 +11,10 @@
     {
       "key": "ctrl+k n",
       "command": "workbench.action.files.newUntitledFile"
-    }
+    },
+    {
+      "key": "ctrl+k s", 
+      "command": "workbench.action.tasks.runTask",
+      "args": "open_ssh_config_settings_in_HOME"
+  }
 ]

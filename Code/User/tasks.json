@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "open .ssh config settings in $HOME",
+            "label": "open_ssh_config_settings_in_HOME",
             "type": "shell",
             "command": "$HOME/.ssh/config"
         },
