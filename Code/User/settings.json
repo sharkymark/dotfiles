@@ -12,6 +12,12 @@ If locally installed VS Code, this file is located:
     // disable home screen
         "workbench.startupEditor": "none",
 
+        "breadcrumbs.enabled": true,
+
+    // Minimap (code outline) gives you a high-level overview of your source code, which is useful for quick navigation and code understanding
+    // https://code.visualstudio.com/docs/getstarted/userinterface
+    "editor.minimap.side": "left",
+
     // move sidebar to the right
         "workbench.sideBar.location": "right",
 
