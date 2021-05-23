@@ -4,12 +4,12 @@
 [
     // open debug
     {
-      "key": "ctrl+command+d",
+      "key": "ctrl+k d",
       "command": "workbench.view.debug"
     },
     // create a new file ( needed in code-server since default behavior is a browser mapping )
     {
-      "key": "ctrl+command+n",
+      "key": "ctrl+k n",
       "command": "workbench.action.files.newUntitledFile"
     }
 ]
