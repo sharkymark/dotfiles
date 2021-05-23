@@ -9,7 +9,6 @@ If locally installed VS Code, this file is located:
 */
 
 {
-
     // disable home screen
         "workbench.startupEditor": "none",
 
@@ -30,17 +29,27 @@ If locally installed VS Code, this file is located:
         "editor.wordWrap": "on",
     
     // Intellisense / autocomplete / suggestions settings
+    // https://code.visualstudio.com/docs/editor/intellisense#_customizing-intellisense
+    // https://code.visualstudio.com/docs/editor/intellisense
     
-        "editor.quickSuggestions": false,   
+    // "editor.quickSuggestions": false,   
     // Consider changing other to false for my note taking
     // or alternatively increase the suggestion delay - now 2 seconds
-    /*    "editor.quickSuggestions": {
+       "editor.quickSuggestions": {
             "other": false,
             "comments": false,
             "strings": false
         },
-    */
-    
+
+    // Controls whether sorting favors words that appear close to the cursor    
+        "editor.suggest.localityBonus": true,
+
+    // Enable parameter hints
+        "editor.parameterHints.enabled": true,
+
+    // show snippits
+        "editor.snippetSuggestions": "bottom",
+
     // Controls if suggestions should automatically show up when typing trigger characters
         "editor.suggestOnTriggerCharacters": true,
     
@@ -48,10 +57,10 @@ If locally installed VS Code, this file is located:
         "editor.acceptSuggestionOnEnter": "on",
     
     // Controls if pressing tab inserts the best suggestion and if tab cycles through other suggestions
-        "editor.tabCompletion": "on",    
+        "editor.tabCompletion": "off",    
     
     // Controls the delay in ms after which quick suggestions will show up.
-        "editor.quickSuggestionsDelay": 500,
+        "editor.quickSuggestionsDelay": 1000,
     
     // Controls how suggestions are pre-selected when showing the suggest list
         "editor.suggestSelection": "recentlyUsed",
