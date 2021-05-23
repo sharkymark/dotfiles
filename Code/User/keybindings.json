@@ -2,11 +2,11 @@
 
 [
     {
-      "key": "option+command+d",
+      "key": "ctrl+command+d",
       "command": "workbench.view.debug"
     },
     {
-      "key": "option+command+n",
+      "key": "ctrl+command+n",
       "command": "workbench.action.files.newUntitledFile"
     }
 ]
