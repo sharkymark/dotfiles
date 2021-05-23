@@ -16,6 +16,13 @@ If locally installed VS Code, this file is located:
     // move sidebar to the right
         "workbench.sideBar.location": "right",
 
+    // dotfiles location
+
+        "dotfiles.repository": "mtm20176/dotfiles",
+        "dotfiles.targetPath": "~/dotfiles",
+        "dotfiles.installCommand": "~/dotfiles/install.sh",
+
+
     // Allow Coder to watch my use of code-server
         "telemetry.enableTelemetry": true,
     
