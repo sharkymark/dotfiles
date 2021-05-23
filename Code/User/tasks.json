@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "open .ssh config settings in $HOME",
+            "type": "shell",
+            "command": "$HOME/.ssh/config"
+        },
+    ]
+}

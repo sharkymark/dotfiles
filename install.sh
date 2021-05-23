@@ -13,6 +13,7 @@ PATH_CS_2="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/Library/Application Support/Code/User"
 COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
+COMMAND_T="cp ./Code/User/tasks.json"
 
 if [ -d $PATH_CS_1 ]; then
     echo 'code-server folder exists, copying settings.json and keybindings.json'
@@ -22,6 +23,8 @@ if [ -d $PATH_CS_1 ]; then
         echo "settings.json copied"
         $COMMAND_K $PATH_CS_2
         echo "keybindings.json copied"
+        $COMMAND_T $PATH_CS_2
+        echo "tasks.json copied"        
     else
         echo "User directory not found, make directory"
         mkdir "$PATH_CS_1"/User
@@ -29,6 +32,8 @@ if [ -d $PATH_CS_1 ]; then
         echo "settings.json copied"
         $COMMAND_K $PATH_CS_2
         echo "keybindings.json copied"
+        $COMMAND_T $PATH_CS_2
+        echo "tasks.json copied"         
     fi
 fi
 
@@ -38,6 +43,8 @@ if [ -d "$PATH_VS_1" ]; then
     echo "settings.json copied"
     $COMMAND_K "$PATH_VS_1"
     echo "keybindings.json copied"
+    $COMMAND_T "$PATH_VS_1"
+    echo "tasks.json copied"    
 fi
 
 
