@@ -72,7 +72,13 @@ fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "MacOS Darwin with brew"
-    brew install fish
+    if [ -d "/usr/local/Cellar/fish/" ]; then
+        echo "brew already installed, check for upgrade"
+        brew upgrade fish
+    else
+        echo "brew not installed, installing brew now..."
+        brew install fish
+    fi
 fi 
 
 
