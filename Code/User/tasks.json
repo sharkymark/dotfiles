@@ -2,9 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "open_ssh_config_settings_in_HOME",
+            "label": "coder_list_workspaces",
             "type": "shell",
-            "command": "$HOME/.ssh/config"
+            "command": "coder envs ls"
         },
     ]
 }
