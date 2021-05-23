@@ -1,10 +1,13 @@
+// custom keybindings
 // https://code.visualstudio.com/api/references/commands
 
 [
+    // open debug
     {
       "key": "ctrl+command+d",
       "command": "workbench.view.debug"
     },
+    // create a new file ( needed in code-server since default behavior is a browser mapping )
     {
       "key": "ctrl+command+n",
       "command": "workbench.action.files.newUntitledFile"
