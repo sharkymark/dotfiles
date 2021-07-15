@@ -66,7 +66,7 @@ If locally installed VS Code, this file is located:
         "editor.quickSuggestionsDelay": 10,
     
     // Controls how suggestions are pre-selected when showing the suggest list
-    //    "editor.suggestSelection": "recentlyUsed",
+        "editor.suggestSelection": "first",
     
     // Enable word based suggestions
         "editor.wordBasedSuggestions": false,
