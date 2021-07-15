@@ -48,10 +48,10 @@ If locally installed VS Code, this file is located:
         },
 
     // Controls whether sorting favors words that appear close to the cursor    
-        "editor.suggest.localityBonus": true,
+        "editor.suggest.localityBonus": false,
 
     // show snippits
-        "editor.snippetSuggestions": "bottom",
+        "editor.snippetSuggestions": "top",
 
     // Controls if suggestions should automatically show up when typing trigger characters
         "editor.suggestOnTriggerCharacters": true,
@@ -69,7 +69,7 @@ If locally installed VS Code, this file is located:
     //    "editor.suggestSelection": "recentlyUsed",
     
     // Enable word based suggestions
-        "editor.wordBasedSuggestions": true,
+        "editor.wordBasedSuggestions": false,
     
     // Enable parameter hints
         "editor.parameterHints.enabled": true,
