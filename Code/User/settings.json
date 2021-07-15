@@ -50,9 +50,6 @@ If locally installed VS Code, this file is located:
     // Controls whether sorting favors words that appear close to the cursor    
         "editor.suggest.localityBonus": true,
 
-    // Enable parameter hints
-        "editor.parameterHints.enabled": true,
-
     // show snippits
         "editor.snippetSuggestions": "bottom",
 
@@ -66,10 +63,10 @@ If locally installed VS Code, this file is located:
         "editor.tabCompletion": "off",    
     
     // Controls the delay in ms after which quick suggestions will show up.
-        "editor.quickSuggestionsDelay": 1000,
+        "editor.quickSuggestionsDelay": 10,
     
     // Controls how suggestions are pre-selected when showing the suggest list
-        "editor.suggestSelection": "recentlyUsed",
+    //    "editor.suggestSelection": "recentlyUsed",
     
     // Enable word based suggestions
         "editor.wordBasedSuggestions": true,
