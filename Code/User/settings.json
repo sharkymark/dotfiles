@@ -9,6 +9,8 @@ If locally installed VS Code, this file is located:
 */
 
 {
+    // set color theme
+        "workbench.colorTheme": "Default Dark+",
     // disable home screen
         "workbench.startupEditor": "none",
 
