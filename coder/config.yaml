@@ -1,0 +1,12 @@
+apps:
+  - name: HTTP server
+    schme: http
+    port: 8080
+    dir: /home/coder
+    icon_path:/home/coder/python.png
+    command: python
+    args: ["-m", "SimpleHTTPServer"]
+    health_check:
+      exec:
+        command: "pgrep"
+        args: ["python"]
