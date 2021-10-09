@@ -6,7 +6,7 @@ apps:
     working-directory: /home/coder
     icon-path: /home/coder/python.png
     command: python3
-    args: ["-m", "SimpleHTTPServer"]
+    args: ["-m", "http.server"]
     health-check:
       exec:
         command: "pgrep"
