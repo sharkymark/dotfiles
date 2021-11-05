@@ -18,16 +18,19 @@ COMMAND_T="cp ./Code/User/tasks.json"
 COMMAND_PYTHON="cp ./coder/python.png $HOME"
 COMMAND_HTTPSERVER="sudo cp ./coder/config.yaml /coder/apps"
 
+
 if [ -d $PATH_CS_1 ]; then
+# check if apps folder is in /coder/
     if [ ! -d $PATH_APPS ]; then
         echo "/coder/apps directory not found" 
         sudo mkdir /coder
         sudo mkdir /coder/apps
+        $COMMAND_PYTHON
+        echo "python.png copied"  
+        $COMMAND_HTTPSERVER
+        echo "config.yaml copied"
     fi
-    $COMMAND_PYTHON
-    echo "python.png copied"  
-    $COMMAND_HTTPSERVER
-    echo "config.yaml copied" 
+
 
     echo 'code-server folder exists, copying settings.json and keybindings.json' 
     if [ -d $PATH_CS_2 ]; then
