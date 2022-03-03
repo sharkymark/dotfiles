@@ -87,7 +87,7 @@ If locally installed VS Code, this file is located:
     "remote.SSH.remotePlatform": {
         "coder.mark-node": "linux",
         "coder.mark-ruby-2-7-2": "linux",
-        "coder.docker-inside": "linux",
+        "coder.mark-docker-inside": "linux",
         "coder.mark-php": "linux",
         "coder.mark-intellij-java-11": "linux",
         "coder.mark-python": "linux",
