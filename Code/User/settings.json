@@ -85,7 +85,7 @@ If locally installed VS Code, this file is located:
     // sets remote to Linux to get around Remote SSH extension not connecting issue
     // https://github.com/microsoft/vscode-remote-release/issues/2509
     "remote.SSH.remotePlatform": {
-        coder.mark-node: "linux"
+        mark-node: "linux"
     }
 
     }
