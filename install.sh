@@ -33,7 +33,7 @@ if [ -d $PATH_CS_1 ]; then
 #    fi
 
     echo 'add .profile to /home/coder'
-    COMMAND_CS 
+    $COMMAND_CS 
 
     echo 'code-server folder exists, copying settings.json and keybindings.json' 
     if [ -d $PATH_CS_2 ]; then
