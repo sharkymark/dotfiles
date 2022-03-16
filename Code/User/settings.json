@@ -90,9 +90,29 @@ If locally installed VS Code, this file is located:
         "coder.mark-docker-inside": "linux",
         "coder.mark-php": "linux",
         "coder.mark-intellij-java-11": "linux",
-        "coder.mark-python": "linux",
-        "coder.mark-salesforce-sdk": "linux"        
+        "coder.mark-python": "linux"      
 
-    }
+    },
+    "terminal.integrated.profiles.osx": {
+        "bash": {
+            "path": "bash",
+            "args": [
+                "-l"
+            ],
+            "icon": "terminal-bash"
+        },
+        "zsh": {
+            "path": "zsh",
+            "args": [
+                "-l"
+            ]
+        },
+        "fish": {
+            "path": "/usr/bin/fish",
+            "args": [
+                "-l"
+            ]
+        }
+    },
 
     }
