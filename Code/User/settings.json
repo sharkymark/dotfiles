@@ -93,7 +93,22 @@ If locally installed VS Code, this file is located:
         "coder.mark-python": "linux"      
 
     },
-    "terminal.integrated.profiles.osx": {
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "bash",
+            "args": [
+                "-l"
+            ],
+            "icon": "terminal-bash"
+        },
+        "fish": {
+            "path": "/usr/bin/fish",
+            "args": [
+                "-l"
+            ]
+        }
+    },
+    "terminal.integrated.profiles.macos": {
         "bash": {
             "path": "bash",
             "args": [
@@ -108,7 +123,7 @@ If locally installed VS Code, this file is located:
             ]
         },
         "fish": {
-            "path": "/usr/bin/fish",
+            "path": "/usr/local/bin/fish",
             "args": [
                 "-l"
             ]
