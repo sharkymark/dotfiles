@@ -4,4 +4,4 @@ export PATH=$PATH:$HOME/.local/bin
 export PATH=$PATH:/var/tmp/coder/code-server/bin
 
 # alias code-server to code
-alias code=/var/tmp/coder/code-server/bin/code-server -r
+alias code="/var/tmp/coder/code-server/bin/code-server -r"
