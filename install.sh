@@ -16,6 +16,7 @@ COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
 COMMAND_CS="cp ./coder/.profile $HOME"
+
 COMMAND_PYTHON="cp ./coder/python.png $HOME"
 COMMAND_HTTPSERVER="sudo cp ./coder/config.yaml /coder/apps"
 
@@ -87,6 +88,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     else
         echo "fish already installed"
     fi
+
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -100,6 +102,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 fi 
 
+# copy config.fish
+cp config.fish $HOME/.config/fish/
 
 # locations for VS Code settings.json
 # Mac $HOME/Library/Application Support/Code/User/
