@@ -12,6 +12,7 @@ PATH_APPS="/coder/apps"
 PATH_CS_1="$HOME/.local/share/code-server"
 PATH_CS_2="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/Library/Application Support/Code/User"
+PATH_FISH_1="$HOME/.config/fish/"
 COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
@@ -103,7 +104,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi 
 
 # copy config.fish
-cp config.fish $HOME/.config/fish/
+if [ -d "$PATH_FISH_1" ]; then
+    cp config.fish $HOME/.config/fish/
+fi
 
 # locations for VS Code settings.json
 # Mac $HOME/Library/Application Support/Code/User/
