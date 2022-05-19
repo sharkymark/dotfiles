@@ -76,7 +76,7 @@ RSYNC_PATH=/usr/bin
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [ ! -f $RSYNC_BINARY ] ; then
         echo "installing rsync in $RSYNC_PATH"
-        elif [ -f "/etc/lsb-release" ]; then
+        if [ -f "/etc/lsb-release" ]; then
             echo "Ubuntu" 
             sudo apt-get update
             sudo apt-get install -y rsync  
