@@ -68,9 +68,37 @@ if [ -d "$PATH_VS_1" ]; then
     echo "tasks.json copied"    
 fi
 
+echo "STEP: install rsync ( check OS )"
 
+RSYNC_BINARY=/usr/bin/rsync
+RSYNC_PATH=/usr/bin
 
-echo "STEP: install fish shell ( check OS )"
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if [ ! -f $RSYNC_BINARY ] ; then
+        echo "installing rsync in $RSYNC_PATH"
+        elif [ -f "/etc/lsb-release" ]; then
+            echo "Ubuntu" 
+            sudo apt-get update
+            sudo apt-get install -y rsync  
+        fi
+    else
+        echo "rsync already installed"
+    fi
+
+fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "MacOS Darwin with brew"
+    if [ -d "/usr/local/bin/rsync" ]; then
+        echo "brew already installed, check for upgrade"
+        brew upgrade rsync
+    else
+        echo "brew not installed, installing brew now..."
+        brew install rsync
+    fi
+fi 
+
+echo "STEP: install fish shell (check OS)"
 
 FISH_BINARY=/usr/bin/fish
 FISH_PATH=/usr/bin
