@@ -68,7 +68,37 @@ if [ -d "$PATH_VS_1" ]; then
     echo "tasks.json copied"    
 fi
 
-echo "STEP: install rsync ( check OS )"
+echo "STEP: install tmux (check OS)"
+
+TMUX_BINARY=/usr/bin/tmux
+TMUX_PATH=/usr/bin
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if [ ! -f $TMUX_BINARY ] ; then
+        echo "installing tmux in $TMUX_PATH"
+        if [ -f "/etc/lsb-release" ]; then
+            echo "Ubuntu" 
+            sudo apt-get update
+            sudo apt-get install -y tmux  
+        fi
+    else
+        echo "tmux already installed"
+    fi
+
+fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "MacOS Darwin with brew"
+    if [ -d "/usr/local/bin/tmux" ]; then
+        echo "tmux already installed, check for upgrade"
+        brew upgrade tmux
+    else
+        echo "tmux not installed, installing tmux now..."
+        brew install tmux
+    fi
+fi 
+
+echo "STEP: install rsync (check OS)"
 
 RSYNC_BINARY=/usr/bin/rsync
 RSYNC_PATH=/usr/bin
@@ -90,10 +120,10 @@ fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "MacOS Darwin with brew"
     if [ -d "/usr/local/bin/rsync" ]; then
-        echo "brew already installed, check for upgrade"
+        echo "rsync already installed, check for upgrade"
         brew upgrade rsync
     else
-        echo "brew not installed, installing brew now..."
+        echo "rsync not installed, installing brew now..."
         brew install rsync
     fi
 fi 
@@ -123,10 +153,10 @@ fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "MacOS Darwin with brew"
     if [ -d "/usr/local/Cellar/fish/" ]; then
-        echo "brew already installed, check for upgrade"
+        echo "fish already installed, check for upgrade"
         brew upgrade fish
     else
-        echo "brew not installed, installing brew now..."
+        echo "fish not installed, installing brew now..."
         brew install fish
     fi
 fi 
