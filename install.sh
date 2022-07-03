@@ -23,16 +23,6 @@ COMMAND_HTTPSERVER="sudo cp ./coder/config.yaml /coder/apps"
 
 
 if [ -d $PATH_CS_1 ]; then
-# check if apps folder is in /coder/
-#    if [ ! -d $PATH_APPS ]; then
-#        echo "/coder/apps directory not found" 
-#        sudo mkdir /coder
-#        sudo mkdir /coder/apps
-#        $COMMAND_PYTHON
-#        echo "python.png copied"  
-#        $COMMAND_HTTPSERVER
-#        echo "config.yaml copied"
-#    fi
 
     echo 'add .profile to /home/coder'
     $COMMAND_CS 
@@ -68,65 +58,7 @@ if [ -d "$PATH_VS_1" ]; then
     echo "tasks.json copied"    
 fi
 
-echo "STEP: install tmux (check OS)"
 
-TMUX_BINARY=/usr/bin/tmux
-TMUX_PATH=/usr/bin
-
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    if [ ! -f $TMUX_BINARY ] ; then
-        echo "installing tmux in $TMUX_PATH"
-        if [ -f "/etc/lsb-release" ]; then
-            echo "Ubuntu" 
-            sudo apt-get update
-            sudo apt-get install -y tmux  
-        fi
-    else
-        echo "tmux already installed"
-    fi
-
-fi
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "MacOS Darwin with brew"
-    if [ -d "/usr/local/bin/tmux" ]; then
-        echo "tmux already installed, check for upgrade"
-        brew upgrade tmux
-    else
-        echo "tmux not installed, installing tmux now..."
-        brew install tmux
-    fi
-fi 
-
-echo "STEP: install rsync (check OS)"
-
-RSYNC_BINARY=/usr/bin/rsync
-RSYNC_PATH=/usr/bin
-
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    if [ ! -f $RSYNC_BINARY ] ; then
-        echo "installing rsync in $RSYNC_PATH"
-        if [ -f "/etc/lsb-release" ]; then
-            echo "Ubuntu" 
-            sudo apt-get update
-            sudo apt-get install -y rsync  
-        fi
-    else
-        echo "rsync already installed"
-    fi
-
-fi
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "MacOS Darwin with brew"
-    if [ -d "/usr/local/bin/rsync" ]; then
-        echo "rsync already installed, check for upgrade"
-        brew upgrade rsync
-    else
-        echo "rsync not installed, installing brew now..."
-        brew install rsync
-    fi
-fi 
 
 echo "STEP: install fish shell (check OS)"
 
