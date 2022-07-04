@@ -27,7 +27,7 @@ If locally installed VS Code, this file is located:
 
     // dotfiles location
 
-        "dotfiles.repository": "mtm20176/dotfiles",
+        "dotfiles.repository": "mark_theshark/dotfiles",
         "dotfiles.targetPath": "~/dotfiles",
         "dotfiles.installCommand": "~/dotfiles/install.sh",
 
