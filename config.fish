@@ -4,6 +4,3 @@
 abbr --add --global g 'git'
 abbr --add --global kube 'kubectl'
 abbr --add --global kub 'kubectl'
-
-# enable autocompletion of kubectl 
-kubectl completion fish | source
