@@ -1,6 +1,9 @@
-# 3-27-22 updated
+# 7-9-22 updated
 
 # convenience abbreviations
 abbr --add --global g 'git'
 abbr --add --global kube 'kubectl'
 abbr --add --global kub 'kubectl'
+
+# enable autocompletion of kubectl 
+kubectl completion fish | source
