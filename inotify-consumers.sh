@@ -4,7 +4,24 @@
 # @author Carl-Erik Kopseng
 # @latest https://github.com/fatso83/dotfiles/blob/master/utils/scripts/inotify-consumers
 # Discussion leading up to answer: https://unix.stackexchange.com/questions/15509/whos-consuming-my-inotify-resources
-# Speed enhancements by Simon Matter <simon.matter@invoca.ch>
+#
+# If you need ultimate speed, use https://github.com/fatso83/dotfiles/commit/inotify-consumers-v1-fastest
+# # Speed enhancements by Simon Matter <simon.matter@invoca.ch>
+#
+# A later PR introduced a significant slowdown to gain better output, but it is insignificant on most machines
+# See this for details: https://github.com/fatso83/dotfiles/pull/10#issuecomment-1122374716
+
+main(){
+    # get terminal width
+    declare -i COLS=$(tput cols 2>/dev/null || echo 80)
+    declare -i WLEN=10
+
+    printf "\n%${WLEN}s  %${WLEN}s\n" "INOTIFY" "INSTANCES"
+    printf "%${WLEN}s  %${WLEN}s\n" "WATCHES" "PER   "
+    printf "%${WLEN}s  %${WLEN}s  %s\n" " COUNT " "PROCESS "    "PID USER         COMMAND"
+    printf -- "------------------------------------------------------------\n"
+    generateData
+}
 
 usage(){
     cat << EOF
@@ -42,41 +59,53 @@ if [ -n "$1" ]; then
     exit 1
 fi
 
-
 generateData(){
     local -i PROC
     local -i PID
     local -i CNT
+    local -i INSTANCES
     local -i TOT
+    local -i TOTINSTANCES
     # read process list into cache
-    local PSLIST="$(ps ax -o pid,user,command --columns $(( COLS - WLEN )))"
-    IFS=","
-    find /proc/*/fd -lname anon_inode:inotify 2> /dev/null |
-        cut -d "/" -f 3 |                # get list of processes
-        uniq |
+    local PSLIST="$(ps ax -o pid,user=WIDE-COLUMN,command --columns $(( COLS - WLEN )))"
+    local INOTIFY="$(find /proc/[0-9]*/fdinfo -type f 2>/dev/null | xargs grep ^inotify 2>/dev/null)"
+    local INOTIFYCNT="$(echo "$INOTIFY" | cut -d "/" -s --output-delimiter=" "  -f 3 |uniq -c | sed -e 's/:.*//')"
+    # unique instances per process is denoted by number of inotify FDs
+    local INOTIFYINSTANCES="$(echo "$INOTIFY" | cut -d "/" -s --output-delimiter=" "   -f 3,5 | sed -e 's/:.*//'| uniq |awk '{print $1}' |uniq -c)"
+    local INOTIFYUSERINSTANCES="$(echo "$INOTIFY" | cut -d "/" -s --output-delimiter=" "   -f 3,5 | sed -e 's/:.*//' | uniq |
+    	     while read PID FD; do echo $PID $FD $(grep -e "^\ *${PID}\ " <<< "$PSLIST"|awk '{print $2}'); done | cut -d" "  -f 3 | sort | uniq -c |sort -nr)"
+    set -e
+
+    cat <<< "$INOTIFYCNT" |
         {
-            while read -rs PROC; do      # count watches of processes found
-                echo "${PROC},$(grep -c "^inotify" < <(cat /proc/${PROC}/fdinfo/* 2> /dev/null))"
+            while read -rs CNT PROC; do   # count watches of processes found
+                echo "${PROC},${CNT},$(echo "$INOTIFYINSTANCES" | grep " ${PROC}$" |awk '{print $1}')"
             done
         } |
-        grep -v ",0$" |                  # remove entires without watches
-        sort -n -t "," -k 2 -r |         # sort to begin with highest numbers
+        grep -v ",0," |                  # remove entires without watches
+        sort -n -t "," -k 2,3 -r |         # sort to begin with highest numbers
         {                                # group commands so that $TOT is visible in the printf
-            while read -rs PID CNT; do   # show watches and corresponding process info
-                printf "%$(( WLEN - 2 ))d  %s\n" "$CNT" "$(grep -e "^\ *${PID}\ " <<< "$PSLIST")"
+	    IFS=","
+            while read -rs PID CNT INSTANCES; do   # show watches and corresponding process info
+                printf "%$(( WLEN - 2 ))d  %$(( WLEN - 2 ))d     %s\n" "$CNT" "$INSTANCES" "$(grep -e "^\ *${PID}\ " <<< "$PSLIST")"
                 TOT=$(( TOT + CNT ))
+		TOTINSTANCES=$(( TOTINSTANCES + INSTANCES))
             done
+	    # These stats should be per-user as well, since inotify limits are per-user..
             printf "\n%$(( WLEN - 2 ))d  %s\n" "$TOT" "WATCHES TOTAL COUNT"
+# the total across different users is somewhat meaningless, not printing for now.
+#            printf "\n%$(( WLEN - 2 ))d  %s\n" "$TOTINSTANCES" "TOTAL INSTANCES COUNT"
         }
+    echo ""
+    echo "INotify instances per user (e.g. limits specified by fs.inotify.max_user_instances): "
+    echo ""
+    (
+      echo "INSTANCES    USER"
+      echo "-----------  ------------------"
+      echo "$INOTIFYUSERINSTANCES"
+    ) | column -t
+    echo ""
+
 }
 
-
-# get terminal width
-declare -i COLS=$(tput cols)
-declare -i WLEN=10
-
-printf "\n%${WLEN}s\n" "INOTIFY"
-printf "%${WLEN}s\n" "WATCHES"
-printf "%${WLEN}s    %s\n" " COUNT " "PID USER     COMMAND"
-printf -- "--------------------------------------\n"
-generateData
+main
