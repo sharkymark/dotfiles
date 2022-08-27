@@ -16,36 +16,25 @@ PATH_FISH_1="$HOME/.config/fish/"
 COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
-COMMAND_CS="cp ./coder/.profile $HOME"
-
-COMMAND_PYTHON="cp ./coder/python.png $HOME"
-COMMAND_HTTPSERVER="sudo cp ./coder/config.yaml /coder/apps"
-
 
 if [ -d $PATH_CS_1 ]; then
 
-    echo 'add .profile to /home/coder'
-    $COMMAND_CS 
-
     echo 'code-server folder exists, copying settings.json and keybindings.json' 
     if [ -d $PATH_CS_2 ]; then
-        echo "User directory found"
-        $COMMAND_S $PATH_CS_2
-        echo "settings.json copied"
-        $COMMAND_K $PATH_CS_2
-        echo "keybindings.json copied"
-        $COMMAND_T $PATH_CS_2
-        echo "tasks.json copied"               
+        echo "User directory found"              
     else
         echo "User directory not found, make directory"
-        mkdir "$PATH_CS_1"/User
-        $COMMAND_S $PATH_CS_2
-        echo "settings.json copied"
-        $COMMAND_K $PATH_CS_2
-        echo "keybindings.json copied"
-        $COMMAND_T $PATH_CS_2
-        echo "tasks.json copied"         
+        mkdir "$PATH_CS_1"/User    
     fi
+
+    # copy settings, keybindings and tasks.json
+    $COMMAND_S $PATH_CS_2
+    echo "settings.json copied"
+    $COMMAND_K $PATH_CS_2
+    echo "keybindings.json copied"
+    $COMMAND_T $PATH_CS_2
+    echo "tasks.json copied"
+
 fi
 
 if [ -d "$PATH_VS_1" ]; then
@@ -58,8 +47,6 @@ if [ -d "$PATH_VS_1" ]; then
     echo "tasks.json copied"    
 fi
 
-
-
 echo "STEP: install fish shell (check OS)"
 
 FISH_BINARY=/usr/bin/fish
@@ -68,10 +55,7 @@ FISH_PATH=/usr/bin
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [ ! -f $FISH_BINARY ] ; then
         echo "installing fish in $FISH_PATH"
-        if [ -f "/etc/arch-release" ]; then
-            echo "Arch Linux"
-            sudo pacman -S fish --noconfirm
-        elif [ -f "/etc/lsb-release" ]; then
+        if [ -f "/etc/lsb-release" ]; then
             echo "Ubuntu" 
             sudo apt-get update
             sudo apt-get install -y fish  
@@ -94,12 +78,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi 
 
 # copy config.fish
-if [ -d "$PATH_FISH_1" ]; then
-    cp config.fish $HOME/.config/fish/
-fi
-
-# locations for VS Code settings.json
-# Mac $HOME/Library/Application Support/Code/User/
-# Linux $HOME/.config/Code/User/
-# locations for code-server settings.json
-# $HOME/.local/share/code-server/User
+#if [ -d "$PATH_FISH_1" ]; then
+#    cp config.fish $HOME/.config/fish/
+#fi
