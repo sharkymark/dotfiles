@@ -21,7 +21,7 @@ fi
 function prompt()
 {
     unset PROMPT_COMMAND
-    PS1="🦈 [\h] \W % "
+    PS1="🦈 [\h] \W \$ "
 }
 
 prompt
