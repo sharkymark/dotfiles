@@ -20,6 +20,7 @@ echo "Shell is $SHELL"
 
 if [ "$SHELL" == "/bin/bash" ]; then 
   cp ./shell/bash/.bashrc $HOME/.bashrc
+  cp ./shell/bash/.bash_profile $HOME/.bash_profile  
 elif [ "$SHELL" == "/bin/zsh" ]; then
   cp ./shell/zsh/.zshrc $HOME/.zshrc
 elif [ "$SHELL" == "/usr/local/fish" ]; then
