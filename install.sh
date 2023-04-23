@@ -36,7 +36,7 @@ if [ -d $PATH_CS_1 ]; then
         echo "User directory found"  
     else
         echo "User directory not found, make directory"
-        #mkdir "$PATH_CS_1/User"    
+        mkdir "$PATH_CS_1"/User    
     fi
 
     $COMMAND_S $PATH_CS_2
