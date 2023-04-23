@@ -18,11 +18,11 @@ COMMAND_T="cp ./Code/User/tasks.json"
 echo "STEP: copying shell dotfiles e.g., .bashrc, .zshrc"
 
 if [ "$SHELL" == "/bin/bash" ]; then
-  cp /shell/bash/.bashrc $HOME/.bashrc
+  cp ./shell/bash/.bashrc $HOME/.bashrc
 elif [ "$SHELL" == "/bin/zsh" ]; then
-  cp /shell/zsh/.zshrc $HOME/.zshrc
+  cp ./shell/zsh/.zshrc $HOME/.zshrc
 elif [ "$SHELL" == "/usr/local/fish" ]; then
-  cp /shell/fish/config.fish $HOME/.config/fish/config.fish
+  cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
 else
   echo "no unix shell dotfiles copied"
 fi
