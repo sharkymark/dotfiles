@@ -5,8 +5,6 @@ export HISTFILESIZE=999999
 export SAVEHIST=$HISTSIZE
 # append to the history file instead of overwriting it when shell closed
 shopt -s histappend
-# after each command, append to the history file and reread it
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
 
 # colors
