@@ -10,7 +10,7 @@ cyan='\e[0;36m'
 CYAN='\e[1;36m'
 NC='\e[0m'
 
-# sh# https://ss64.com/bash/syntax-prompt.html
+# https://ss64.com/bash/syntax-prompt.html
 
 if [[ "${DISPLAY#$HOST}" != ":0.0" &&  "${DISPLAY}" != ":0" ]]; then  
     HILIT=${red}   # remote machine
@@ -24,4 +24,4 @@ function prompt()
     PS1="🦈 [\h] \W % "
 }
 
-# prompt
+prompt
