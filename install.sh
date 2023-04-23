@@ -16,7 +16,7 @@ COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
 
-# cp ./coder/.bashrc $HOME
+cp ./coder/.bashrc $HOME
 
 if [ -d $PATH_CS_1 ]; then
 
