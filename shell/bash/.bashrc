@@ -18,11 +18,5 @@ NC='\e[0m'
 
 # https://ss64.com/bash/syntax-prompt.html
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
-
-function prompt()
-{
-    unset PROMPT_COMMAND
-    PS1="🦈 \W \$ "
-}
-
-prompt
+unset PROMPT_COMMAND
+PS1="🦈 \W \$ "
