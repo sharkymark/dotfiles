@@ -1,8 +1,8 @@
 
 export HISTFILE="$HOME/.bash_history"
-export HISTSIZE=999999
-export HISTFILESIZE=999999
-export SAVEHIST=$HISTSIZE
+export HISTSIZE=10000
+export HISTFILESIZE=100000
+export HISTCONTROL=ignoredups:erasedups
 # append to the history file instead of overwriting it when shell closed
 shopt -s histappend
 
