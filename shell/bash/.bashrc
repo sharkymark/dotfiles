@@ -1,5 +1,13 @@
 
-export DISPLAY
+export HISTFILE="$HOME/.bash_history"
+export HISTSIZE=999999
+export HISTFILESIZE=999999
+export SAVEHIST=$HISTSIZE
+# append to the history file instead of overwriting it when shell closed
+shopt -s histappend
+# after each command, append to the history file and reread it
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+
 
 # colors
 red='\e[0;31m'
@@ -13,16 +21,10 @@ NC='\e[0m'
 # https://ss64.com/bash/syntax-prompt.html
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 
-if [[ "${DISPLAY#$HOST}" != ":0.0" &&  "${DISPLAY}" != ":0" ]]; then  
-    HILIT=${red}   # remote machine
-else
-    HILIT=${NC}  # local machine
-fi
-
 function prompt()
 {
     unset PROMPT_COMMAND
-    PS1="🦈 [\h] \W \$ "
+    PS1="🦈 \W \$ "
 }
 
 prompt
