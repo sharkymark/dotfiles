@@ -8,16 +8,6 @@
 ehthumbs.db
 Thumbs.db
 
-# fish-related
-.vim/bundle
-fish_history
-config.fish.backup
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
 # Java-related
 /.gradle
 # Ruby on Rails-related
@@ -25,11 +15,9 @@ config.fish.backup
 # Ignore bundler config
 /.bundle
 
-# Ignore the default SQLite database - comment out for my key apps
-#/db/*.sqlite3
-
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
 
 /vendor/bundle
+/node_modules
