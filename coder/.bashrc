@@ -24,4 +24,4 @@ function prompt()
     PS1="🦈 [\h] \W % "
 }
 
-prompt
+# prompt
