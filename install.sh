@@ -33,9 +33,9 @@ if [ -d $PATH_CS_1 ]; then
 
     echo 'code-server directory exists (i.e., a Coder remote workspace), copying settings.json, keybindings.json, tasks.json' 
     if [ -d $PATH_CS_2 ]; then        
-        echo "User directory found"  
+        echo "$PATH_CS_2 found"  
     else
-        echo "User directory not found, make directory"
+        echo "$PATH_CS_2 not found, make directory"
         mkdir "$PATH_CS_1"/User    
     fi
 
