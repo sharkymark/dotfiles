@@ -32,12 +32,13 @@ echo "STEP: copying VS Code-related config files"
 if [ -d $PATH_CS_1 ]; then
 
     echo 'code-server directory exists (i.e., a Coder remote workspace), copying settings.json, keybindings.json, tasks.json' 
-    if [ -d $PATH_CS_2 ]; then          
+    if [ -d $PATH_CS_2 ]; then        
+        echo "User directory found"  
     else
-        mkdir "$PATH_CS_1"/User    
+        echo "User directory not found, make directory"
+        #mkdir "$PATH_CS_1/User"    
     fi
 
-    # copy settings, keybindings and tasks.json
     $COMMAND_S $PATH_CS_2
     $COMMAND_K $PATH_CS_2
     $COMMAND_T $PATH_CS_2
