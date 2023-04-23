@@ -16,8 +16,9 @@ COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
 
 echo "STEP: copying shell dotfiles e.g., .bashrc, .zshrc"
+echo "Shell is $SHELL"
 
-if [ "$SHELL" == "/bin/bash" ]; then
+if [ "$SHELL" == "/bin/bash" ]; then 
   cp ./shell/bash/.bashrc $HOME/.bashrc
 elif [ "$SHELL" == "/bin/zsh" ]; then
   cp ./shell/zsh/.zshrc $HOME/.zshrc
