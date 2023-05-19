@@ -74,6 +74,11 @@ If locally installed VS Code, this file is located:
     // Turn off file watchers
         "files.watcherExclude": {
             "**": true
-        }
+        },
+        
+    // Do not save tab | file history
+        "terminal.integrated.persistentSessionReviveProcess": "never",
 
+        "terminal.integrated.enablePersistentSessions": false
+    
     }
