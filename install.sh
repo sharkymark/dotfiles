@@ -32,6 +32,13 @@ fi
 
 echo "STEP: copying VS Code-related config files"
 
+if [ -d "$PATH_VSCS" ]; then
+    echo 'Microsoft VS Code Server found, copying settings.json, keybindings.json, tasks.json'
+    $COMMAND_S "$PATH_VSCS"
+    $COMMAND_K "$PATH_VSCS"
+    $COMMAND_T "$PATH_VSCS"  
+fi
+
 if [ -d $PATH_CS_1 ]; then
 
     echo 'code-server directory exists (i.e., a Coder remote workspace), copying settings.json, keybindings.json, tasks.json' 
@@ -55,9 +62,3 @@ if [ -d "$PATH_VS_1" ]; then
     $COMMAND_T "$PATH_VS_1"  
 fi
 
-if [ -d "$PATH_VSCS" ]; then
-    echo 'Microsoft VS Code Server found, copying settings.json, keybindings.json, tasks.json'
-    $COMMAND_S "$PATH_VSCS"
-    $COMMAND_K "$PATH_VSCS"
-    $COMMAND_T "$PATH_VSCS"  
-fi
