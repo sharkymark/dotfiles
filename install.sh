@@ -11,7 +11,7 @@ cp -r ./git/.gitconfig ./git/.gitignore_global ~
 PATH_CS_1="$HOME/.local/share/code-server"
 PATH_CS_2="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/Library/Application Support/Code/User"
-PATH_VSCS_1="$HOME/.vscoder-server/data"
+PATH_VSCS_1="$HOME/.vscoder-server"
 PATH_VSCS_2="$HOME/.vscoder-server/data/User"
 COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
