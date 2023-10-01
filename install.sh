@@ -11,7 +11,8 @@ cp -r ./git/.gitconfig ./git/.gitignore_global ~
 PATH_CS_1="$HOME/.local/share/code-server"
 PATH_CS_2="$HOME/.local/share/code-server/User"
 PATH_VS_1="$HOME/Library/Application Support/Code/User"
-PATH_VSCS="$HOME/.vscoder-server/data/User"
+PATH_VSCS_1="$HOME/.vscoder-server/data"
+PATH_VSCS_2="$HOME/.vscoder-server/data/User"
 COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
@@ -32,8 +33,16 @@ fi
 
 echo "STEP: copying VS Code-related config files"
 
-if [ -d "$PATH_VSCS" ]; then
+if [ -d "$PATH_VSCS_1" ]; then
+
     echo 'Microsoft VS Code Server found, copying settings.json, keybindings.json, tasks.json'
+    if [ -d $PATH_VSCS_2 ]; then        
+        echo "$PATH_VSCS_2 found"  
+    else
+        echo "$PATH_VSCS_2 not found, make directory"
+        mkdir "$PATH_VSCS_1"/User    
+    fi
+
     $COMMAND_S "$PATH_VSCS"
     $COMMAND_K "$PATH_VSCS"
     $COMMAND_T "$PATH_VSCS"  
