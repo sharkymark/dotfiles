@@ -7,6 +7,15 @@ echo "Copying dotfiles ..."
 echo "STEP: copying .gitconfig and .gitignore_global"
 cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
+# vs code extension installation
+# Check if VS Code is installed by looking for the 'code' command
+if ! command -v code &> /dev/null
+then
+    echo "VS Code is not installed. Please install it before running this script."
+    exit 1
+else
+    ./install_vs_code_extensions.sh
+fi
 
 PATH_CS_1="$HOME/.local/share/code-server"
 PATH_CS_2="$HOME/.local/share/code-server/User"
