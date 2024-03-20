@@ -49,6 +49,8 @@ if [ -d "$PATH_VSCS_1" ]; then
     $COMMAND_T "$PATH_VSCS_2"  
 fi
 
+echo "before code-server check"
+
 if [ -d $PATH_CS_1 ]; then
 
     if [ -d $PATH_CS_2 ]; then        
@@ -59,8 +61,9 @@ if [ -d $PATH_CS_1 ]; then
     fi
 
     # vs code extension installation
-    # Check if VS Code is installed by looking for the 'code' command
-    if ! command -v /tmp/code-server/bin/code-server &> /dev/null
+    # Check if VS Code is installed by looking for the 'code-server' command
+    export EXT_BINARY="/tmp/code-server/bin/code-server"
+    if ! command -v $EXT_BINARY &> /dev/null
     then
         echo "code-server is not installed. Please install it before running this script. https://github.com/coder/code-server"
     else
@@ -79,7 +82,8 @@ if [ -d "$PATH_VS_1" ]; then
 
     # vs code extension installation
     # Check if VS Code is installed by looking for the 'code' command
-    if ! command -v code &> /dev/null
+    export EXT_BINARY="code"
+    if ! command -v $EXT_BINARY &> /dev/null
     then
         echo "VS Code is not installed. Please install it before running this script. https://github.com/microsoft/vscode"
     else
