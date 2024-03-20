@@ -10,9 +10,8 @@ Thumbs.db
 
 # Java-related
 /.gradle
-# Ruby on Rails-related
 
-# Ignore bundler config
+# Ruby on Rails-related
 /.bundle
 
 # Ignore all logfiles and tempfiles.

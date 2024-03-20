@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-echo "dotfiles repo install.sh"
+echo "RUNNING dotfiles repo install.sh"
 
-echo "Copying dotfiles ..."
-
-echo "STEP: copying .gitconfig and .gitignore_global"
+echo "STEP: 💾 copying .gitconfig and .gitignore_global"
 cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
 
