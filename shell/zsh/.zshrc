@@ -24,6 +24,3 @@ _comp_options+=(globdots) # With hidden files
 #prompt
 #PS1="%n@%m %1~ %# "
 PS1="🍋 %1~ %# "
-
-# ruby environment manager rbenv initialization
-eval "$(rbenv init -)"

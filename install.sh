@@ -7,15 +7,7 @@ echo "Copying dotfiles ..."
 echo "STEP: copying .gitconfig and .gitignore_global"
 cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
-# vs code extension installation
-# Check if VS Code is installed by looking for the 'code' command
-if ! command -v code &> /dev/null
-then
-    echo "VS Code is not installed. Please install it before running this script."
-    exit 1
-else
-    ./install_vs_code_extensions.sh
-fi
+
 
 PATH_CS_1="$HOME/.local/share/code-server"
 PATH_CS_2="$HOME/.local/share/code-server/User"
@@ -59,13 +51,23 @@ fi
 
 if [ -d $PATH_CS_1 ]; then
 
-    echo 'code-server directory exists (i.e., a Coder remote workspace), copying settings.json, keybindings.json, tasks.json' 
     if [ -d $PATH_CS_2 ]; then        
         echo "$PATH_CS_2 found"  
     else
         echo "$PATH_CS_2 not found, make directory"
         mkdir "$PATH_CS_1"/User    
     fi
+
+    # vs code extension installation
+    # Check if VS Code is installed by looking for the 'code' command
+    if ! command -v /tmp/code-server/bin/code-server &> /dev/null
+    then
+        echo "code-server is not installed. Please install it before running this script. https://github.com/coder/code-server"
+    else
+        ./install_vs_code_extensions.sh
+    fi
+
+    echo 'code-server found, copying settings.json, keybindings.json, tasks.json'
 
     $COMMAND_S $PATH_CS_2
     $COMMAND_K $PATH_CS_2
@@ -74,6 +76,16 @@ if [ -d $PATH_CS_1 ]; then
 fi
 
 if [ -d "$PATH_VS_1" ]; then
+
+    # vs code extension installation
+    # Check if VS Code is installed by looking for the 'code' command
+    if ! command -v code &> /dev/null
+    then
+        echo "VS Code is not installed. Please install it before running this script. https://github.com/microsoft/vscode"
+    else
+        ./install_vs_code_extensions.sh
+    fi
+
     echo 'locally-installed VS Code found, copying settings.json, keybindings.json, tasks.json'
     $COMMAND_S "$PATH_VS_1"
     $COMMAND_K "$PATH_VS_1"
