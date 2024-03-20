@@ -2,7 +2,7 @@
 
 echo "RUNNING dotfiles repo install.sh"
 
-echo "STEP: 💾 copying .gitconfig and .gitignore_global"
+echo "STEP 1: 💾 copying .gitconfig and .gitignore_global"
 cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
 
@@ -16,8 +16,8 @@ COMMAND_S="cp ./Code/User/settings.json"
 COMMAND_K="cp ./Code/User/keybindings.json"
 COMMAND_T="cp ./Code/User/tasks.json"
 
-echo "STEP: copying shell dotfiles e.g., .bashrc, .zshrc"
-echo "Shell is $SHELL"
+echo "🐚 Shell is $SHELL"
+echo "STEP 2: 💾 copying shell configuration files e.g., bash, fish, zsh"
 
 if [ "$SHELL" == "/bin/bash" ]; then 
   cp ./shell/bash/.bashrc $HOME/.bashrc
@@ -30,11 +30,11 @@ else
   echo "no unix shell dotfiles copied"
 fi
 
-echo "STEP: copying VS Code-related config files"
+echo "STEP 3: 💾 copying VS Code-related config files e.g., settings, keybindings, tasks"
 
 if [ -d "$PATH_VSCS_1" ]; then
 
-    echo 'Microsoft VS Code Server found, copying settings.json, keybindings.json, tasks.json'
+    echo 'Microsoft VS Code Server config directory found'
     if [ -d $PATH_VSCS_2 ]; then        
         echo "$PATH_VSCS_2 found"  
     else
@@ -42,15 +42,16 @@ if [ -d "$PATH_VSCS_1" ]; then
         mkdir "$PATH_VSCS_1"/data/User    
     fi
 
+    VSCS_DIR=$(ls -td $HOME/.vscode/cli/serve-web/*/ | head -1)
+    export EXT_BINARY="$VSCS_DIR bin/code-server"
     $COMMAND_S "$PATH_VSCS_2"
     $COMMAND_K "$PATH_VSCS_2"
     $COMMAND_T "$PATH_VSCS_2"  
 fi
 
-echo "before code-server check"
-
 if [ -d $PATH_CS_1 ]; then
 
+    echo 'code-server config directory found'
     if [ -d $PATH_CS_2 ]; then        
         echo "$PATH_CS_2 found"  
     else
@@ -68,8 +69,6 @@ if [ -d $PATH_CS_1 ]; then
         ./install_vs_code_extensions.sh
     fi
 
-    echo 'code-server found, copying settings.json, keybindings.json, tasks.json'
-
     $COMMAND_S $PATH_CS_2
     $COMMAND_K $PATH_CS_2
     $COMMAND_T $PATH_CS_2
@@ -78,6 +77,7 @@ fi
 
 if [ -d "$PATH_VS_1" ]; then
 
+    echo 'Locally-installed VS Code config directory found'
     # vs code extension installation
     # Check if VS Code is installed by looking for the 'code' command
     export EXT_BINARY="code"
@@ -88,7 +88,6 @@ if [ -d "$PATH_VS_1" ]; then
         ./install_vs_code_extensions.sh
     fi
 
-    echo 'locally-installed VS Code found, copying settings.json, keybindings.json, tasks.json'
     $COMMAND_S "$PATH_VS_1"
     $COMMAND_K "$PATH_VS_1"
     $COMMAND_T "$PATH_VS_1"  
