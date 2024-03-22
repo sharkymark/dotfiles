@@ -1,0 +1,6 @@
+4ops.terraform
+ms-azuretools.vscode-docker
+esbenp.prettier-vscode
+mechatroner.rainbow-csv
+asvetliakov.vscode-neovim
+eamodio.gitlens
