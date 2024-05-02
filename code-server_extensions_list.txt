@@ -1,4 +1,1 @@
-4ops.terraform
-ms-azuretools.vscode-docker
 esbenp.prettier-vscode
-mechatroner.rainbow-csv
