@@ -1,22 +1,20 @@
 # OS generated files #
 ######################
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
+.Trash-*
 Thumbs.db
 
-# Java-related
-/.gradle
+# log and temp files
+*.log
+*.tmp
+*.bak
 
-# Ruby on Rails-related
-/.bundle
+# package manager files
+vendor/
+node_modules/
+venv*
 
-# Ignore all logfiles and tempfiles.
-/log/*.log
-/tmp
+# ide files
+.vscode
+*.code-workspace
 
-/vendor/bundle
-/node_modules
