@@ -15,6 +15,6 @@ node_modules/
 venv*
 
 # ide files
-.vscode
+.vscode/
 *.code-workspace
 
