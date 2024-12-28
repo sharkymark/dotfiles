@@ -75,5 +75,9 @@ If locally installed VS Code, this file is located:
         "remote.SSH.connectTimeout": 1800,
         "git.autofetch": true,
         "git.ignoreMissingGitWarning": true,
+        "github.copilot.enable": {
+            "markdown": true,
+            "plaintext": true
+        },
     
     }
