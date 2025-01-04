@@ -78,6 +78,6 @@ If locally installed VS Code, this file is located:
         "github.copilot.enable": {
             "markdown": true,
             "plaintext": true
-        },
+        }
     
     }
