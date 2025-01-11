@@ -1,6 +1,6 @@
 /*
 
-2024-12-25
+2025-01-11
 
 If locally installed VS Code, this file is located: 
 ~/Library/Application Support/Code/User/settings.json
@@ -68,9 +68,8 @@ If locally installed VS Code, this file is located:
     //        "**": true
     //    },
         
-    // never, always, onExit
-        "terminal.integrated.persistentSessionReviveProcess": "onExit",
-        "terminal.integrated.enablePersistentSessions": true,
+    // 
+        "terminal.integrated.enablePersistentSessions": false,
 
         "remote.SSH.connectTimeout": 1800,
         "git.autofetch": true,
