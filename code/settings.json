@@ -70,6 +70,7 @@ If locally installed VS Code, this file is located:
         
     // 
         "terminal.integrated.enablePersistentSessions": false,
+        "terminal.integrated.hideOnStartup": "always",
 
         "remote.SSH.connectTimeout": 1800,
         "git.autofetch": true,
