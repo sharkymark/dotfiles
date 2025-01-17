@@ -10,3 +10,5 @@
 	prune = true
 [diff]
 	colorMoved = zebra
+[alias]
+    lastdiff = diff HEAD^1..HEAD
