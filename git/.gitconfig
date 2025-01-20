@@ -10,11 +10,10 @@
 	prune = true
 [diff]
 	colorMoved = zebra
-[alias]
-    lastdiff = diff HEAD^1..HEAD
 [help]
     autoCorrect = immediate
 [alias]
+    lastdiff = diff HEAD^1..HEAD
     co = checkout
     br = branch
     cm = commit
