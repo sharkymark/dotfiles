@@ -78,6 +78,12 @@ If locally installed VS Code, this file is located:
         "github.copilot.enable": {
             "markdown": true,
             "plaintext": true
-        }
+        },
+
+    // autoinstall extensions in remote development
+        "remote.SSH.defaultExtensions": [
+            "ms-python.python",
+            "esbenp.prettier-vscode"
+        ]
     
     }
