@@ -68,7 +68,7 @@ copy_vscode_settings() {
 copy_zed_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local settings_source="$dotfiles_dir/zed/settings.json"
-    local settings_target="$HOME/.config/settings.json"
+    local settings_target="$HOME/.config/zed/settings.json"
 
     # Check if source file exists
     if [ ! -f "$settings_source" ]; then
