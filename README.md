@@ -40,7 +40,8 @@ This repository contains configuration files for various development tools and s
 │   ├── .gitconfig           # Git configuration
 │   └── .gitignore_global    # Global gitignore patterns
 ├── zed/
-│   └── settings.json        # Zed IDE settings
+│   ├── settings.json        # Zed IDE settings
+│   └── keymap.json          # Zed IDE keymap
 └── shell/
     ├── bash/
     │   ├── .bash_profile    # Bash profile (sources .bashrc)
@@ -53,12 +54,12 @@ This repository contains configuration files for various development tools and s
 
 ## Zed IDE Settings
 
-This script now supports copying Zed IDE settings. If Zed is installed, the script will:
+This script now supports copying Zed IDE settings and keymaps. If Zed is installed, the script will:
 
-1. Check if `./zed/settings.json` exists in the dotfiles directory.
-2. Copy the file to `~/.config/settings.json`.
+1. Check if `./zed/settings.json` exists in the dotfiles directory and copy it to `~/.config/zed/settings.json`.
+2. Check if `./zed/keymap.json` exists in the dotfiles directory and copy it to `~/.config/zed/keymap.json`.
 
-Ensure that the `zed/settings.json` file is present in the dotfiles directory before running the script.
+Ensure that both `zed/settings.json` and `zed/keymap.json` files are present in the dotfiles directory before running the script.
 
 ## Resources
 

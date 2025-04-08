@@ -64,24 +64,36 @@ copy_vscode_settings() {
     fi
 }
 
-# Add copy_zed_settings function
+# Update copy_zed_settings to handle keymap.json
 copy_zed_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local settings_source="$dotfiles_dir/zed/settings.json"
-    local settings_target="$HOME/.config/zed/settings.json"
+    local keymap_source="$dotfiles_dir/zed/keymap.json"
+    local zed_config_dir="$HOME/.config/zed"
 
-    # Check if source file exists
-    if [ ! -f "$settings_source" ]; then
+    # Ensure the target directory exists
+    mkdir -p "$zed_config_dir"
+
+    # Copy settings.json
+    if [ -f "$settings_source" ]; then
+        if cp "$settings_source" "$zed_config_dir/settings.json"; then
+            echo "💾 copied Zed settings.json to $zed_config_dir/settings.json"
+        else
+            echo "Failed to copy Zed settings.json to $zed_config_dir/settings.json"
+        fi
+    else
         echo "Zed settings.json not found in $dotfiles_dir/zed"
-        return 1
     fi
 
-    # Copy the settings file
-    if cp "$settings_source" "$settings_target"; then
-        echo "💾 copied Zed settings.json to $settings_target"
+    # Copy keymap.json
+    if [ -f "$keymap_source" ]; then
+        if cp "$keymap_source" "$zed_config_dir/keymap.json"; then
+            echo "💾 copied Zed keymap.json to $zed_config_dir/keymap.json"
+        else
+            echo "Failed to copy Zed keymap.json to $zed_config_dir/keymap.json"
+        fi
     else
-        echo "Failed to copy Zed settings.json to $settings_target"
-        return 1
+        echo "Zed keymap.json not found in $dotfiles_dir/zed"
     fi
 }
 
