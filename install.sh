@@ -43,30 +43,58 @@ check_vscode_installed() {
     fi
 }
 
-# Function to copy settings.json to VS Code's user settings directory for macOS
-copy_settings() {
+# Rename copy_settings to copy_vscode_settings and update echo statements
+copy_vscode_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local settings_source="$dotfiles_dir/code/settings.json"
     local settings_target="$HOME/Library/Application Support/Code/User/settings.json"
 
     # Check if source file exists
     if [ ! -f "$settings_source" ]; then
-        echo "settings.json not found in $dotfiles_dir/code"
+        echo "VS Code settings.json not found in $dotfiles_dir/code"
         return 1
     fi
 
     # Copy the settings file
     if cp "$settings_source" "$settings_target"; then
-        echo "💾 copied settings.json to $settings_target"
+        echo "💾 copied VS Code settings.json to $settings_target"
     else
-        echo "Failed to copy settings.json to $settings_target"
+        echo "Failed to copy VS Code settings.json to $settings_target"
+        return 1
+    fi
+}
+
+# Add copy_zed_settings function
+copy_zed_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local settings_source="$dotfiles_dir/zed/settings.json"
+    local settings_target="$HOME/.config/settings.json"
+
+    # Check if source file exists
+    if [ ! -f "$settings_source" ]; then
+        echo "Zed settings.json not found in $dotfiles_dir/zed"
+        return 1
+    fi
+
+    # Copy the settings file
+    if cp "$settings_source" "$settings_target"; then
+        echo "💾 copied Zed settings.json to $settings_target"
+    else
+        echo "Failed to copy Zed settings.json to $settings_target"
         return 1
     fi
 }
 
 # Main execution
 if check_vscode_installed; then
-    copy_settings
+    copy_vscode_settings
 else
-    echo "Installation of settings.json skipped due to VS Code not being installed."
+    echo "Installation of VS Code settings.json skipped due to VS Code not being installed."
+fi
+
+# Check if Zed is installed
+if command -v zed &> /dev/null; then
+    copy_zed_settings
+else
+    echo "Zed is not installed. Installation of Zed settings.json skipped."
 fi
