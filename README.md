@@ -15,6 +15,8 @@ This repository contains configuration files for various development tools and s
   - Editor preferences (theme, word wrap, intellisense)
   - Terminal and Git integration
   - Copilot configuration
+- **Zed IDE Settings**
+  - Automatically copies Zed IDE settings if installed
 - **Installation Script**
   - Automatically detects and configures appropriate shell
   - Sets up VS Code settings if installed
@@ -37,6 +39,8 @@ This repository contains configuration files for various development tools and s
 ├── git/
 │   ├── .gitconfig           # Git configuration
 │   └── .gitignore_global    # Global gitignore patterns
+├── zed/
+│   └── settings.json        # Zed IDE settings
 └── shell/
     ├── bash/
     │   ├── .bash_profile    # Bash profile (sources .bashrc)
@@ -46,6 +50,15 @@ This repository contains configuration files for various development tools and s
     └── zsh/
         └── .zshrc           # Zsh configuration
 ```
+
+## Zed IDE Settings
+
+This script now supports copying Zed IDE settings. If Zed is installed, the script will:
+
+1. Check if `./zed/settings.json` exists in the dotfiles directory.
+2. Copy the file to `~/.config/settings.json`.
+
+Ensure that the `zed/settings.json` file is present in the dotfiles directory before running the script.
 
 ## Resources
 
