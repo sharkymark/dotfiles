@@ -82,8 +82,11 @@ If locally installed VS Code, this file is located:
 
     // autoinstall extensions in remote development
         "remote.SSH.defaultExtensions": [
+            "saoudrizwan.claude-dev",
+            "continue.continue",
+            "GitHub.copilot",
             "ms-python.python",
-            "esbenp.prettier-vscode"
+            "ms-python.pylance"
         ]
     
     }
