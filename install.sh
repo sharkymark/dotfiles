@@ -45,22 +45,46 @@ check_vscode_installed() {
 
 # Rename copy_settings to copy_vscode_settings and update echo statements
 copy_vscode_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local dotfiles_dir="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
     local settings_source="$dotfiles_dir/code/settings.json"
+    local extensions_source="$dotfiles_dir/code/extensions.json"
+    local vscode_dir="$HOME/.vscode"
     local settings_target="$HOME/Library/Application Support/Code/User/settings.json"
 
-    # Check if source file exists
-    if [ ! -f "$settings_source" ]; then
-        echo "VS Code settings.json not found in $dotfiles_dir/code"
+    # Check if VS Code settings directory exists (handle spaces in path)
+    if [ ! -d "$HOME/Library/Application Support/Code/User" ]; then
+        echo "VS Code settings directory not found. Please ensure Visual Studio Code is installed."
         return 1
     fi
 
-    # Copy the settings file
-    if cp "$settings_source" "$settings_target"; then
-        echo "💾 copied VS Code settings.json to $settings_target"
+    # Copy the settings.json file
+    if [ -f "$settings_source" ]; then
+        if cp "$settings_source" "$settings_target"; then
+            echo "💾 copied VS Code settings.json to $settings_target"
+        else
+            echo "Failed to copy VS Code settings.json to $settings_target"
+            return 1
+        fi
     else
-        echo "Failed to copy VS Code settings.json to $settings_target"
+        echo "VS Code settings.json not found in $dotfiles_dir/code"
+    fi
+
+    # Check if VS Code extensions directory exists
+    if [ ! -d "$vscode_dir" ]; then
+        echo "$vscode_dir not found. Please ensure Visual Studio Code is installed."
         return 1
+    fi
+
+    # Copy the extensions.json file
+    if [ -f "$extensions_source" ]; then
+        if cp "$extensions_source" "$vscode_dir/extensions.json"; then
+            echo "💾 copied VS Code extensions.json to $vscode_dir/extensions.json"
+        else
+            echo "Failed to copy VS Code extensions.json to $vscode_dir/extensions.json"
+            return 1
+        fi
+    else
+        echo "VS Code extensions.json not found in $dotfiles_dir/code"
     fi
 }
 
