@@ -35,7 +35,8 @@ This repository contains configuration files for various development tools and s
 .
 ├── install.sh               # Main installation script
 ├── code/
-│   └── settings.json        # VS Code settings
+│   ├── settings.json        # VS Code settings
+│   └── extensions.json      # VS Code extensions
 ├── git/
 │   ├── .gitconfig           # Git configuration
 │   └── .gitignore_global    # Global gitignore patterns
@@ -60,6 +61,21 @@ This script now supports copying Zed IDE settings and keymaps. If Zed is install
 2. Check if `./zed/keymap.json` exists in the dotfiles directory and copy it to `~/.config/zed/keymap.json`.
 
 Ensure that both `zed/settings.json` and `zed/keymap.json` files are present in the dotfiles directory before running the script.
+
+## VS Code Settings
+
+The `install.sh` script now includes functionality to copy both `settings.json` and `extensions.json` for Visual Studio Code. Here's how it works:
+
+1. The script checks if the `$HOME/.vscode` directory exists. If it does not, it prompts the user to ensure Visual Studio Code is installed.
+2. If the directory exists, the script copies:
+   - `settings.json` to `$HOME/Library/Application Support/Code/User/settings.json`
+   - `extensions.json` to `$HOME/.vscode/extensions.json`
+
+If either file is missing in the `code` directory of the repository, the script will notify the user.
+
+## AI Code Generation Tools
+
+The `.gitignore` file has been updated to include entries for AI code generation tools. This ensures that temporary or generated files from these tools are not accidentally committed to the repository. If you are using any AI tools for code generation, make sure to review the `.gitignore` file to confirm that the relevant entries are included.
 
 ## Resources
 
