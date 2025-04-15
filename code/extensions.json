@@ -2,7 +2,7 @@
     "recommendations": [
         // python-related
         "ms-python.python",
-        "ms-python.pylance",
+        "ms-python.vscode-pylance",
         "ms-python.debugpy",
         // ai code gen
         "Continue.continue",
