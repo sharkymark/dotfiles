@@ -13,9 +13,41 @@ Thumbs.db
 vendor/
 node_modules/
 venv*
+env*
+
+# database files
+*.sqlite
+*.sqlite3
+*.db
+*.txt
+
+# build and distribution files
+build/
+dist/
 
 # ide files
 .vscode/
 *.code-workspace
 
+# python specific files
 __pycache__/
+*.pyc
+
+# ai code generation directories and files
+
+# https://aider.chat/docs/
+.aider/
+.aider*
+
+
+# https://docs.continue.dev/
+.continueignore
+.continue*
+
+# https://docs.cline.bot/
+.clineignore
+.cline*
+
+# https://block.github.io/goose/docs/
+.goose*
+

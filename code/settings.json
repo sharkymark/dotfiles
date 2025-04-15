@@ -1,6 +1,8 @@
 /*
 
-2025-01-11
+Last updated: 2025-04-15
+
+https://code.visualstudio.com/docs/terminal/advanced
 
 If locally installed VS Code, this file is located: 
 ~/Library/Application Support/Code/User/settings.json
@@ -70,7 +72,8 @@ If locally installed VS Code, this file is located:
         
     // 
         "terminal.integrated.enablePersistentSessions": false,
-        "terminal.integrated.hideOnStartup": "always",
+        // never, whenEmpty, always
+        "terminal.integrated.hideOnStartup": "whenEmpty",
 
         "remote.SSH.connectTimeout": 1800,
         "git.autofetch": true,
@@ -85,6 +88,7 @@ If locally installed VS Code, this file is located:
             "saoudrizwan.claude-dev",
             "continue.continue",
             "GitHub.copilot",
+            "michaelneale.goose-vscode",
             "ms-python.python",
             "ms-python.pylance"
         ]
