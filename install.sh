@@ -2,35 +2,41 @@
 
 echo "RUNNING dotfiles repo install.sh"
 
+echo ""
 echo "STEP 1: 💾 copying .gitconfig and .gitignore_global"
 cp -r ./git/.gitconfig ./git/.gitignore_global ~
 
+echo ""
+echo "STEP 2: 💾 copying prettier formatting files"
+cp ./prettier/.prettierrc ~
+echo "- copied .prettierrc 🎨 to $HOME"
 
+echo ""
+echo "STEP 3: 💾 copying shell configuration files e.g., bash, fish, zsh"
 echo "🐚 shell is $SHELL"
-echo "STEP 2: 💾 about to copy shell configuration files e.g., bash, fish, zsh"
 
 # Check for bash
 if [ "$SHELL" == "/bin/bash" ]; then
   cp ./shell/bash/.bashrc $HOME/.bashrc
   cp ./shell/bash/.bash_profile $HOME/.bash_profile
-  echo "Copied bash 👾 configuration files to $HOME"
+  echo "- copied bash 👾 configuration files to $HOME"
 fi
 
 # Check for zsh
 if [ "$SHELL" == "/bin/zsh" ]; then
   cp ./shell/zsh/.zshrc $HOME/.zshrc
-  echo "💾 copied zsh 🍎 configuration files to $HOME"
+  echo "- copied zsh 🍎 configuration files to $HOME"
 fi
 
 # Check for fish (regardless of current shell)
 if command -v fish &> /dev/null; then
   cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
-  echo "💾 copied fish 🐟 configuration files to $HOME/.config/fish"
+  echo "- copied fish 🐟 configuration files to $HOME/.config/fish"
 fi
 
 # If none of the above conditions are met, print a message
 if [ "$SHELL" != "/bin/bash" ] && [ "$SHELL" != "/bin/zsh" ] && ! command -v fish &> /dev/null; then
-  echo "No unix shell dotfiles copied. Please ensure you have bash, zsh, or fish installed."
+  echo "- no unix shell dotfiles copied. Please ensure you have bash, zsh, or fish installed."
 fi
 
 # Function to check if VS Code is installed
@@ -53,16 +59,16 @@ copy_vscode_settings() {
 
     # Check if VS Code settings directory exists (handle spaces in path)
     if [ ! -d "$HOME/Library/Application Support/Code/User" ]; then
-        echo "VS Code settings directory not found. Please ensure Visual Studio Code is installed."
+        echo "- VS Code settings directory not found. Please ensure Visual Studio Code is installed."
         return 1
     fi
 
     # Copy the settings.json file
     if [ -f "$settings_source" ]; then
         if cp "$settings_source" "$settings_target"; then
-            echo "💾 copied VS Code settings.json to $settings_target"
+            echo "- copied VS Code settings.json to $settings_target"
         else
-            echo "Failed to copy VS Code settings.json to $settings_target"
+            echo "- failed to copy VS Code settings.json to $settings_target"
             return 1
         fi
     else
@@ -71,20 +77,20 @@ copy_vscode_settings() {
 
     # Check if VS Code extensions directory exists
     if [ ! -d "$vscode_dir" ]; then
-        echo "$vscode_dir not found. Please ensure Visual Studio Code is installed."
+        echo "- $vscode_dir not found. Please ensure Visual Studio Code is installed."
         return 1
     fi
 
     # Copy the extensions.json file
     if [ -f "$extensions_source" ]; then
         if cp "$extensions_source" "$vscode_dir/extensions.json"; then
-            echo "💾 copied VS Code extensions.json to $vscode_dir/extensions.json"
+            echo "- copied VS Code extensions.json to $vscode_dir/extensions.json"
         else
-            echo "Failed to copy VS Code extensions.json to $vscode_dir/extensions.json"
+            echo "- failed to copy VS Code extensions.json to $vscode_dir/extensions.json"
             return 1
         fi
     else
-        echo "VS Code extensions.json not found in $dotfiles_dir/code"
+        echo "- VS Code extensions.json not found in $dotfiles_dir/code"
     fi
 }
 
@@ -101,27 +107,29 @@ copy_zed_settings() {
     # Copy settings.json
     if [ -f "$settings_source" ]; then
         if cp "$settings_source" "$zed_config_dir/settings.json"; then
-            echo "💾 copied Zed settings.json to $zed_config_dir/settings.json"
+            echo "- copied Zed settings.json to $zed_config_dir/settings.json"
         else
-            echo "Failed to copy Zed settings.json to $zed_config_dir/settings.json"
+            echo "- failed to copy Zed settings.json to $zed_config_dir/settings.json"
         fi
     else
-        echo "Zed settings.json not found in $dotfiles_dir/zed"
+        echo "- Zed settings.json not found in $dotfiles_dir/zed"
     fi
 
     # Copy keymap.json
     if [ -f "$keymap_source" ]; then
         if cp "$keymap_source" "$zed_config_dir/keymap.json"; then
-            echo "💾 copied Zed keymap.json to $zed_config_dir/keymap.json"
+            echo "- copied Zed keymap.json to $zed_config_dir/keymap.json"
         else
-            echo "Failed to copy Zed keymap.json to $zed_config_dir/keymap.json"
+            echo "- failed to copy Zed keymap.json to $zed_config_dir/keymap.json"
         fi
     else
-        echo "Zed keymap.json not found in $dotfiles_dir/zed"
+        echo "- Zed keymap.json not found in $dotfiles_dir/zed"
     fi
 }
 
 # Main execution
+echo ""
+echo "STEP 4: 💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
 else
@@ -129,6 +137,8 @@ else
 fi
 
 # Check if Zed is installed
+echo ""
+echo "STEP 5: 💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
 else

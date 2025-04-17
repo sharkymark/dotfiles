@@ -90,7 +90,18 @@ If locally installed VS Code, this file is located:
             "GitHub.copilot",
             "michaelneale.goose-vscode",
             "ms-python.python",
-            "ms-python.vscode-pylance"
-        ]
+            "ms-python.vscode-pylance",
+            "esbenp.prettier-vscode"
+        ],
+
+    // formatter settings
+    // https://github.com/prettier/prettier-vscode     
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": false,
+        "[markdown]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        }
+        
     
     }
