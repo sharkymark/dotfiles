@@ -1,0 +1,11 @@
+
+printWidth: 80
+proseWrap: always
+useTabs: true
+tabWidth: 2
+overrides:
+  - files:
+      - README.md
+      - CHANGELOG.md
+    options:
+      proseWrap: preserve

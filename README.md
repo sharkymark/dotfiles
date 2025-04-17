@@ -17,6 +17,8 @@ This repository contains configuration files for various development tools and s
   - Copilot configuration
 - **Zed IDE Settings**
   - Automatically copies Zed IDE settings if installed
+- **Prettier Configuration**
+  - Global .prettierrc for consistent code formatting
 - **Installation Script**
   - Automatically detects and configures appropriate shell
   - Sets up VS Code settings if installed
@@ -40,6 +42,8 @@ This repository contains configuration files for various development tools and s
 ├── git/
 │   ├── .gitconfig           # Git configuration
 │   └── .gitignore_global    # Global gitignore patterns
+├── prettier/
+│   └── .prettierrc         # Prettier formatting config
 ├── zed/
 │   ├── settings.json        # Zed IDE settings
 │   └── keymap.json          # Zed IDE keymap
