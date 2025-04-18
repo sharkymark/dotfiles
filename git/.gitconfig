@@ -2,6 +2,11 @@
     name = Mark Milligan
     email = mtm20176@gmail.com
 
+[credential "https://github.com"]
+	username = sharkymark
+[credential]
+	helper = store
+
 [core]
 	excludesfile = ~/.gitignore_global
 [pull]
