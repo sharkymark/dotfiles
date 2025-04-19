@@ -23,3 +23,6 @@
     br = branch
     cm = commit
     st = status
+    lg = log --oneline --graph --decorate
+    rv = revert
+    rs = reset --hard HEAD~1
