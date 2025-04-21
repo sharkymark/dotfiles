@@ -1,4 +1,3 @@
-tap "coder/coder"
 brew "aider"
 brew "lima"
 brew "colima"
