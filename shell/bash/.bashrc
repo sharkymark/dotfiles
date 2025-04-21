@@ -1,5 +1,8 @@
 
-export PATH=$PATH:/root/.local/bin
+case ":$PATH:" in
+    *":/root/.local/bin:"*) ;;
+    *) export PATH=$PATH:/root/.local/bin ;;
+esac
 
 export HISTFILE="$HOME/.bash_history"
 export HISTSIZE=10000
