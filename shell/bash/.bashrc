@@ -24,4 +24,4 @@ NC='\e[0m'
 # https://ss64.com/bash/syntax-prompt.html
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 unset PROMPT_COMMAND
-export PS1="\[\e[1 q\]🦈  \W \$ \u00A0"
+export PS1="🦈  \W \$ \ "
