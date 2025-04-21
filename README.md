@@ -19,9 +19,16 @@ This repository contains configuration files for various development tools and s
   - Automatically copies Zed IDE settings if installed
 - **Prettier Configuration**
   - Global .prettierrc for consistent code formatting
+- **Homebrew Setup**
+  - Automatic installation of Homebrew if not present
+  - Package installation via Brewfile
+- **macOS Configuration**
+  - Custom macOS system defaults
+  - Finder and mouse settings
 - **Installation Script**
   - Automatically detects and configures appropriate shell
-  - Sets up VS Code settings if installed
+  - Sets up VS Code and Zed settings if installed
+  - Configures Homebrew packages and macOS defaults
 
 ## Installation
 
@@ -36,12 +43,17 @@ This repository contains configuration files for various development tools and s
 ```
 .
 ├── install.sh               # Main installation script
+├── brew/
+│   └── Brewfile            # Homebrew packages and casks
+│   └── brew.sh              # Homebrew installation script
 ├── code/
 │   ├── settings.json        # VS Code settings
 │   └── extensions.json      # VS Code extensions
 ├── git/
 │   ├── .gitconfig           # Git configuration
 │   └── .gitignore_global    # Global gitignore patterns
+├── mac/
+│   └── macos.sh         # macOS system preferences
 ├── prettier/
 │   └── .prettierrc         # Prettier formatting config
 ├── zed/
