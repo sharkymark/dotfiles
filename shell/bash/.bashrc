@@ -1,4 +1,6 @@
 
+export PATH=$PATH:/root/.local/bin
+
 export HISTFILE="$HOME/.bash_history"
 export HISTSIZE=10000
 export HISTFILESIZE=100000
@@ -19,4 +21,4 @@ NC='\e[0m'
 # https://ss64.com/bash/syntax-prompt.html
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 unset PROMPT_COMMAND
-export PS1="🦈  \W \$ "
+export PS1="🦈  \W \$ \ "
