@@ -144,3 +144,28 @@ if command -v zed &> /dev/null; then
 else
     echo "Zed is not installed. Installation of Zed settings.json skipped."
 fi
+
+# Export DOTFILES_PATH for brew.sh
+export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Only run macOS specific configurations if on Darwin
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo ""
+    echo "STEP 6: 🍺 setting up Homebrew packages"
+    if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
+        bash "$DOTFILES_PATH/brew/brew.sh"
+    else
+        echo "brew.sh not found in brew directory"
+    fi
+
+    echo ""
+    echo "STEP 7: 🍎 configuring macOS defaults"
+    if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
+        bash "$DOTFILES_PATH/mac/macos.sh"
+    else
+        echo "macos.sh not found in mac directory"
+    fi
+else
+    echo ""
+    echo "Skipping macOS-specific configurations (Homebrew and system defaults) on non-Darwin system"
+fi
