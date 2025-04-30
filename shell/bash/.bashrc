@@ -1,7 +1,7 @@
 
 case ":$PATH:" in
-    *":/root/.local/bin:"*) ;;
-    *) export PATH=$PATH:/root/.local/bin ;;
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH=$PATH:/$HOME/.local/bin ;;
 esac
 
 export HISTFILE="$HOME/.bash_history"
