@@ -1,0 +1,76 @@
+GOOSE_MODE: smart_approve
+extensions:
+  computercontroller:
+    bundled: true
+    display_name: Computer Controller
+    enabled: false
+    name: computercontroller
+    timeout: 300
+    type: builtin
+  developer:
+    bundled: true
+    display_name: Developer Tools
+    enabled: true
+    name: developer
+    timeout: 300
+    type: builtin
+  git:
+    args:
+    - mcp-server-git
+    bundled: null
+    cmd: uvx
+    description: Git version control system integration
+    enabled: false
+    env_keys: []
+    envs: {}
+    name: git
+    timeout: 300
+    type: stdio
+  github:
+    args:
+    - -y
+    - '@modelcontextprotocol/server-github'
+    bundled: null
+    cmd: npx
+    description: GitHub API
+    enabled: true
+    env_keys: []
+    envs: {}
+    name: github
+    timeout: 300
+    type: stdio
+  jetbrains:
+    bundled: true
+    display_name: Jetbrains
+    enabled: false
+    name: jetbrains
+    timeout: 300
+    type: builtin
+  memory:
+    bundled: true
+    display_name: Memory
+    enabled: false
+    name: memory
+    timeout: 300
+    type: builtin
+  tutorial:
+    bundled: true
+    display_name: Tutorial
+    enabled: false
+    name: tutorial
+    timeout: 300
+    type: builtin
+  vscode:
+    args:
+    - vscode-mcp-server
+    bundled: null
+    cmd: npx
+    description: Provides a VSCode IDE integration for development workflows
+    enabled: false
+    env_keys: []
+    envs: {}
+    name: vscode
+    timeout: 300
+    type: stdio
+GOOSE_MODEL: gemini-2.5-flash-preview-04-17
+GOOSE_PROVIDER: google
