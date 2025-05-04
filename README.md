@@ -25,6 +25,9 @@ This repository contains configuration files for various development tools and s
 - **macOS Configuration**
   - Custom macOS system defaults
   - Finder and mouse settings
+- **AI Code Generation Tools**
+  - Aider configuration for AI-assisted coding
+  - Block Goose configuration for AI code generation
 - **Installation Script**
   - Automatically detects and configures appropriate shell
   - Sets up VS Code and Zed settings if installed
@@ -38,11 +41,27 @@ This repository contains configuration files for various development tools and s
    ./install.sh
    ```
 
+This script will:
+
+- Copy common Git configuration (`.gitconfig`, `.gitignore_global`).
+- Copy Prettier configuration (`.prettierrc`).
+- Copy shell configurations for Bash, Zsh, and Fish (if installed).
+- Copy VS Code settings and extensions (if installed).
+- Copy Zed editor settings and keymap (if installed).
+- Copy Aider configuration.
+- Copy Block Goose configuration (if `$HOME/.config/goose` directory exists).\*\*
+- On macOS:
+  - Run `brew/brew.sh` to install Homebrew packages.
+  - Run `mac/macos.sh` to apply macOS system defaults.
+
 ## File Structure
 
 ```
 .
 ├── install.sh               # Main installation script
+├── ai-agents/               # AI agent configurations
+│   ├── .original-aider.conf.yml # Source Aider config
+│   └── .original-goose-config.yaml # Source Goose config
 ├── brew/
 │   └── Brewfile            # Homebrew packages and casks
 │   └── brew.sh              # Homebrew installation script
@@ -92,6 +111,11 @@ If either file is missing in the `code` directory of the repository, the script 
 ## AI Code Generation Tools
 
 The `.gitignore` file has been updated to include entries for AI code generation tools. This ensures that temporary or generated files from these tools are not accidentally committed to the repository. If you are using any AI tools for code generation, make sure to review the `.gitignore` file to confirm that the relevant entries are included.
+
+### AI Agent Configurations
+
+- **Aider:** Copies the configuration file from `ai-agents/.original-aider.conf.yml` to `$HOME/.aider.conf.yml`.
+- **Block Goose:** Copies the configuration file from `ai-agents/.original-goose-config.yaml` to `$HOME/.config/goose/config.yaml`. The script checks if the `$HOME/.config/goose` directory exists first; if not, it prompts the user to install Goose.
 
 ## Resources
 
