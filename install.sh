@@ -127,6 +127,45 @@ copy_zed_settings() {
     fi
 }
 
+# Function to copy Aider configuration
+copy_aider_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local aider_config_source="$dotfiles_dir/ai-agents/.original-aider.conf.yml"
+    local aider_config_target="$HOME/.aider.conf.yml"
+
+    if [ -f "$aider_config_source" ]; then
+        if cp "$aider_config_source" "$aider_config_target"; then
+            echo "- copied Aider config 🤖 to $aider_config_target"
+        else
+            echo "- failed to copy Aider config to $aider_config_target"
+        fi
+    else
+        echo "- Aider config file not found in $dotfiles_dir/aider"
+    fi
+}
+
+# Function to copy Block Goose configuration
+copy_goose_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local goose_config_source="$dotfiles_dir/ai-agents/.original-goose-config.yaml"
+    local goose_config_target_dir="$HOME/.config/goose"
+    local goose_config_target_file="$goose_config_target_dir/config.yaml"
+
+    if [ -d "$goose_config_target_dir" ]; then
+        if [ -f "$goose_config_source" ]; then
+            if cp "$goose_config_source" "$goose_config_target_file"; then
+                echo "- copied Block Goose config 🤖 to $goose_config_target_file"
+            else
+                echo "- failed to copy Block Goose config to $goose_config_target_file"
+            fi
+        else
+            echo "- Block Goose config file not found in $dotfiles_dir/ai-agents"
+        fi
+    else
+        echo "- Block Goose config directory $goose_config_target_dir not found. Please install Goose first."
+    fi
+}
+
 # Main execution
 echo ""
 echo "STEP 4: 💾 copying VS Code IDE configs"
@@ -169,3 +208,11 @@ else
     echo ""
     echo "Skipping macOS-specific configurations (Homebrew and system defaults) on non-Darwin system"
 fi
+
+echo ""
+echo "STEP 8: 🤖 copying Aider config"
+copy_aider_settings
+
+echo ""
+echo "STEP 9: 🤖 copying Block Goose config"
+copy_goose_settings
