@@ -26,40 +26,6 @@ extensions:
     name: git
     timeout: 300
     type: stdio
-  github:
-    args:
-    - -y
-    - '@modelcontextprotocol/server-github'
-    bundled: null
-    cmd: npx
-    description: GitHub API
-    enabled: true
-    env_keys: []
-    envs: {}
-    name: github
-    timeout: 300
-    type: stdio
-  jetbrains:
-    bundled: true
-    display_name: Jetbrains
-    enabled: false
-    name: jetbrains
-    timeout: 300
-    type: builtin
-  memory:
-    bundled: true
-    display_name: Memory
-    enabled: false
-    name: memory
-    timeout: 300
-    type: builtin
-  tutorial:
-    bundled: true
-    display_name: Tutorial
-    enabled: false
-    name: tutorial
-    timeout: 300
-    type: builtin
   vscode:
     args:
     - vscode-mcp-server
