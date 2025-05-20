@@ -1,6 +1,7 @@
 brew "aider"
 brew "lima"
 brew "colima"
+brew "codex"
 brew "fish"
 brew "git"
 brew "gh"

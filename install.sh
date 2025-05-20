@@ -166,6 +166,47 @@ copy_goose_settings() {
     fi
 }
 
+# Function to copy OpenAI Codex CLI configuration
+copy_codex_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local codex_config_source_dir="$dotfiles_dir/ai-agents/codex"
+    local codex_agents_source_file="$codex_config_source_dir/AGENTS.md"
+    local codex_config_source_file="$codex_config_source_dir/config.json"
+    local codex_config_target_dir="$HOME/.codex"
+
+    if [ ! -d "$codex_config_target_dir" ]; then
+        echo "- OpenAI Codex CLI config directory $codex_config_target_dir not found. Please install OpenAI Codex CLI first."
+        return 1
+    fi
+
+    local agents_copied=false
+    local config_copied=false
+
+    # Copy AGENTS.md
+    if [ -f "$codex_agents_source_file" ]; then
+        if cp "$codex_agents_source_file" "$codex_config_target_dir/AGENTS.md"; then
+            agents_copied=true
+        fi
+    fi
+
+    # Copy config.json
+    if [ -f "$codex_config_source_file" ]; then
+        if cp "$codex_config_source_file" "$codex_config_target_dir/config.json"; then
+            config_copied=true
+        fi
+    fi
+
+    if [ "$agents_copied" = true ] && [ "$config_copied" = true ]; then
+        echo "- copied OpenAI Codex CLI config (AGENTS.md and config.json) 🤖 to $codex_config_target_dir"
+    elif [ "$agents_copied" = true ]; then
+        echo "- copied OpenAI Codex AGENTS.md 🤖 to $codex_config_target_dir, but config.json was not found or failed to copy."
+    elif [ "$config_copied" = true ]; then
+        echo "- copied OpenAI Codex config.json 🤖 to $codex_config_target_dir, but AGENTS.md was not found or failed to copy."
+    else
+        echo "- failed to copy OpenAI Codex CLI config. Check if AGENTS.md and config.json exist in $codex_config_source_dir."
+    fi
+}
+
 # Main execution
 echo ""
 echo "STEP 4: 💾 copying VS Code IDE configs"
@@ -216,3 +257,7 @@ copy_aider_settings
 echo ""
 echo "STEP 9: 🤖 copying Block Goose config"
 copy_goose_settings
+
+echo ""
+echo "STEP 10: 🤖 copying OpenAI Codex CLI config"
+copy_codex_settings
