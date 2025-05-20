@@ -12,15 +12,21 @@ copy-paste: false
 # large language models
 # https://aider.chat/docs/llms.html
 
-model: gemini-exp
-editor-model: gemini
+model: gemini/gemini-2.5-flash-preview-04-17
+editor-model: gemini/gemini-2.0-flash
 weak-model: gemini/gemini-2.0-flash
 
 # model names
 #
 # gemini
 # gemini-exp
+# gemini/gemini-2.5-flash-preview-04-17
 # gemini/gemini-2.0-flash
+# openrouter/google/gemini-2.5-flash-preview
+# openrouter/google/gemini-2.5-pro-preview
+# openrouter/google/gemini-2.5-flash-preview:thinking
+# openrouter/google/gemini-2.0-flash-001
+# openrouter/google/gemini-2.0-flash-exp:free
 # openrouter/anthropic/claude-3.7-sonnet
 # openrouter/anthropic/claude-3.5-sonnet
 # openrouter/openai/gpt-4o-mini
