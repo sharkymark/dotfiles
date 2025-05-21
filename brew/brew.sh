@@ -10,8 +10,8 @@ fi
 
 # Install packages from Brewfile if it exists
 if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
-  echo "Installing packages from Brewfile..."
-  brew bundle --file="$DOTFILES_PATH/brew/Brewfile"
+  echo "Installing/Upgrading packages from Brewfile (only upgraded will be shown)..."
+  brew bundle --file="$DOTFILES_PATH/brew/Brewfile" | grep "Upgrading"
 else
   echo "Brewfile not found."
 fi
