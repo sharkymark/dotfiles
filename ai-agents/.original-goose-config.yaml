@@ -38,5 +38,5 @@ extensions:
     name: vscode
     timeout: 300
     type: stdio
-GOOSE_MODEL: gemini-2.5-flash-preview-04-17
+GOOSE_MODEL: gemini-2.5-flash-preview-05-20
 GOOSE_PROVIDER: google
