@@ -130,8 +130,10 @@ copy_zed_settings() {
 # Function to copy Aider configuration
 copy_aider_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local aider_config_source="$dotfiles_dir/ai-agents/.original-aider.conf.yml"
+    local aider_config_source="$dotfiles_dir/ai-agents/aider/.original-aider.conf.yml"
     local aider_config_target="$HOME/.aider.conf.yml"
+    local aider_ignore_source="$dotfiles_dir/ai-agents/aider/.original-aiderignore"
+    local aider_ignore_target="$HOME/.aiderignore"
 
     if [ -f "$aider_config_source" ]; then
         if cp "$aider_config_source" "$aider_config_target"; then
@@ -140,16 +142,29 @@ copy_aider_settings() {
             echo "- failed to copy Aider config to $aider_config_target"
         fi
     else
-        echo "- Aider config file not found in $dotfiles_dir/aider"
+        echo "- Aider config file not found in $dotfiles_dir/ai-agents/aider"
+    fi
+    
+    # Copy .aiderignore file if it exists
+    if [ -f "$aider_ignore_source" ]; then
+        if cp "$aider_ignore_source" "$aider_ignore_target"; then
+            echo "- copied Aider ignore file 🤖 to $aider_ignore_target"
+        else
+            echo "- failed to copy Aider ignore file to $aider_ignore_target"
+        fi
+    else
+        echo "- Aider ignore file not found in $dotfiles_dir/ai-agents/aider"
     fi
 }
 
 # Function to copy Block Goose configuration
 copy_goose_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local goose_config_source="$dotfiles_dir/ai-agents/.original-goose-config.yaml"
+    local goose_config_source="$dotfiles_dir/ai-agents/goose/.original-goose-config.yaml"
     local goose_config_target_dir="$HOME/.config/goose"
     local goose_config_target_file="$goose_config_target_dir/config.yaml"
+    local goose_ignore_source="$dotfiles_dir/ai-agents/goose/.original-gooseignore"
+    local goose_ignore_target="$goose_config_target_dir/.gooseignore"
 
     if [ -d "$goose_config_target_dir" ]; then
         if [ -f "$goose_config_source" ]; then
@@ -159,7 +174,18 @@ copy_goose_settings() {
                 echo "- failed to copy Block Goose config to $goose_config_target_file"
             fi
         else
-            echo "- Block Goose config file not found in $dotfiles_dir/ai-agents"
+            echo "- Block Goose config file not found in $dotfiles_dir/ai-agents/goose"
+        fi
+        
+        # Copy .gooseignore file if it exists
+        if [ -f "$goose_ignore_source" ]; then
+            if cp "$goose_ignore_source" "$goose_ignore_target"; then
+                echo "- copied Block Goose ignore file 🤖 to $goose_ignore_target"
+            else
+                echo "- failed to copy Block Goose ignore file to $goose_ignore_target"
+            fi
+        else
+            echo "- Block Goose ignore file not found in $dotfiles_dir/ai-agents/goose"
         fi
     else
         echo "- Block Goose config directory $goose_config_target_dir not found. Please install Goose first."
