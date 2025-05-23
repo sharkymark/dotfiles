@@ -1,0 +1,90 @@
+# Standard ignore patterns for aider
+# Based on common Python, Go, and Rust development needs
+
+# Ignore specific files by name
+settings.json         # Ignore settings files
+credentials.json      # Ignore credentials
+config.local.json     # Ignore local configs
+
+# Ignore files by extension
+*.pdf                # Ignore all PDF files
+*.config             # Ignore all files ending in .config
+*.pyc                # Ignore Python compiled files
+*.pyo                # Ignore Python optimized files
+*.pyd                # Ignore Python dynamic libraries
+*.so                 # Ignore shared objects
+*.dll                # Ignore DLLs
+*.exe                # Ignore executables
+*.bin                # Ignore binary files
+
+# Python specific
+__pycache__/         # Ignore Python cache directories
+*.egg-info/          # Ignore egg info directories
+*.egg                # Ignore egg packages
+.pytest_cache/       # Ignore pytest cache
+.coverage            # Ignore coverage data
+htmlcov/             # Ignore coverage reports
+.tox/                # Ignore tox environments
+venv/                # Ignore virtual environments
+env/                 # Ignore virtual environments
+.env                 # Ignore environment variables
+.venv/               # Ignore virtual environments
+
+# Go specific
+/vendor/             # Ignore Go vendor directory
+*.exe                # Ignore Go executables
+*.test               # Ignore Go test files
+*.out                # Ignore Go output files
+
+# Rust specific
+/target/             # Ignore Rust build directory
+Cargo.lock           # Ignore Rust lock file (uncomment if needed)
+**/*.rs.bk           # Ignore Rust backup files
+**/*.rlib            # Ignore Rust libraries
+
+# Ignore directories and their contents
+backup/              # Ignore everything in the "backup" directory
+downloads/           # Ignore everything in the "downloads" directory
+log/                 # Ignore log directories
+logs/                # Ignore log directories
+tmp/                 # Ignore temp directories
+temp/                # Ignore temp directories
+.cache/              # Ignore cache directories
+
+# Ignore all files with this name in any directory
+**/credentials.json  # Ignore all files named "credentials.json" in any directory
+**/.DS_Store         # Ignore macOS folder attributes
+
+# Secrets
+**/.env              # Ignore .env files
+**/.env.*            # Ignore all .env.* files
+**/secrets.*         # Ignore any secrets file
+
+# Complex patterns
+*.log                # Ignore all .log files
+!error.log           # Except for error.log file
+
+# Version control systems
+.git/                # Ignore git directory
+**/.git/             # Ignore git directories in subdirectories
+.gitignore           # Ignore gitignore files (uncomment if needed)
+.svn/               # Ignore SVN directories
+.hg/                # Ignore Mercurial directories
+
+# Editor and IDE files
+.idea/              # Ignore JetBrains IDE settings
+.vscode/            # Ignore VS Code settings
+*.swp               # Ignore vim swap files
+*.swo               # Ignore vim swap files
+*~                  # Ignore backup files
+.*.sw?              # Ignore vim swap files
+
+# Large data files
+*.csv               # Ignore CSV files (uncomment if needed)
+*.data              # Ignore data files
+*.db                # Ignore database files
+*.sqlite            # Ignore SQLite databases
+
+# Build directories
+build/              # Ignore build directories
+dist/               # Ignore distribution directories
