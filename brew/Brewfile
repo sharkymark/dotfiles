@@ -1,7 +1,6 @@
 
 brew "lima"
 brew "colima"
-brew "docker"
 brew "fish"
 brew "git"
 brew "gh"
