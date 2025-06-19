@@ -1,6 +1,6 @@
 /*
 
-Last updated: 2025-04-15
+Last updated: 2025-06-19
 
 https://code.visualstudio.com/docs/terminal/advanced
 
@@ -25,6 +25,13 @@ If locally installed VS Code, this file is located:
     // Turn on word-wrap for my note taking
         "editor.wordWrap": "on",
     
+    "[plaintext]": {
+        "editor.wordWrap": "on"
+    },
+    "[markdown]": {
+        "editor.wordWrap": "on"
+    },    
+
     // Intellisense / autocomplete / suggestions settings
     // https://code.visualstudio.com/docs/editor/intellisense#_customizing-intellisense
     // https://code.visualstudio.com/docs/editor/intellisense
