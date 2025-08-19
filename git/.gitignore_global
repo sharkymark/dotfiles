@@ -34,6 +34,8 @@ __pycache__/
 
 # ai code generation directories and files
 
+WARP.md
+
 # https://aider.chat/docs/
 .aider/
 .aider*
