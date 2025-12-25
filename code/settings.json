@@ -40,7 +40,7 @@ If locally installed VS Code, this file is located:
     // Consider changing other to false for my note taking
     // or alternatively increase the suggestion delay - now 2 seconds
        "editor.quickSuggestions": {
-            "other": false,
+            "other": true,
             "comments": false,
             "strings": false
         },
@@ -58,10 +58,10 @@ If locally installed VS Code, this file is located:
         "editor.acceptSuggestionOnEnter": "on",
     
     // Controls if pressing tab inserts the best suggestion and if tab cycles through other suggestions
-        "editor.tabCompletion": "off",    
+        "editor.tabCompletion": "on",    
     
     // Controls the delay in ms after which quick suggestions will show up.
-        "editor.quickSuggestionsDelay": 10,
+        "editor.quickSuggestionsDelay": 100,
     
     // Controls how suggestions are pre-selected when showing the suggest list
         "editor.suggestSelection": "first",
@@ -86,20 +86,9 @@ If locally installed VS Code, this file is located:
         "git.autofetch": true,
         "git.ignoreMissingGitWarning": true,
         "github.copilot.enable": {
-            "markdown": true,
-            "plaintext": true
+            "markdown": false,
+            "plaintext": false
         },
-
-    // autoinstall extensions in remote development
-        "remote.SSH.defaultExtensions": [
-            "saoudrizwan.claude-dev",
-            "continue.continue",
-            "GitHub.copilot",
-            "michaelneale.goose-vscode",
-            "ms-python.python",
-            "ms-python.vscode-pylance",
-            "esbenp.prettier-vscode"
-        ],
 
     // formatter settings
     // https://github.com/prettier/prettier-vscode     
