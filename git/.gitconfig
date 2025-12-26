@@ -1,11 +1,15 @@
 [user]
     name = Mark Milligan
     email = mark@nuon.co
+    signingkey = E1EF8B29EECBA46D
+
+[commit]
+    gpgsign = true
 
 [credential "https://github.com"]
 	username = sharkymark
 [credential]
-	helper = store
+	helper = osxkeychain
 
 [core]
 	excludesfile = ~/.gitignore_global
