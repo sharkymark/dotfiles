@@ -127,112 +127,6 @@ copy_zed_settings() {
     fi
 }
 
-# Function to copy Aider configuration
-copy_aider_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local aider_config_source="$dotfiles_dir/ai-agents/aider/.original-aider.conf.yml"
-    local aider_config_target="$HOME/.aider.conf.yml"
-    local aider_ignore_source="$dotfiles_dir/ai-agents/aider/.original-aiderignore"
-    local aider_ignore_target="$HOME/.aiderignore"
-
-    if [ -f "$aider_config_source" ]; then
-        if cp "$aider_config_source" "$aider_config_target"; then
-            echo "- copied Aider config 🤖 to $aider_config_target"
-        else
-            echo "- failed to copy Aider config to $aider_config_target"
-        fi
-    else
-        echo "- Aider config file not found in $dotfiles_dir/ai-agents/aider"
-    fi
-    
-    # Copy .aiderignore file if it exists
-    if [ -f "$aider_ignore_source" ]; then
-        if cp "$aider_ignore_source" "$aider_ignore_target"; then
-            echo "- copied Aider ignore file 🤖 to $aider_ignore_target"
-        else
-            echo "- failed to copy Aider ignore file to $aider_ignore_target"
-        fi
-    else
-        echo "- Aider ignore file not found in $dotfiles_dir/ai-agents/aider"
-    fi
-}
-
-# Function to copy Block Goose configuration
-copy_goose_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local goose_config_source="$dotfiles_dir/ai-agents/goose/.original-goose-config.yaml"
-    local goose_config_target_dir="$HOME/.config/goose"
-    local goose_config_target_file="$goose_config_target_dir/config.yaml"
-    local goose_ignore_source="$dotfiles_dir/ai-agents/goose/.original-gooseignore"
-    local goose_ignore_target="$goose_config_target_dir/.gooseignore"
-
-    if [ -d "$goose_config_target_dir" ]; then
-        if [ -f "$goose_config_source" ]; then
-            if cp "$goose_config_source" "$goose_config_target_file"; then
-                echo "- copied Block Goose config 🤖 to $goose_config_target_file"
-            else
-                echo "- failed to copy Block Goose config to $goose_config_target_file"
-            fi
-        else
-            echo "- Block Goose config file not found in $dotfiles_dir/ai-agents/goose"
-        fi
-        
-        # Copy .gooseignore file if it exists
-        if [ -f "$goose_ignore_source" ]; then
-            if cp "$goose_ignore_source" "$goose_ignore_target"; then
-                echo "- copied Block Goose ignore file 🤖 to $goose_ignore_target"
-            else
-                echo "- failed to copy Block Goose ignore file to $goose_ignore_target"
-            fi
-        else
-            echo "- Block Goose ignore file not found in $dotfiles_dir/ai-agents/goose"
-        fi
-    else
-        echo "- Block Goose config directory $goose_config_target_dir not found. Please install Goose first."
-    fi
-}
-
-# Function to copy OpenAI Codex CLI configuration
-copy_codex_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local codex_config_source_dir="$dotfiles_dir/ai-agents/codex"
-    local codex_agents_source_file="$codex_config_source_dir/AGENTS.md"
-    local codex_config_source_file="$codex_config_source_dir/config.json"
-    local codex_config_target_dir="$HOME/.codex"
-
-    if [ ! -d "$codex_config_target_dir" ]; then
-        echo "- OpenAI Codex CLI config directory $codex_config_target_dir not found. Please install OpenAI Codex CLI first."
-        return 1
-    fi
-
-    local agents_copied=false
-    local config_copied=false
-
-    # Copy AGENTS.md
-    if [ -f "$codex_agents_source_file" ]; then
-        if cp "$codex_agents_source_file" "$codex_config_target_dir/AGENTS.md"; then
-            agents_copied=true
-        fi
-    fi
-
-    # Copy config.json
-    if [ -f "$codex_config_source_file" ]; then
-        if cp "$codex_config_source_file" "$codex_config_target_dir/config.json"; then
-            config_copied=true
-        fi
-    fi
-
-    if [ "$agents_copied" = true ] && [ "$config_copied" = true ]; then
-        echo "- copied OpenAI Codex CLI config (AGENTS.md and config.json) 🤖 to $codex_config_target_dir"
-    elif [ "$agents_copied" = true ]; then
-        echo "- copied OpenAI Codex AGENTS.md 🤖 to $codex_config_target_dir, but config.json was not found or failed to copy."
-    elif [ "$config_copied" = true ]; then
-        echo "- copied OpenAI Codex config.json 🤖 to $codex_config_target_dir, but AGENTS.md was not found or failed to copy."
-    else
-        echo "- failed to copy OpenAI Codex CLI config. Check if AGENTS.md and config.json exist in $codex_config_source_dir."
-    fi
-}
-
 # Main execution
 echo ""
 echo "STEP 4: 💾 copying VS Code IDE configs"
@@ -251,25 +145,13 @@ else
     echo "Zed is not installed. Installation of Zed settings.json skipped."
 fi
 
-echo ""
-echo "STEP 6: 🤖 copying Aider config"
-copy_aider_settings
-
-echo ""
-echo "STEP 7: 🤖 copying Block Goose config"
-copy_goose_settings
-
-echo ""
-echo "STEP 8: 🤖 copying OpenAI Codex CLI config"
-copy_codex_settings
-
 # Export DOTFILES_PATH for brew.sh
 export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Only run macOS specific configurations if on Darwin
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo ""
-    echo "STEP 9: 🍎 configuring macOS defaults"
+    echo "STEP 6: 🍎 configuring macOS defaults"
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         bash "$DOTFILES_PATH/mac/macos.sh"
     else
@@ -277,7 +159,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     echo ""
-    echo "STEP 10: 🍺 setting up Homebrew packages"
+    echo "STEP 7: 🍺 setting up Homebrew packages"
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
         bash "$DOTFILES_PATH/brew/brew.sh"
     else
