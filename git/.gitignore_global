@@ -52,3 +52,7 @@ WARP.md
 # https://block.github.io/goose/docs/
 .goose*
 
+# https://claude.com/claude-code
+.claude/settings.local.json
+.claude/plans/
+
