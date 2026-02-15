@@ -7,53 +7,128 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 //
-// last updated: 2025-04-08
+// last updated: 2026-02-15
 //
 {
-    "features": {
-      "edit_prediction_provider": "zed"
-    },
-    "assistant": {
-      "default_model": {
-        "provider": "copilot_chat",
-        "model": "gpt-4o"
-      },
-      "version": "2"
-    },
-    "telemetry": {
-      "metrics": false,
-      "diagnostics": false
-    },
-    "ui_font_size": 14,
-    "buffer_font_size": 14,
-    "theme": {
-      "mode": "system",
-      "light": "One Light",
-      "dark": "One Dark"
-    },
-    "terminal": {
-      "blinking": "on"
-    },
-    "assistant.enabled": true,
-    "completions.enabled": true,
-  
-    "show_completions_on_input": false,
-  
-    "languages": {
-      "Markdown": {
-        "show_completions_on_input": false,
-        "show_edit_predictions": false,
-        "assistant": {
-          "enabled": false
-        }
-      },
-      "HTML": {
-        "prettier": {
-          "allowed": false,
-          "format_on_save": false
-        },
-        "soft_wrap": "editor_width"
-      }
-    }
-  }
-  
+	"edit_predictions": {
+		"provider": "zed",
+	},
+	"agent": {
+		"default_model": {
+			"provider": "anthropic",
+			"model": "claude-sonnet-4-5-latest",
+		},
+	},
+	"telemetry": {
+		"metrics": false,
+		"diagnostics": false,
+	},
+	"ui_font_size": 14,
+	"buffer_font_size": 14,
+	"theme": {
+		"mode": "system",
+		"light": "One Light",
+		"dark": "One Dark",
+	},
+	"terminal": {
+		"blinking": "on",
+	},
+	"show_completions_on_input": true,
+
+	"languages": {
+		"Markdown": {
+			"show_completions_on_input": false,
+			"show_edit_predictions": false,
+		},
+		"HTML": {
+			"prettier": {
+				"allowed": false,
+				"format_on_save": false,
+			},
+			"soft_wrap": "editor_width",
+		},
+	},
+	"context_servers": {
+		"nuon": {
+			"command": "/Users/markmilligan/documents/dev_and_debug/src/mark/nuon-mcp/venv/bin/python",
+			"args": [
+				"/Users/markmilligan/documents/dev_and_debug/src/mark/nuon-mcp/server.py",
+			],
+			"env": {},
+		},
+		//      "remote-mcp-server": {
+		//        "url": "custom",
+		//        "headers": { "Authorization": "Bearer <token>" }
+		//      }
+	},
+	"language_models": {
+		// Model strings: https://docs.anthropic.com/en/docs/about-claude/models
+		"anthropic": {
+			"available_models": [
+				{
+					"name": "claude-sonnet-4-5-20250929",
+					"display_name": "Claude Sonnet 4.5",
+					"max_tokens": 200000,
+					"max_output_tokens": 8192,
+					"cache_configuration": {
+						"max_cache_anchors": 10,
+						"min_total_token": 10000,
+						"should_speculate": false,
+					},
+				},
+				{
+					"name": "claude-opus-4-6",
+					"display_name": "Claude Opus 4.6",
+					"max_tokens": 200000,
+					"max_output_tokens": 8192,
+					"cache_configuration": {
+						"max_cache_anchors": 10,
+						"min_total_token": 10000,
+						"should_speculate": false,
+					},
+				},
+				{
+					"name": "claude-haiku-4-5-20251001",
+					"display_name": "Claude Haiku 4.5",
+					"max_tokens": 200000,
+					"max_output_tokens": 8192,
+					"cache_configuration": {
+						"max_cache_anchors": 10,
+						"min_total_token": 10000,
+						"should_speculate": false,
+					},
+				},
+			],
+		},
+		// Google model strings: https://ai.google.dev/gemini-api/docs/models
+		"google": {
+			"available_models": [
+				{
+					"name": "gemini-3-pro-preview",
+					"display_name": "Gemini 3 Pro Preview",
+					"max_tokens": 1048576,
+				},
+				{
+					"name": "gemini-3-flash-preview",
+					"display_name": "Gemini 3 Flash Preview",
+					"max_tokens": 1048576,
+				},
+				{
+					"name": "gemini-2.5-pro",
+					"display_name": "Gemini 2.5 Pro",
+					"max_tokens": 1048576,
+				},
+				{
+					"name": "gemini-2.5-flash",
+					"display_name": "Gemini 2.5 Flash",
+					"max_tokens": 1048576,
+				},
+				{
+					"name": "gemini-2.5-flash-lite",
+					"display_name": "Gemini 2.5 Flash-Lite",
+					"max_tokens": 1048576,
+				},
+			],
+		},
+	},
+}
