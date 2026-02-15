@@ -4,12 +4,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
-        // ai code gen
-        "Continue.continue",
-        "GitHub.copilot",
-        "saoudrizwan.claude-dev",
-        "ms-windows-ai-studio.windows-ai-studio",
-        "michaelneale.goose-vscode",
+        // ai assistant
+        "Anthropic.claude-code",
         // docker
         "ms-azuretools.vscode-docker",
         // remote development
@@ -17,7 +13,6 @@
         "ms-vscode-remote.remote-containers",
         "ms-vscode-remote.remote-ssh",
         "ms-vscode-remote.remote-ssh-edit",
-        "coder.coder-remote",
         // terraform iac
         "HashiCorp.terraform",
         // yaml

@@ -1,15 +1,32 @@
 #!/bin/bash
 
+# Parse arguments
+DRY_RUN=false
+if [[ "$1" == "--dry-run" ]] || [[ "$1" == "-n" ]]; then
+    DRY_RUN=true
+    echo "🔍 DRY RUN MODE - No files will be modified"
+    echo ""
+fi
+
 echo "RUNNING dotfiles repo install.sh"
 
 echo ""
-echo "STEP 1: 💾 copying .gitconfig and .gitignore_global"
-cp -r ./git/.gitconfig ./git/.gitignore_global ~
+echo "STEP 1: 💾 copying .gitignore_global"
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./git/.gitignore_global → ~/.gitignore_global"
+else
+    cp ./git/.gitignore_global ~
+    echo "- copied .gitignore_global to $HOME"
+fi
 
 echo ""
 echo "STEP 2: 💾 copying prettier formatting files"
-cp ./prettier/.prettierrc ~
-echo "- copied .prettierrc 🎨 to $HOME"
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./prettier/.prettierrc → ~/.prettierrc"
+else
+    cp ./prettier/.prettierrc ~
+    echo "- copied .prettierrc 🎨 to $HOME"
+fi
 
 echo ""
 echo "STEP 3: 💾 copying shell configuration files e.g., bash, fish, zsh"
@@ -17,21 +34,34 @@ echo "🐚 shell is $SHELL"
 
 # Check for bash
 if [ "$SHELL" == "/bin/bash" ]; then
-  cp ./shell/bash/.bashrc $HOME/.bashrc
-  cp ./shell/bash/.bash_profile $HOME/.bash_profile
-  echo "- copied bash 👾 configuration files to $HOME"
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./shell/bash/.bashrc → ~/.bashrc"
+    echo "[DRY RUN] Would copy: ./shell/bash/.bash_profile → ~/.bash_profile"
+  else
+    cp ./shell/bash/.bashrc $HOME/.bashrc
+    cp ./shell/bash/.bash_profile $HOME/.bash_profile
+    echo "- copied bash 👾 configuration files to $HOME"
+  fi
 fi
 
 # Check for zsh
 if [ "$SHELL" == "/bin/zsh" ]; then
-  cp ./shell/zsh/.zshrc $HOME/.zshrc
-  echo "- copied zsh 🍎 configuration files to $HOME"
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./shell/zsh/.zshrc → ~/.zshrc"
+  else
+    cp ./shell/zsh/.zshrc $HOME/.zshrc
+    echo "- copied zsh 🍎 configuration files to $HOME"
+  fi
 fi
 
 # Check for fish (regardless of current shell)
 if command -v fish &> /dev/null; then
-  cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
-  echo "- copied fish 🐟 configuration files to $HOME/.config/fish"
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./shell/fish/config.fish → ~/.config/fish/config.fish"
+  else
+    cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
+    echo "- copied fish 🐟 configuration files to $HOME/.config/fish"
+  fi
 fi
 
 # If none of the above conditions are met, print a message
@@ -65,11 +95,15 @@ copy_vscode_settings() {
 
     # Copy the settings.json file
     if [ -f "$settings_source" ]; then
-        if cp "$settings_source" "$settings_target"; then
-            echo "- copied VS Code settings.json to $settings_target"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $settings_source → $settings_target"
         else
-            echo "- failed to copy VS Code settings.json to $settings_target"
-            return 1
+            if cp "$settings_source" "$settings_target"; then
+                echo "- copied VS Code settings.json to $settings_target"
+            else
+                echo "- failed to copy VS Code settings.json to $settings_target"
+                return 1
+            fi
         fi
     else
         echo "VS Code settings.json not found in $dotfiles_dir/code"
@@ -83,11 +117,15 @@ copy_vscode_settings() {
 
     # Copy the extensions.json file
     if [ -f "$extensions_source" ]; then
-        if cp "$extensions_source" "$vscode_dir/extensions.json"; then
-            echo "- copied VS Code extensions.json to $vscode_dir/extensions.json"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $extensions_source → $vscode_dir/extensions.json"
         else
-            echo "- failed to copy VS Code extensions.json to $vscode_dir/extensions.json"
-            return 1
+            if cp "$extensions_source" "$vscode_dir/extensions.json"; then
+                echo "- copied VS Code extensions.json to $vscode_dir/extensions.json"
+            else
+                echo "- failed to copy VS Code extensions.json to $vscode_dir/extensions.json"
+                return 1
+            fi
         fi
     else
         echo "- VS Code extensions.json not found in $dotfiles_dir/code"
@@ -106,10 +144,14 @@ copy_zed_settings() {
 
     # Copy settings.json
     if [ -f "$settings_source" ]; then
-        if cp "$settings_source" "$zed_config_dir/settings.json"; then
-            echo "- copied Zed settings.json to $zed_config_dir/settings.json"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $settings_source → $zed_config_dir/settings.json"
         else
-            echo "- failed to copy Zed settings.json to $zed_config_dir/settings.json"
+            if cp "$settings_source" "$zed_config_dir/settings.json"; then
+                echo "- copied Zed settings.json to $zed_config_dir/settings.json"
+            else
+                echo "- failed to copy Zed settings.json to $zed_config_dir/settings.json"
+            fi
         fi
     else
         echo "- Zed settings.json not found in $dotfiles_dir/zed"
@@ -117,10 +159,14 @@ copy_zed_settings() {
 
     # Copy keymap.json
     if [ -f "$keymap_source" ]; then
-        if cp "$keymap_source" "$zed_config_dir/keymap.json"; then
-            echo "- copied Zed keymap.json to $zed_config_dir/keymap.json"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $keymap_source → $zed_config_dir/keymap.json"
         else
-            echo "- failed to copy Zed keymap.json to $zed_config_dir/keymap.json"
+            if cp "$keymap_source" "$zed_config_dir/keymap.json"; then
+                echo "- copied Zed keymap.json to $zed_config_dir/keymap.json"
+            else
+                echo "- failed to copy Zed keymap.json to $zed_config_dir/keymap.json"
+            fi
         fi
     else
         echo "- Zed keymap.json not found in $dotfiles_dir/zed"
@@ -153,7 +199,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo ""
     echo "STEP 6: 🍎 configuring macOS defaults"
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
-        bash "$DOTFILES_PATH/mac/macos.sh"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would execute: mac/macos.sh"
+        else
+            bash "$DOTFILES_PATH/mac/macos.sh"
+        fi
     else
         echo "macos.sh not found in mac directory"
     fi
@@ -161,7 +211,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo ""
     echo "STEP 7: 🍺 setting up Homebrew packages"
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
-        bash "$DOTFILES_PATH/brew/brew.sh"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would execute: brew/brew.sh"
+        else
+            bash "$DOTFILES_PATH/brew/brew.sh"
+        fi
     else
         echo "brew.sh not found in brew directory"
     fi
@@ -169,3 +223,24 @@ else
     echo ""
     echo "Skipping macOS-specific configurations (Homebrew and system defaults) on non-Darwin system"
 fi
+
+echo ""
+echo "======================================"
+echo "📝 Git User Configuration"
+echo "======================================"
+echo ""
+echo "Your current git user settings:"
+echo "  Name:       $(git config --global user.name 2>/dev/null || echo '(not set)')"
+echo "  Email:      $(git config --global user.email 2>/dev/null || echo '(not set)')"
+echo "  GPG Key:    $(git config --global user.signingkey 2>/dev/null || echo '(not set)')"
+echo "  GPG Sign:   $(git config --global commit.gpgsign 2>/dev/null || echo '(not set)')"
+echo ""
+echo "To configure your git identity (required for commits):"
+echo "  git config --global user.name \"Your Name\""
+echo "  git config --global user.email \"your@email.com\""
+echo ""
+echo "Optional - To enable GPG commit signing:"
+echo "  1. List your GPG keys:    gpg --list-secret-keys --keyid-format=long"
+echo "  2. Set signing key:       git config --global user.signingkey YOUR_KEY_ID"
+echo "  3. Enable auto-signing:   git config --global commit.gpgsign true"
+echo ""
