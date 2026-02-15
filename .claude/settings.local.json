@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(rm:*)",
-      "Bash(brew list:*)",
-      "Bash(git mv:*)"
-    ]
-  }
-}
