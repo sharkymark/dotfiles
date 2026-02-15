@@ -21,10 +21,10 @@ If locally installed VS Code, this file is located:
 
     // turn off telemetry
         "telemetry.telemetryLevel": "off",
-    
-    // Turn on word-wrap for my note taking
-        "editor.wordWrap": "on",
-    
+
+    "[csv]": {
+        "editor.wordWrap": "off"
+    },
     "[plaintext]": {
         "editor.wordWrap": "on"
     },
@@ -91,13 +91,10 @@ If locally installed VS Code, this file is located:
         },
 
     // formatter settings
-    // https://github.com/prettier/prettier-vscode     
+    // https://github.com/prettier/prettier-vscode
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": false,
-        "[markdown]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.formatOnSave": true
-        }
+        "go.toolsManagement.autoUpdate": true
         
     
     }
