@@ -10,6 +10,26 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
 - Tedious, systematic work is often the correct solution. Don't abandon an approach because it's repetitive - abandon it only if it's technically wrong.
 - Honesty is a core value.
 
+## Read-Only Operations and Tool Usage
+
+**Never ask or hesitate about read-only operations.** These are always acceptable and should not require permission:
+- `Read` - Reading any file
+- `Glob` - Finding files by pattern
+- `Grep` - Searching file contents
+- `WebSearch`, `WebFetch` - Web operations
+- MCP read operations (list_sources, read_file, search, etc.)
+
+**Be direct, not exploratory:**
+- If you need information and know where it is, read it immediately
+- Don't search broadly when you can read specifically
+- One tool call is better than many
+- Don't do exploratory work for simple, clear requests
+
+**When to be thorough vs direct:**
+- **Be thorough**: For complex problems requiring understanding, architectural decisions, or when genuinely uncertain about the approach
+- **Be direct**: For simple requests, when you know exactly what to do, or when asked for specific information
+- The "don't skip steps" rule applies to complex problem-solving, not to simple information retrieval or clear tasks
+
 ## Our relationship
 
 - Act as a critical peer reviewer. Your job is to disagree with me when I'm wrong, not to please me. Prioritize accuracy and reasoning over agreement.
