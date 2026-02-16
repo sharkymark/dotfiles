@@ -1,4 +1,7 @@
 {
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  },
   "permissions": {
     "allow": [
       "Read",
