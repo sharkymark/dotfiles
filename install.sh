@@ -50,22 +50,22 @@ else
   echo "- CLAUDE.md not found in ./.claude/"
 fi
 
-# Copy settings.local.json
-if [ -f "./.claude/settings.local.json" ]; then
+# Copy settings.json
+if [ -f "./.claude/settings.json" ]; then
   if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] Would copy: ./.claude/settings.local.json → ~/.claude/settings.local.json"
+    echo "[DRY RUN] Would copy: ./.claude/settings.json → ~/.claude/settings.json"
   else
-    # Backup existing settings.local.json if it exists
-    if [ -f "$HOME/.claude/settings.local.json" ]; then
-      cp "$HOME/.claude/settings.local.json" "$HOME/.claude/settings.local.json.backup.$(date +%Y%m%d_%H%M%S)"
-      echo "- backed up existing settings.local.json"
+    # Backup existing settings.json if it exists
+    if [ -f "$HOME/.claude/settings.json" ]; then
+      cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing settings.json"
     fi
-    cp ./.claude/settings.local.json "$HOME/.claude/settings.local.json"
-    echo "- copied settings.local.json to ~/.claude/"
+    cp ./.claude/settings.json "$HOME/.claude/settings.json"
+    echo "- copied settings.json to ~/.claude/"
     echo "- NOTE: You'll need to restart Claude Code for settings to take effect"
   fi
 else
-  echo "- settings.local.json not found in ./.claude/"
+  echo "- settings.json not found in ./.claude/"
 fi
 
 echo ""
