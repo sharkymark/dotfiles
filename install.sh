@@ -29,7 +29,47 @@ else
 fi
 
 echo ""
-echo "STEP 3: 💾 copying shell configuration files e.g., bash, fish, zsh"
+echo "STEP 3: 🤖 copying Claude Code configuration files"
+# Ensure ~/.claude directory exists
+mkdir -p "$HOME/.claude"
+
+# Copy CLAUDE.md
+if [ -f "./.claude/CLAUDE.md" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./.claude/CLAUDE.md → ~/.claude/CLAUDE.md"
+  else
+    # Backup existing CLAUDE.md if it exists
+    if [ -f "$HOME/.claude/CLAUDE.md" ]; then
+      cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing CLAUDE.md"
+    fi
+    cp ./.claude/CLAUDE.md "$HOME/.claude/CLAUDE.md"
+    echo "- copied CLAUDE.md to ~/.claude/"
+  fi
+else
+  echo "- CLAUDE.md not found in ./.claude/"
+fi
+
+# Copy settings.local.json
+if [ -f "./.claude/settings.local.json" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./.claude/settings.local.json → ~/.claude/settings.local.json"
+  else
+    # Backup existing settings.local.json if it exists
+    if [ -f "$HOME/.claude/settings.local.json" ]; then
+      cp "$HOME/.claude/settings.local.json" "$HOME/.claude/settings.local.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing settings.local.json"
+    fi
+    cp ./.claude/settings.local.json "$HOME/.claude/settings.local.json"
+    echo "- copied settings.local.json to ~/.claude/"
+    echo "- NOTE: You'll need to restart Claude Code for settings to take effect"
+  fi
+else
+  echo "- settings.local.json not found in ./.claude/"
+fi
+
+echo ""
+echo "STEP 4: 💾 copying shell configuration files e.g., bash, fish, zsh"
 echo "🐚 shell is $SHELL"
 
 # Check for bash
@@ -175,7 +215,7 @@ copy_zed_settings() {
 
 # Main execution
 echo ""
-echo "STEP 4: 💾 copying VS Code IDE configs"
+echo "STEP 5: 💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
 else
@@ -184,7 +224,7 @@ fi
 
 # Check if Zed is installed
 echo ""
-echo "STEP 5: 💾 copying Zed IDE configs"
+echo "STEP 6: 💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
 else
@@ -197,7 +237,7 @@ export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Only run macOS specific configurations if on Darwin
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo ""
-    echo "STEP 6: 🍎 configuring macOS defaults"
+    echo "STEP 7: 🍎 configuring macOS defaults"
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
             echo "[DRY RUN] Would execute: mac/macos.sh"
@@ -209,7 +249,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     echo ""
-    echo "STEP 7: 🍺 setting up Homebrew packages"
+    echo "STEP 8: 🍺 setting up Homebrew packages"
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
             echo "[DRY RUN] Would execute: brew/brew.sh"

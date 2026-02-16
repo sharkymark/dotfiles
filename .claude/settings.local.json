@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "mcp__nuon__list_sources",
+      "mcp__nuon__search_all",
+      "mcp__nuon__search_repo",
+      "mcp__nuon__read_file",
+      "mcp__nuon__list_files",
+      "mcp__nuon__get_directory_tree",
+      "mcp__coder__list_sources",
+      "mcp__coder__search_all",
+      "mcp__coder__search_repo",
+      "mcp__coder__read_file",
+      "mcp__coder__list_files",
+      "mcp__coder__get_directory_tree",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(env)",
+      "Bash(ls:*)"
+    ]
+  }
+}
