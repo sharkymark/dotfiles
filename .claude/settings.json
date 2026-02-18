@@ -21,6 +21,8 @@
       "mcp__coder__read_file",
       "mcp__coder__list_files",
       "mcp__coder__get_directory_tree",
+      "mcp__firecrawl__firecrawl_scrap",
+      "mcp__firecrawl__firecrawl_search",
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(env)",
