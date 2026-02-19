@@ -1,0 +1,2 @@
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
