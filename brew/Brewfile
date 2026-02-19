@@ -1,4 +1,4 @@
-
+brew "atuin"
 brew "fish"
 brew "git"
 brew "gh"

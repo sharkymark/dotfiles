@@ -10,8 +10,27 @@ fi
 
 echo "RUNNING dotfiles repo install.sh"
 
+# Export DOTFILES_PATH (needed by brew.sh and referenced throughout)
+export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo ""
-echo "STEP 1: 💾 copying .gitignore_global"
+echo "STEP 1: 🍺 setting up Homebrew packages"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would execute: brew/brew.sh"
+        else
+            bash "$DOTFILES_PATH/brew/brew.sh"
+        fi
+    else
+        echo "brew.sh not found in brew directory"
+    fi
+else
+    echo "Skipping Homebrew setup on non-Darwin system"
+fi
+
+echo ""
+echo "STEP 2: 💾 copying .gitignore_global"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./git/.gitignore_global → ~/.gitignore_global"
 else
@@ -20,7 +39,7 @@ else
 fi
 
 echo ""
-echo "STEP 2: 💾 copying prettier formatting files"
+echo "STEP 3: 💾 copying prettier formatting files"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./prettier/.prettierrc → ~/.prettierrc"
 else
@@ -29,7 +48,7 @@ else
 fi
 
 echo ""
-echo "STEP 3: 🤖 copying Claude Code configuration files"
+echo "STEP 4: 🤖 copying Claude Code configuration files"
 # Ensure ~/.claude directory exists
 mkdir -p "$HOME/.claude"
 
@@ -69,7 +88,7 @@ else
 fi
 
 echo ""
-echo "STEP 4: 💾 copying shell configuration files e.g., bash, fish, zsh"
+echo "STEP 5: 💾 copying shell configuration files e.g., bash, fish, zsh"
 echo "🐚 shell is $SHELL"
 
 # Check for bash
@@ -78,6 +97,14 @@ if [ "$SHELL" == "/bin/bash" ]; then
     echo "[DRY RUN] Would copy: ./shell/bash/.bashrc → ~/.bashrc"
     echo "[DRY RUN] Would copy: ./shell/bash/.bash_profile → ~/.bash_profile"
   else
+    if [ -f "$HOME/.bashrc" ]; then
+      cp "$HOME/.bashrc" "$HOME/.bashrc.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing .bashrc"
+    fi
+    if [ -f "$HOME/.bash_profile" ]; then
+      cp "$HOME/.bash_profile" "$HOME/.bash_profile.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing .bash_profile"
+    fi
     cp ./shell/bash/.bashrc $HOME/.bashrc
     cp ./shell/bash/.bash_profile $HOME/.bash_profile
     echo "- copied bash 👾 configuration files to $HOME"
@@ -89,6 +116,10 @@ if [ "$SHELL" == "/bin/zsh" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./shell/zsh/.zshrc → ~/.zshrc"
   else
+    if [ -f "$HOME/.zshrc" ]; then
+      cp "$HOME/.zshrc" "$HOME/.zshrc.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing .zshrc"
+    fi
     cp ./shell/zsh/.zshrc $HOME/.zshrc
     echo "- copied zsh 🍎 configuration files to $HOME"
   fi
@@ -99,6 +130,10 @@ if command -v fish &> /dev/null; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./shell/fish/config.fish → ~/.config/fish/config.fish"
   else
+    if [ -f "$HOME/.config/fish/config.fish" ]; then
+      cp "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing config.fish"
+    fi
     cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
     echo "- copied fish 🐟 configuration files to $HOME/.config/fish"
   fi
@@ -119,7 +154,6 @@ check_vscode_installed() {
     fi
 }
 
-# Rename copy_settings to copy_vscode_settings and update echo statements
 copy_vscode_settings() {
     local dotfiles_dir="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
     local settings_source="$dotfiles_dir/code/settings.json"
@@ -172,7 +206,6 @@ copy_vscode_settings() {
     fi
 }
 
-# Update copy_zed_settings to handle keymap.json
 copy_zed_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local settings_source="$dotfiles_dir/zed/settings.json"
@@ -213,31 +246,60 @@ copy_zed_settings() {
     fi
 }
 
-# Main execution
+copy_ghostty_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local config_source="$dotfiles_dir/ghostty/config"
+    local ghostty_config_dir="$HOME/.config/ghostty"
+    local config_target="$ghostty_config_dir/config"
+
+    mkdir -p "$ghostty_config_dir"
+
+    if [ -f "$config_source" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $config_source → $config_target"
+        else
+            if [ -f "$config_target" ]; then
+                cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "- backed up existing ghostty config"
+            fi
+            if cp "$config_source" "$config_target"; then
+                echo "- copied Ghostty config to $config_target"
+            else
+                echo "- failed to copy Ghostty config to $config_target"
+            fi
+        fi
+    else
+        echo "- ghostty/config not found in $dotfiles_dir/ghostty"
+    fi
+}
+
 echo ""
-echo "STEP 5: 💾 copying VS Code IDE configs"
+echo "STEP 6: 💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
 else
     echo "Installation of VS Code settings.json skipped due to VS Code not being installed."
 fi
 
-# Check if Zed is installed
 echo ""
-echo "STEP 6: 💾 copying Zed IDE configs"
+echo "STEP 7: 💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
 else
     echo "Zed is not installed. Installation of Zed settings.json skipped."
 fi
 
-# Export DOTFILES_PATH for brew.sh
-export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo ""
+echo "STEP 8: 👻 copying Ghostty terminal config"
+if brew list --cask ghostty &> /dev/null 2>&1; then
+    copy_ghostty_settings
+else
+    echo "Ghostty is not installed. Skipping ghostty config."
+fi
 
-# Only run macOS specific configurations if on Darwin
+echo ""
+echo "STEP 9: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo ""
-    echo "STEP 7: 🍎 configuring macOS defaults"
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
             echo "[DRY RUN] Would execute: mac/macos.sh"
@@ -247,21 +309,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     else
         echo "macos.sh not found in mac directory"
     fi
-
-    echo ""
-    echo "STEP 8: 🍺 setting up Homebrew packages"
-    if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
-        if [ "$DRY_RUN" = true ]; then
-            echo "[DRY RUN] Would execute: brew/brew.sh"
-        else
-            bash "$DOTFILES_PATH/brew/brew.sh"
-        fi
-    else
-        echo "brew.sh not found in brew directory"
-    fi
 else
-    echo ""
-    echo "Skipping macOS-specific configurations (Homebrew and system defaults) on non-Darwin system"
+    echo "Skipping macOS defaults on non-Darwin system"
 fi
 
 echo ""
