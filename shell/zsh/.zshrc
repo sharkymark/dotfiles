@@ -17,6 +17,9 @@ else
   echo "💡 Atuin not installed — run: brew install atuin"
 fi
 
+# Nuon-related
+alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
+
 #prompt
 #PS1="%n@%m %1~ %# "
 PS1="🍋 %1~ %# "
