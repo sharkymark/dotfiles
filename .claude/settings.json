@@ -23,10 +23,24 @@
       "mcp__coder__get_directory_tree",
       "mcp__firecrawl__firecrawl_scrap",
       "mcp__firecrawl__firecrawl_search",
+      "mcp__grain__search_meetings",
+      "mcp__grain__list_attended_meetings",
+      "mcp__grain__fetch_meeting_notes",
+      "mcp__grain__fetch_meeting_transcript",
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(env)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__nuon-slack__slack_list_channels",
+      "mcp__nuon-slack__slack_get_channel_history",
+      "mcp__nuon-slack__slack_get_thread_replies",
+      "mcp__nuon-slack__slack_get_users",
+      "mcp__nuon-slack__slack_get_user_profile",
+      "mcp__nuon-byoc-slack__slack_list_channels",
+      "mcp__nuon-byoc-slack__slack_get_channel_history",
+      "mcp__nuon-byoc-slack__slack_get_thread_replies",
+      "mcp__nuon-byoc-slack__slack_get_users",
+      "mcp__nuon-byoc-slack__slack_get_user_profile"
     ]
   }
 }
