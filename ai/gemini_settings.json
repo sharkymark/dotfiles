@@ -1,0 +1,17 @@
+{
+  "approvalMode": "plan",
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "mcpServers": {
+    "nuon": {
+      "command": "/Users/markmilligan/documents/dev_and_debug/src/mark/nuon-mcp/venv/bin/python",
+      "args": [
+        "/Users/markmilligan/documents/dev_and_debug/src/mark/nuon-mcp/server.py"
+      ],
+      "env": {}
+    }
+  }  
+}

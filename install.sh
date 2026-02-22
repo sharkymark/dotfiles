@@ -14,7 +14,7 @@ echo "RUNNING dotfiles repo install.sh"
 export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo ""
-echo "STEP 1: 🍺 setting up Homebrew packages"
+echo "STEP: 🍺 setting up Homebrew packages"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -30,7 +30,7 @@ else
 fi
 
 echo ""
-echo "STEP 2: 💾 copying .gitignore_global"
+echo "STEP: 💾 copying .gitignore_global"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./git/.gitignore_global → ~/.gitignore_global"
 else
@@ -39,7 +39,7 @@ else
 fi
 
 echo ""
-echo "STEP 3: 💾 copying prettier formatting files"
+echo "STEP: 💾 copying prettier formatting files"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./prettier/.prettierrc → ~/.prettierrc"
 else
@@ -48,26 +48,55 @@ else
 fi
 
 echo ""
-echo "STEP 4: 🤖 copying Claude Code configuration files"
-# Ensure ~/.claude directory exists
-mkdir -p "$HOME/.claude"
-
-# Copy CLAUDE.md
-if [ -f "./.claude/CLAUDE.md" ]; then
+echo "STEP: 🤖 Installing Agent Definitions (AGENTS.md)"
+if [ -f "./ai/AGENTS.md" ]; then
   if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] Would copy: ./.claude/CLAUDE.md → ~/.claude/CLAUDE.md"
+    echo "[DRY RUN] Would copy: ./ai/AGENTS.md → ~/AGENTS.md"
   else
-    # Backup existing CLAUDE.md if it exists
-    if [ -f "$HOME/.claude/CLAUDE.md" ]; then
-      cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.backup.$(date +%Y%m%d_%H%M%S)"
-      echo "- backed up existing CLAUDE.md"
+    # Backup existing AGENTS.md if it exists
+    if [ -f "$HOME/AGENTS.md" ]; then
+      cp "$HOME/AGENTS.md" "$HOME/AGENTS.md.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing AGENTS.md"
     fi
-    cp ./.claude/CLAUDE.md "$HOME/.claude/CLAUDE.md"
-    echo "- copied CLAUDE.md to ~/.claude/"
+    cp "./ai/AGENTS.md" "$HOME/AGENTS.md"
+    echo "- copied AGENTS.md to $HOME"
   fi
 else
-  echo "- CLAUDE.md not found in ./.claude/"
+  echo "- AGENTS.md not found in ./ai/"
 fi
+
+echo ""
+echo "STEP: 🔗 Symlinking AI configurations"
+if [ "$DRY_RUN" = true ]; then
+  echo "[DRY RUN] Would create symlinks for AI configurations"
+else
+  # Ensure ~/.claude directory exists
+  mkdir -p "$HOME/.claude"
+  # Remove existing CLAUDE.md if it's a file, to replace with symlink
+  if [ -f "$HOME/.claude/CLAUDE.md" ]; then
+    rm "$HOME/.claude/CLAUDE.md"
+    echo "- removed old ~/.claude/CLAUDE.md file"
+  fi
+  # Create symlink for CLAUDE.md
+  ln -sf "$HOME/AGENTS.md" "$HOME/.claude/CLAUDE.md"
+  echo "- symlinked ~/.claude/CLAUDE.md to ~/AGENTS.md"
+
+  # Ensure ~/.gemini directory exists
+  mkdir -p "$HOME/.gemini"
+  # Remove existing GEMINI.md if it's a file, to replace with symlink (assuming it might exist from previous manual setup)
+  if [ -f "$HOME/.gemini/GEMINI.md" ]; then
+    rm "$HOME/.gemini/GEMINI.md"
+    echo "- removed old ~/.gemini/GEMINI.md file"
+  fi
+  # Create symlink for GEMINI.md
+  ln -sf "$HOME/AGENTS.md" "$HOME/.gemini/GEMINI.md"
+  echo "- symlinked ~/.gemini/GEMINI.md to ~/AGENTS.md"
+fi
+
+echo ""
+echo "STEP: 🤖 copying Claude Code configuration files"
+# Ensure ~/.claude directory exists
+mkdir -p "$HOME/.claude"
 
 # Copy settings.json
 if [ -f "./.claude/settings.json" ]; then
@@ -88,7 +117,29 @@ else
 fi
 
 echo ""
-echo "STEP 5: 💾 copying shell configuration files e.g., bash, fish, zsh"
+echo "STEP: 🤖 copying Gemini configuration files"
+# Ensure ~/.gemini directory exists
+mkdir -p "$HOME/.gemini"
+
+# Copy settings.json
+if [ -f "./ai/gemini_settings.json" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./ai/gemini_settings.json → ~/.gemini/settings.json"
+  else
+    # Backup existing settings.json if it exists
+    if [ -f "$HOME/.gemini/settings.json" ]; then
+      cp "$HOME/.gemini/settings.json" "$HOME/.gemini/settings.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing settings.json"
+    fi
+    cp "./ai/gemini_settings.json" "$HOME/.gemini/settings.json"
+    echo "- copied gemini_settings.json to ~/.gemini/"
+  fi
+else
+  echo "- gemini_settings.json not found in ./ai/"
+fi
+
+echo ""
+echo "STEP: 💾 copying shell configuration files e.g., bash, fish, zsh"
 echo "🐚 shell is $SHELL"
 
 # Check for bash
@@ -273,8 +324,35 @@ copy_ghostty_settings() {
     fi
 }
 
+# Function to clean up old backups, keeping only the two most recent
+cleanup_backups() {
+    local target_dir="$1"
+    local base_filename="$2"
+    local backup_files=()
+
+    # Find all backup files for the given base_filename, sorted by name (chronological)
+    while IFS= read -r -d $'\0' file; do
+        backup_files+=("$file")
+    done < <(find "$target_dir" -maxdepth 1 -type f -name "${base_filename}.backup.*" -print0 | sort -z)
+
+    local num_backups=${#backup_files[@]}
+
+    if (( num_backups > 2 )); then
+        echo "- Found $num_backups backups for $base_filename in "$target_dir". Keeping the 2 newest."
+        # Delete backups from the 3rd oldest onwards
+        for (( i=0; i < num_backups - 2; i++ )); do
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY RUN] Would delete old backup: ${backup_files[i]}"
+            else
+                rm "${backup_files[i]}"
+                echo "  Deleted: ${backup_files[i]}"
+            fi
+        done
+    fi
+}
+
 echo ""
-echo "STEP 6: 💾 copying VS Code IDE configs"
+echo "STEP: 💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
 else
@@ -282,7 +360,7 @@ else
 fi
 
 echo ""
-echo "STEP 7: 💾 copying Zed IDE configs"
+echo "STEP: 💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
 else
@@ -290,7 +368,7 @@ else
 fi
 
 echo ""
-echo "STEP 8: 👻 copying Ghostty terminal config"
+echo "STEP: 👻 copying Ghostty terminal config"
 if brew list --cask ghostty &> /dev/null 2>&1; then
     copy_ghostty_settings
 else
@@ -298,7 +376,7 @@ else
 fi
 
 echo ""
-echo "STEP 9: 🍎 configuring macOS defaults"
+echo "STEP: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -311,6 +389,28 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 else
     echo "Skipping macOS defaults on non-Darwin system"
+fi
+
+echo ""
+echo "STEP: 🧹 Cleaning up old backups"
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would clean up old backup files, keeping only the 2 most recent."
+else
+    # Clean up AGENTS.md backups
+    cleanup_backups "$HOME" "AGENTS.md"
+    # Clean up Claude settings.json backups
+    cleanup_backups "$HOME/.claude" "settings.json"
+    # Clean up old CLAUDE.md files (that were backed up before it became a symlink)
+    cleanup_backups "$HOME/.claude" "CLAUDE.md"
+    # Clean up Gemini settings.json backups
+    cleanup_backups "$HOME/.gemini" "settings.json"
+    # Clean up shell backups
+    cleanup_backups "$HOME" ".bashrc"
+    cleanup_backups "$HOME" ".bash_profile"
+    cleanup_backups "$HOME" ".zshrc"
+    cleanup_backups "$HOME/.config/fish" "config.fish"
+    # Clean up Ghostty config backups
+    cleanup_backups "$HOME/.config/ghostty" "config"
 fi
 
 echo ""
