@@ -1,0 +1,32 @@
+
+
+# Add to your ~/.config/starship.toml:
+command_timeout = 5000
+
+# Disable everything noisy
+[aws]
+disabled = false
+[gcloud]
+disabled = false
+[kubernetes]
+disabled = true
+[golang]
+disabled = true
+[git_branch]
+disabled = false
+[git_commit]
+disabled = true
+[git_status]
+disabled = true
+[git_state]
+disabled = true
+[git_metrics]
+disabled = true
+
+
+[custom.nuon]
+command = "nuon starship prompt"
+detect_files = ["runner.toml"]
+format = "[$symbol($output )]($style)"
+symbol = "☁️ "
+style = "bold purple"

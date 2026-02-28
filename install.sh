@@ -324,6 +324,32 @@ copy_ghostty_settings() {
     fi
 }
 
+copy_starship_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local config_source="$dotfiles_dir/starship/starship.toml"
+    local config_target="$HOME/.config/starship.toml"
+
+    mkdir -p "$HOME/.config"
+
+    if [ -f "$config_source" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $config_source → $config_target"
+        else
+            if [ -f "$config_target" ]; then
+                cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "- backed up existing starship config"
+            fi
+            if cp "$config_source" "$config_target"; then
+                echo "- copied Starship config to $config_target"
+            else
+                echo "- failed to copy Starship config to $config_target"
+            fi
+        fi
+    else
+        echo "- starship/starship.toml not found in $dotfiles_dir/starship"
+    fi
+}
+
 # Function to clean up old backups, keeping only the two most recent
 cleanup_backups() {
     local target_dir="$1"
@@ -376,6 +402,14 @@ else
 fi
 
 echo ""
+echo "STEP: 🚀 copying Starship prompt config"
+if command -v starship &> /dev/null; then
+    copy_starship_settings
+else
+    echo "Starship is not installed. Skipping starship config."
+fi
+
+echo ""
 echo "STEP: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
@@ -411,6 +445,8 @@ else
     cleanup_backups "$HOME/.config/fish" "config.fish"
     # Clean up Ghostty config backups
     cleanup_backups "$HOME/.config/ghostty" "config"
+    # Clean up Starship config backups
+    cleanup_backups "$HOME/.config" "starship.toml"
 fi
 
 echo ""
