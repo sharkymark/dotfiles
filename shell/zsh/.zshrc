@@ -20,6 +20,11 @@ fi
 # Nuon-related
 alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
 
+# starship cross-shell prompt
+# https://starship.rs/
+eval "$(starship init zsh)"
+
+
 #prompt
 #PS1="%n@%m %1~ %# "
-PS1="🍋 %1~ %# "
+#PS1="🍋 %1~ %# "

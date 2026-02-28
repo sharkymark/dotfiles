@@ -26,6 +26,8 @@ This script copies configuration files to their appropriate locations:
 - VS Code settings and extensions (if installed)
 - Zed editor settings and keymap (if installed)
 - Prettier formatting config
+- Ghostty terminal config (if installed)
+- Starship prompt config (if installed)
 
 On macOS, also runs Homebrew package installation and system defaults.
 
