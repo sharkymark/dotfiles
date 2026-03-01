@@ -19,6 +19,7 @@ fi
 
 # Nuon-related
 alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
+alias nuonstage="nuon -f ~/.stage"
 
 # starship cross-shell prompt
 # https://starship.rs/
