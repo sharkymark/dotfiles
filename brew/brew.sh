@@ -18,9 +18,9 @@ echo ""
 # Install packages from Brewfile if it exists
 if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   echo "📦 Installing development tools and applications from Brewfile..."
-  echo "   (Already installed packages will be skipped, only upgrades shown below)"
+  echo "   (This may take several minutes on a fresh install)"
   echo ""
-  brew bundle --file="$DOTFILES_PATH/brew/Brewfile" | grep "Upgrading"
+  brew bundle --file="$DOTFILES_PATH/brew/Brewfile"
   echo ""
   echo "✅ All packages from Brewfile are now installed!"
   echo "   Run 'brew list' to see what's installed"
