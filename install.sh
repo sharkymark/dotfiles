@@ -350,6 +350,37 @@ copy_starship_settings() {
     fi
 }
 
+copy_nvim_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local nvim_config_dir="$HOME/.config/nvim"
+    local nvim_files=("init.lua" "lazy-lock.json" ".avante_pref")
+
+    mkdir -p "$nvim_config_dir"
+
+    for file in "${nvim_files[@]}"; do
+        local source="$dotfiles_dir/nvim/$file"
+        local target="$nvim_config_dir/$file"
+
+        if [ -f "$source" ]; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY RUN] Would copy: $source → $target"
+            else
+                if [ -f "$target" ]; then
+                    cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
+                    echo "- backed up existing $file"
+                fi
+                if cp "$source" "$target"; then
+                    echo "- copied $file to $nvim_config_dir/"
+                else
+                    echo "- failed to copy $file to $nvim_config_dir/"
+                fi
+            fi
+        else
+            echo "- nvim/$file not found in $dotfiles_dir/nvim"
+        fi
+    done
+}
+
 # Function to clean up old backups, keeping only the two most recent
 cleanup_backups() {
     local target_dir="$1"
@@ -410,6 +441,14 @@ else
 fi
 
 echo ""
+echo "STEP: 💾 copying Neovim config"
+if command -v nvim &> /dev/null; then
+    copy_nvim_settings
+else
+    echo "Neovim is not installed. Skipping Neovim configuration."
+fi
+
+echo ""
 echo "STEP: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
@@ -447,6 +486,10 @@ else
     cleanup_backups "$HOME/.config/ghostty" "config"
     # Clean up Starship config backups
     cleanup_backups "$HOME/.config" "starship.toml"
+    # Clean up Neovim config backups
+    cleanup_backups "$HOME/.config/nvim" "init.lua"
+    cleanup_backups "$HOME/.config/nvim" "lazy-lock.json"
+    cleanup_backups "$HOME/.config/nvim" ".avante_pref"
 fi
 
 echo ""
