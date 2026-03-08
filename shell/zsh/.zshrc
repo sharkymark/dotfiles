@@ -17,6 +17,10 @@ else
   echo "💡 Atuin not installed — run: brew install atuin"
 fi
 
+# Jon's avante.nvim fork path (https://github.com/jonmorehouse/avante.nvim)
+# Override on machines where the fork lives elsewhere
+export AVANTE_FORK_PATH="$HOME/Documents/dev_and_debug/src/mark/avante.nvim"
+
 # Nuon-related
 alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
 alias nuonstage="nuon -f ~/.stage"
