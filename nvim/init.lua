@@ -29,9 +29,35 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     build = "npm install -g mcp-hub@latest", 
     config = function()
+      local claude_json_path = vim.fn.expand("~/.claude.json")
+
+      local function check_claude_json()
+        local f = io.open(claude_json_path, "r")
+        if not f then return false, "not_found" end
+        local content = f:read("*a"); f:close()
+        local ok, parsed = pcall(vim.json.decode, content)
+        if not ok or type(parsed) ~= "table" then return false, "invalid_json" end
+        local has_mcp = parsed.mcpServers and type(parsed.mcpServers) == "table"
+        local has_srv = parsed.servers    and type(parsed.servers)    == "table"
+        if not has_mcp and not has_srv then return false, "no_servers_key" end
+        return true, nil
+      end
+
+      local ok, reason = check_claude_json()
+      if not ok then
+        local msgs = {
+          not_found      = "~/.claude.json not found. Add MCP servers via Claude Code (`claude mcp add ...`) and restart nvim.",
+          invalid_json   = "~/.claude.json is not valid JSON. mcphub will not start.",
+          no_servers_key = "~/.claude.json has no 'mcpServers' key — mcphub will not start.\nAdd servers via Claude Code: `claude mcp add <name> <cmd>`",
+        }
+        vim.schedule(function()
+          vim.notify("[mcphub] " .. (msgs[reason] or "Unknown config issue — mcphub will not start."), vim.log.levels.WARN)
+        end)
+        return
+      end
+
       require("mcphub").setup({
-        -- This points to your existing Claude config file directly
-        config = vim.fn.expand("~/.claude.json"), 
+        config = claude_json_path,
       })
     end,
   },
@@ -52,8 +78,19 @@ require("lazy").setup({
       if f then
         local v = tonumber(f:read("*l")); f:close()
         if v == 1 then
-          vim.g.avante_fork_loaded = "jon"
-          return vim.fn.expand("~/Documents/dev_and_debug/src/mark/avante.nvim")
+          local fork_path = vim.fn.expand(
+            os.getenv("AVANTE_FORK_PATH") or "~/Documents/dev_and_debug/src/mark/avante.nvim"
+          )
+          if vim.fn.isdirectory(fork_path) == 1 then
+            vim.g.avante_fork_loaded = "jon"
+            return fork_path
+          else
+            -- Fork not found — reset pref to 2 (upstream) so next start is clean
+            vim.g.avante_fork_loaded = "upstream"
+            local pf = io.open(vim.fn.stdpath("config") .. "/.avante_pref", "w")
+            if pf then pf:write("2"); pf:close() end
+            vim.notify("Avante fork not found at " .. fork_path .. " — falling back to upstream", vim.log.levels.WARN)
+          end
         end
       end
       vim.g.avante_fork_loaded = "upstream"
@@ -109,6 +146,16 @@ require("lazy").setup({
 
       local function apply_pref(idx)
         local cfg = provider_configs[idx]
+        -- Guard: if jon's fork is selected but directory not present, warn and skip
+        if cfg.fork == "jon" then
+          local fork_path = vim.fn.expand(
+            os.getenv("AVANTE_FORK_PATH") or "~/Documents/dev_and_debug/src/mark/avante.nvim"
+          )
+          if vim.fn.isdirectory(fork_path) ~= 1 then
+            vim.notify("Jon's avante fork not found at " .. fork_path .. ".\nClone: https://github.com/jonmorehouse/avante.nvim\nOr set AVANTE_FORK_PATH env var.", vim.log.levels.ERROR)
+            return
+          end
+        end
         opts.provider = cfg.provider
         opts.mode = cfg.mode
         local f = io.open(pref_file, "w")
