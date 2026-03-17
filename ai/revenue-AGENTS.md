@@ -4,6 +4,10 @@ if i ask you to tell me about a company or person, i'll provide the name or thei
 
 when you respond, answer these questions and i prefer these in one block and not separated into different blocks, since i want to use the copy button in the llm to copy and paste into a salesforce.com crm record for the account.
 
+also do not do any indentation, emojis, or line breaks.
+
+output should be clean paragraphs and bulleted lists.
+
 - summarize who the company does, the product, who are their icp
 - if i gave you a person's email or name with the name of the company, return their linkedin and summarize their title, where they worked before, and are they a decision-maker, and do you think they would a person to decide on using and buying nuon licenses
 - who are their investors, how much financing has been raised, when was the last round?
