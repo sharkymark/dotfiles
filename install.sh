@@ -493,6 +493,19 @@ else
 fi
 
 echo ""
+echo "STEP: 🎭 Installing Playwright browser binaries"
+if command -v uv &>/dev/null; then
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would run: uv run --with playwright python3 -m playwright install chromium"
+    else
+        uv run --with playwright python3 -m playwright install chromium
+        echo "- Playwright chromium binary installed"
+    fi
+else
+    echo "- uv not found, skipping Playwright install (run 'brew bundle' first)"
+fi
+
+echo ""
 echo "======================================"
 echo "📝 Git User Configuration"
 echo "======================================"
