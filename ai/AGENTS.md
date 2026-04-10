@@ -59,3 +59,14 @@ Simplicity First: Make every change as simple as possible. Impact minimal code.
 No Laziness: Find root causes. No temporary fixes. Senior developer standards.
 Minimal Impact: Changes should only touch what's necessary. Avoid introducing bugs.
 
+
+Output Formatting
+
+- no emojis or special characters used as bullets or decorators
+- no indentation
+- no extra blank lines between items
+- use plain hyphens (-) for bullet lists only, no other list markers
+- write in clean, dense paragraphs or flat hyphen-bulleted lists
+- do not use markdown headers, bold, italics, or any other markdown formatting
+- do not add any preamble, closing remarks, or meta-commentary about the output
+
