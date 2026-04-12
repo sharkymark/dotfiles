@@ -22,7 +22,10 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   echo ""
   brew bundle --file="$DOTFILES_PATH/brew/Brewfile"
   echo ""
-  echo "✅ All packages from Brewfile are now installed!"
+  echo "⬆️  Upgrading outdated packages..."
+  brew upgrade
+  echo ""
+  echo "✅ All packages from Brewfile are now installed and up to date!"
   echo "   Run 'brew list' to see what's installed"
 else
   echo "⚠️  Brewfile not found - skipping package installation"
