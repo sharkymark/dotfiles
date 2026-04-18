@@ -1,0 +1,4 @@
+enter_accept = false
+show_preview = true
+search_mode = "fuzzy"
+style = "compact"

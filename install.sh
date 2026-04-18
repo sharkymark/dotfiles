@@ -350,6 +350,33 @@ copy_starship_settings() {
     fi
 }
 
+copy_atuin_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local config_source="$dotfiles_dir/atuin/config.toml"
+    local atuin_config_dir="$HOME/.config/atuin"
+    local config_target="$atuin_config_dir/config.toml"
+
+    mkdir -p "$atuin_config_dir"
+
+    if [ -f "$config_source" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $config_source → $config_target"
+        else
+            if [ -f "$config_target" ]; then
+                cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "- backed up existing atuin config"
+            fi
+            if cp "$config_source" "$config_target"; then
+                echo "- copied Atuin config to $config_target"
+            else
+                echo "- failed to copy Atuin config to $config_target"
+            fi
+        fi
+    else
+        echo "- atuin/config.toml not found in $dotfiles_dir/atuin"
+    fi
+}
+
 copy_nvim_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local nvim_config_dir="$HOME/.config/nvim"
@@ -441,6 +468,14 @@ else
 fi
 
 echo ""
+echo "STEP: copying Atuin config"
+if command -v atuin &> /dev/null; then
+    copy_atuin_settings
+else
+    echo "Atuin is not installed. Skipping atuin config."
+fi
+
+echo ""
 echo "STEP: 💾 copying Neovim config"
 if command -v nvim &> /dev/null; then
     copy_nvim_settings
@@ -482,6 +517,8 @@ else
     cleanup_backups "$HOME" ".bash_profile"
     cleanup_backups "$HOME" ".zshrc"
     cleanup_backups "$HOME/.config/fish" "config.fish"
+    # Clean up Atuin config backups
+    cleanup_backups "$HOME/.config/atuin" "config.toml"
     # Clean up Ghostty config backups
     cleanup_backups "$HOME/.config/ghostty" "config"
     # Clean up Starship config backups
