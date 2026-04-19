@@ -55,4 +55,6 @@ WARP.md
 # https://claude.com/claude-code
 .claude/settings.local.json
 .claude/plans/
+CLAUDE.local.md
+.claude.json
 
