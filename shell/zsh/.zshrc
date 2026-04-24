@@ -25,6 +25,8 @@ alias nuonstage="nuon -f ~/.stage"
 # https://starship.rs/
 eval "$(starship init zsh)"
 
+# for email prospecting
+alias chrome-debug='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222'
 
 #prompt
 #PS1="%n@%m %1~ %# "
