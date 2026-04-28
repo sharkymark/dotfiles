@@ -23,7 +23,7 @@ alias nuonstage="nuon -f ~/.stage"
 
 # starship cross-shell prompt
 # https://starship.rs/
-eval "$(starship init zsh)"
+# eval "$(starship init zsh)"
 
 # for email prospecting
 chrome-debug() {
