@@ -1,3 +1,5 @@
+export PATH="/opt/homebrew/opt/node@24/bin:$PATH"
+
 # zsh configurations
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=999999
