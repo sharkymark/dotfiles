@@ -1,3 +1,5 @@
+fish_add_path /opt/homebrew/opt/node@24/bin
+
 # 2024-12-25 python vitual env display
 
 function fish_prompt
