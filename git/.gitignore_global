@@ -53,8 +53,8 @@ WARP.md
 .goose*
 
 # https://claude.com/claude-code
+.claude/
 .claude/settings.local.json
 .claude/plans/
 CLAUDE.local.md
 .claude.json
-
