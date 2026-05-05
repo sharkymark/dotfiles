@@ -66,6 +66,20 @@ else
 fi
 
 echo ""
+echo "STEP: copying revenue-AGENTS.md to Google Drive notes"
+GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/notes"
+if [ ! -d "$GDRIVE_NOTES" ]; then
+  echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
+elif [ ! -f "./ai/revenue-AGENTS.md" ]; then
+  echo "- skipping: ./ai/revenue-AGENTS.md not found"
+elif [ "$DRY_RUN" = true ]; then
+  echo "[DRY RUN] Would copy: ./ai/revenue-AGENTS.md → $GDRIVE_NOTES/AGENTS.md"
+else
+  cp "./ai/revenue-AGENTS.md" "$GDRIVE_NOTES/AGENTS.md"
+  echo "- copied revenue-AGENTS.md to $GDRIVE_NOTES/AGENTS.md"
+fi
+
+echo ""
 echo "STEP: 🔗 Symlinking AI configurations"
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would create symlinks for AI configurations"

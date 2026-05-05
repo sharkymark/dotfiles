@@ -34,6 +34,19 @@
 	},
 	"show_completions_on_input": true,
 
+	"project_panel": {
+		"dock": "left",
+	},
+	"outline_panel": {
+		"dock": "left",
+	},
+	"git_panel": {
+		"dock": "left",
+	},
+	"agent_panel": {
+		"dock": "right",
+	},
+
 	"languages": {
 		"Markdown": {
 			"show_completions_on_input": false,
