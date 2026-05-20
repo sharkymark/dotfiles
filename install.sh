@@ -740,14 +740,24 @@ else
 fi
 
 if [ "$REPO_CURRENT_READY" = true ]; then
+    REPO_CURRENT_DIRS_FILE="$REPO_CURRENT_DIR/directories.txt"
+    if [ ! -f "$REPO_CURRENT_DIRS_FILE" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would seed $REPO_CURRENT_DIRS_FILE with: \$HOME/Documents/dev_and_debug/src"
+        else
+            echo '$HOME/Documents/dev_and_debug/src' > "$REPO_CURRENT_DIRS_FILE"
+            echo "- seeded $REPO_CURRENT_DIRS_FILE"
+        fi
+    fi
+
     if [ ! -f "$REPO_CURRENT_SCRIPT" ]; then
         echo "- git_pull_all.sh missing in $REPO_CURRENT_DIR"
         record_step "repo-current" "failed" "git_pull_all.sh missing"
     elif [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] Would execute: $REPO_CURRENT_SCRIPT --summary-only"
+        echo "[DRY RUN] Would execute: (cd $REPO_CURRENT_DIR && ./git_pull_all.sh --summary-only)"
         record_step "repo-current" "dry-run"
     else
-        bash "$REPO_CURRENT_SCRIPT" --summary-only
+        ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only )
         REPO_CURRENT_RC=$?
         if [ "$REPO_CURRENT_RC" -eq 0 ]; then
             record_step "repo-current" "done"
