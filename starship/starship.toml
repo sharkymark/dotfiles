@@ -5,9 +5,9 @@ command_timeout = 5000
 
 # Disable everything noisy
 [aws]
-disabled = false
+disabled = true
 [gcloud]
-disabled = false
+disabled = true
 [kubernetes]
 disabled = true
 [golang]

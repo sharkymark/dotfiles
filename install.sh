@@ -17,6 +17,7 @@ export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Each entry is tab-separated: status<TAB>name<TAB>detail
 STEP_RESULTS=()
 BREW_CHANGES=""
+REPO_CURRENT_CHANGES=""
 BACKUP_DELETED_TOTAL=0
 
 record_step() {
@@ -887,6 +888,9 @@ if [ "$REPO_CURRENT_READY" = true ]; then
         REPO_CURRENT_OUT=$( ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only ) 2>&1 )
         REPO_CURRENT_RC=$?
         printf '%s\n' "$REPO_CURRENT_OUT"
+        REPO_CURRENT_CHANGES=$(printf '%s\n' "$REPO_CURRENT_OUT" \
+            | awk '/=== AFFECTED REPOSITORIES ===/,/^Finished processing directories\./' \
+            | sed '$d')
         # Parse footer lines emitted by git_pull_all.sh
         RC_PROCESSED=$(printf '%s\n' "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories processed:/ {print $2; exit}')
         RC_PULLED=$(printf '%s\n'    "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories with actual changes pulled:/ {print $2; exit}')
@@ -953,6 +957,14 @@ if [ -z "$BREW_CHANGES" ]; then
 else
     # Trim trailing newline if present
     printf '%s' "$BREW_CHANGES"
+fi
+
+echo ""
+echo "Repo-current changes:"
+if [ -z "$REPO_CURRENT_CHANGES" ]; then
+    echo "  (not run, or no affected repos)"
+else
+    printf '%s\n' "$REPO_CURRENT_CHANGES"
 fi
 
 echo ""
