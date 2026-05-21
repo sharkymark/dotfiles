@@ -2,8 +2,18 @@
 
 # Parse arguments
 DRY_RUN=false
-if [[ "$1" == "--dry-run" ]] || [[ "$1" == "-n" ]]; then
-    DRY_RUN=true
+SHOW_REPO_PATH=false
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run|-n)
+            DRY_RUN=true
+            ;;
+        --show-repo-path)
+            SHOW_REPO_PATH=true
+            ;;
+    esac
+done
+if [ "$DRY_RUN" = true ]; then
     echo "🔍 DRY RUN MODE - No files will be modified"
     echo ""
 fi
@@ -774,34 +784,11 @@ else
 fi
 
 echo ""
-echo "STEP: 🎭 Installing Playwright browser binaries"
-if command -v uv &>/dev/null; then
-    if [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] Would run: uv run --with playwright python3 -m playwright install chromium"
-        record_step "Playwright (chromium)" "dry-run" "would install chromium"
-    else
-        PLAYWRIGHT_OUT=$(uv run --with playwright python3 -m playwright install chromium 2>&1)
-        PLAYWRIGHT_RC=$?
-        printf '%s\n' "$PLAYWRIGHT_OUT"
-        echo "- Playwright chromium binary installed"
-        if [ "$PLAYWRIGHT_RC" -eq 0 ]; then
-            if printf '%s' "$PLAYWRIGHT_OUT" | grep -q "is already installed"; then
-                record_step "Playwright (chromium)" "done" "chromium (already installed)"
-            else
-                record_step "Playwright (chromium)" "done" "chromium installed"
-            fi
-        else
-            record_step "Playwright (chromium)" "failed" "exit $PLAYWRIGHT_RC"
-        fi
-    fi
-else
-    echo "- uv not found, skipping Playwright install (run 'brew bundle' first)"
-    record_step "Playwright (chromium)" "skipped" "uv not installed"
-fi
-
-echo ""
 echo "STEP: 🔄 Keeping sibling repos current (repo-current)"
-REPO_CURRENT_DIR="$DOTFILES_PATH/../repo-current"
+# Resolve the parent of dotfiles to a clean absolute path so the displayed
+# repo-current location doesn't include a literal "..".
+REPO_CURRENT_PARENT="$(cd "$DOTFILES_PATH/.." && pwd)"
+REPO_CURRENT_DIR="$REPO_CURRENT_PARENT/repo-current"
 REPO_CURRENT_SCRIPT="$REPO_CURRENT_DIR/git_pull_all.sh"
 REPO_CURRENT_URL="https://github.com/sharkymark/repo-current.git"
 REPO_CURRENT_FRESH_CLONE=false
@@ -855,14 +842,30 @@ if [ "$REPO_CURRENT_READY" = true ]; then
 
     # Validate directories.txt entries against the real filesystem.
     # Do NOT overwrite the file when it pre-existed — those are user customizations.
+    # With --show-repo-path, also build a repo-name -> full-path map (with $HOME
+    # collapsed to ~) so we can rewrite git_pull_all.sh's basename-only output
+    # to show each repo's full directory path.
     REPO_CURRENT_VALID=0
     REPO_CURRENT_INVALID=0
+    REPO_CURRENT_MAP=""
+    [ "$SHOW_REPO_PATH" = true ] && REPO_CURRENT_MAP=$(mktemp -t repo-current-map.XXXXXX)
     if [ -f "$REPO_CURRENT_DIRS_FILE" ]; then
         while IFS= read -r raw || [ -n "$raw" ]; do
             case "$raw" in ''|\#*) continue;; esac
             expanded=$(eval echo "$raw")
             if [ -d "$expanded" ]; then
                 REPO_CURRENT_VALID=$((REPO_CURRENT_VALID + 1))
+                if [ "$SHOW_REPO_PATH" = true ]; then
+                    while IFS= read -r -d '' git_dir; do
+                        repo_dir=$(dirname "$git_dir")
+                        repo_name=$(basename "$repo_dir")
+                        case "$repo_dir" in
+                            "$HOME"/*) display_path="~${repo_dir#$HOME}" ;;
+                            *) display_path="$repo_dir" ;;
+                        esac
+                        printf '%s\t%s\n' "$repo_name" "$display_path" >> "$REPO_CURRENT_MAP"
+                    done < <(find "$expanded" -type d -name .git -print0 2>/dev/null)
+                fi
             else
                 REPO_CURRENT_INVALID=$((REPO_CURRENT_INVALID + 1))
             fi
@@ -887,6 +890,31 @@ if [ "$REPO_CURRENT_READY" = true ]; then
     else
         REPO_CURRENT_OUT=$( ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only ) 2>&1 )
         REPO_CURRENT_RC=$?
+        if [ "$SHOW_REPO_PATH" = true ]; then
+            # Rewrite "  - <repo>  <url>" lines inside AFFECTED REPOSITORIES to
+            # "  - <full-path>  <url>" so each repo's location is unambiguous.
+            REPO_CURRENT_OUT=$(printf '%s\n' "$REPO_CURRENT_OUT" | awk -v map="$REPO_CURRENT_MAP" '
+                BEGIN {
+                    while ((getline line < map) > 0) {
+                        tab = index(line, "\t")
+                        if (tab > 0) m[substr(line, 1, tab - 1)] = substr(line, tab + 1)
+                    }
+                    close(map)
+                }
+                /^=== AFFECTED REPOSITORIES ===/ { in_affected = 1 }
+                /^Finished processing directories\./ { in_affected = 0 }
+                {
+                    if (in_affected && substr($0, 1, 4) == "  - ") {
+                        rest = substr($0, 5)
+                        sp = index(rest, " ")
+                        if (sp > 0) { name = substr(rest, 1, sp - 1); tail = substr(rest, sp) }
+                        else        { name = rest; tail = "" }
+                        if (name in m) { print "  - " m[name] tail; next }
+                    }
+                    print
+                }
+            ')
+        fi
         printf '%s\n' "$REPO_CURRENT_OUT"
         REPO_CURRENT_CHANGES=$(printf '%s\n' "$REPO_CURRENT_OUT" \
             | awk '/=== AFFECTED REPOSITORIES ===/,/^Finished processing directories\./' \
@@ -904,6 +932,7 @@ if [ "$REPO_CURRENT_READY" = true ]; then
             record_step "repo-current" "failed" "exit $REPO_CURRENT_RC ($REPO_CURRENT_DETAIL)"
         fi
     fi
+    [ -n "$REPO_CURRENT_MAP" ] && rm -f "$REPO_CURRENT_MAP"
 fi
 
 echo ""
