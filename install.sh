@@ -17,6 +17,7 @@ export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Each entry is tab-separated: status<TAB>name<TAB>detail
 STEP_RESULTS=()
 BREW_CHANGES=""
+BACKUP_DELETED_TOTAL=0
 
 record_step() {
     # Usage: record_step <name> <status> [detail]
@@ -26,6 +27,25 @@ record_step() {
     STEP_RESULTS+=("${status}"$'\t'"${name}"$'\t'"${detail}")
 }
 
+# Sets COPY_BACKUP=true if target exists before the copy, false otherwise.
+# Call BEFORE the cp so we can report whether a backup was made.
+detect_backup() {
+    local target="$1"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        COPY_BACKUP=true
+    else
+        COPY_BACKUP=false
+    fi
+}
+
+copy_detail() {
+    if [ "$COPY_BACKUP" = true ]; then
+        echo "copied (backup made)"
+    else
+        echo "copied (first run)"
+    fi
+}
+
 echo ""
 echo "STEP: 🍺 setting up Homebrew packages"
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -33,7 +53,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         if [ "$DRY_RUN" = true ]; then
             echo "[DRY RUN] Would execute: brew/brew.sh"
             BREW_CHANGES="  (dry-run, not measured)"$'\n'
-            record_step "Homebrew packages" "dry-run"
+            record_step "Homebrew packages" "dry-run" "would run brew bundle"
         else
             if command -v brew &> /dev/null; then
                 BREW_BEFORE_FORMULA=$(brew list --formula --versions 2>/dev/null | sort)
@@ -50,34 +70,55 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
                 BREW_INSTALLED_COUNT=0
                 BREW_UPGRADED_COUNT=0
                 BREW_CHANGES=""
+                # bash 3.2 safe: no associative arrays. Diff against the sorted
+                # `brew list --versions` snapshots taken before/after brew bundle.
                 diff_brew_kind() {
                     # $1 = kind label (formula/cask), $2 = before list, $3 = after list
                     local kind="$1"
                     local before="$2"
                     local after="$3"
-                    declare -A before_versions
-                    while IFS= read -r line; do
-                        [ -z "$line" ] && continue
-                        local name="${line%% *}"
-                        local versions="${line#* }"
-                        before_versions["$name"]="$versions"
-                    done <<< "$before"
-                    while IFS= read -r line; do
-                        [ -z "$line" ] && continue
-                        local name="${line%% *}"
-                        local versions="${line#* }"
-                        if [ -z "${before_versions[$name]+x}" ]; then
+                    local before_names after_names newly_installed
+                    local line name versions before_line before_versions
+                    before_names=$(printf '%s\n' "$before" | awk 'NF{print $1}' | sort -u)
+                    after_names=$(printf '%s\n'  "$after"  | awk 'NF{print $1}' | sort -u)
+                    # New installs: names in after but not in before
+                    newly_installed=$(comm -13 <(printf '%s\n' "$before_names") <(printf '%s\n' "$after_names"))
+                    if [ -n "$newly_installed" ]; then
+                        while IFS= read -r name; do
+                            [ -z "$name" ] && continue
+                            versions=$(printf '%s\n' "$after" | awk -v n="$name" '$1==n {$1=""; sub(/^ /,""); print; exit}')
                             BREW_CHANGES+="  installed: ${name} ${versions} (${kind})"$'\n'
                             BREW_INSTALLED_COUNT=$((BREW_INSTALLED_COUNT + 1))
-                        elif [ "${before_versions[$name]}" != "$versions" ]; then
-                            BREW_CHANGES+="  upgraded:  ${name} ${before_versions[$name]} -> ${versions} (${kind})"$'\n'
-                            BREW_UPGRADED_COUNT=$((BREW_UPGRADED_COUNT + 1))
+                        done <<< "$newly_installed"
+                    fi
+                    # Upgrades: name in both, version column differs
+                    while IFS= read -r line; do
+                        [ -z "$line" ] && continue
+                        name="${line%% *}"
+                        versions="${line#* }"
+                        if printf '%s\n' "$before_names" | grep -Fxq -- "$name"; then
+                            before_line=$(printf '%s\n' "$before" | awk -v n="$name" '$1==n {print; exit}')
+                            before_versions="${before_line#* }"
+                            if [ "$before_versions" != "$versions" ]; then
+                                BREW_CHANGES+="  upgraded:  ${name} ${before_versions} -> ${versions} (${kind})"$'\n'
+                                BREW_UPGRADED_COUNT=$((BREW_UPGRADED_COUNT + 1))
+                            fi
                         fi
                     done <<< "$after"
                 }
                 diff_brew_kind "formula" "$BREW_BEFORE_FORMULA" "$BREW_AFTER_FORMULA"
                 diff_brew_kind "cask" "$BREW_BEFORE_CASK" "$BREW_AFTER_CASK"
-                BREW_DETAIL="${BREW_INSTALLED_COUNT} installed, ${BREW_UPGRADED_COUNT} upgraded"
+                BREW_CHANGED_NAMES=$(printf '%s' "$BREW_CHANGES" \
+                    | awk '/^  (installed|upgraded)/ {print $2}' \
+                    | awk '!seen[$0]++' \
+                    | paste -sd, -)
+                if [ "$BREW_INSTALLED_COUNT" -eq 0 ] && [ "$BREW_UPGRADED_COUNT" -eq 0 ]; then
+                    BREW_DETAIL="no changes"
+                elif [ -n "$BREW_CHANGED_NAMES" ]; then
+                    BREW_DETAIL="${BREW_UPGRADED_COUNT} upgraded, ${BREW_INSTALLED_COUNT} installed (${BREW_CHANGED_NAMES})"
+                else
+                    BREW_DETAIL="${BREW_UPGRADED_COUNT} upgraded, ${BREW_INSTALLED_COUNT} installed"
+                fi
             else
                 BREW_CHANGES="(brew not available after install)"
                 BREW_DETAIL="brew unavailable"
@@ -101,22 +142,24 @@ echo ""
 echo "STEP: 💾 copying .gitignore_global"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./git/.gitignore_global → ~/.gitignore_global"
-    record_step ".gitignore_global" "dry-run"
+    record_step ".gitignore_global" "dry-run" "would copy"
 else
+    detect_backup "$HOME/.gitignore_global"
     cp ./git/.gitignore_global ~
     echo "- copied .gitignore_global to $HOME"
-    record_step ".gitignore_global" "done"
+    record_step ".gitignore_global" "done" "$(copy_detail)"
 fi
 
 echo ""
 echo "STEP: 💾 copying prettier formatting files"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./prettier/.prettierrc → ~/.prettierrc"
-    record_step "Prettier config" "dry-run"
+    record_step "Prettier config" "dry-run" "would copy"
 else
+    detect_backup "$HOME/.prettierrc"
     cp ./prettier/.prettierrc ~
     echo "- copied .prettierrc 🎨 to $HOME"
-    record_step "Prettier config" "done"
+    record_step "Prettier config" "done" "$(copy_detail)"
 fi
 
 echo ""
@@ -124,8 +167,9 @@ echo "STEP: 🤖 Installing Agent Definitions (AGENTS.md)"
 if [ -f "./ai/AGENTS.md" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./ai/AGENTS.md → ~/AGENTS.md"
-    record_step "AGENTS.md" "dry-run"
+    record_step "AGENTS.md" "dry-run" "would copy"
   else
+    detect_backup "$HOME/AGENTS.md"
     # Backup existing AGENTS.md if it exists
     if [ -f "$HOME/AGENTS.md" ]; then
       cp "$HOME/AGENTS.md" "$HOME/AGENTS.md.backup.$(date +%Y%m%d_%H%M%S)"
@@ -133,7 +177,7 @@ if [ -f "./ai/AGENTS.md" ]; then
     fi
     cp "./ai/AGENTS.md" "$HOME/AGENTS.md"
     echo "- copied AGENTS.md to $HOME"
-    record_step "AGENTS.md" "done"
+    record_step "AGENTS.md" "done" "$(copy_detail)"
   fi
 else
   echo "- AGENTS.md not found in ./ai/"
@@ -151,24 +195,27 @@ elif [ ! -f "./ai/revenue-AGENTS.md" ]; then
   record_step "revenue-AGENTS.md -> Gdrive" "skipped" "source missing"
 elif [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would copy: ./ai/revenue-AGENTS.md → $GDRIVE_NOTES/AGENTS.md"
-  record_step "revenue-AGENTS.md -> Gdrive" "dry-run"
+  record_step "revenue-AGENTS.md -> Gdrive" "dry-run" "would copy to Gdrive"
 else
+  detect_backup "$GDRIVE_NOTES/AGENTS.md"
   cp "./ai/revenue-AGENTS.md" "$GDRIVE_NOTES/AGENTS.md"
   echo "- copied revenue-AGENTS.md to $GDRIVE_NOTES/AGENTS.md"
-  record_step "revenue-AGENTS.md -> Gdrive" "done"
+  record_step "revenue-AGENTS.md -> Gdrive" "done" "$(copy_detail)"
 fi
 
 echo ""
 echo "STEP: 🔗 Symlinking AI configurations"
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would create symlinks for AI configurations"
-  record_step "AI config symlinks" "dry-run"
+  record_step "AI config symlinks" "dry-run" "CLAUDE.md, GEMINI.md"
 else
+  SYMLINK_REPLACED=0
   # Ensure ~/.claude directory exists
   mkdir -p "$HOME/.claude"
   # Remove existing CLAUDE.md if it's a file, to replace with symlink
   if [ -f "$HOME/.claude/CLAUDE.md" ]; then
     rm "$HOME/.claude/CLAUDE.md"
+    SYMLINK_REPLACED=$((SYMLINK_REPLACED + 1))
     echo "- removed old ~/.claude/CLAUDE.md file"
   fi
   # Create symlink for CLAUDE.md
@@ -180,12 +227,13 @@ else
   # Remove existing GEMINI.md if it's a file, to replace with symlink (assuming it might exist from previous manual setup)
   if [ -f "$HOME/.gemini/GEMINI.md" ]; then
     rm "$HOME/.gemini/GEMINI.md"
+    SYMLINK_REPLACED=$((SYMLINK_REPLACED + 1))
     echo "- removed old ~/.gemini/GEMINI.md file"
   fi
   # Create symlink for GEMINI.md
   ln -sf "$HOME/AGENTS.md" "$HOME/.gemini/GEMINI.md"
   echo "- symlinked ~/.gemini/GEMINI.md to ~/AGENTS.md"
-  record_step "AI config symlinks" "done"
+  record_step "AI config symlinks" "done" "CLAUDE.md, GEMINI.md (${SYMLINK_REPLACED} replaced)"
 fi
 
 echo ""
@@ -197,8 +245,9 @@ mkdir -p "$HOME/.claude"
 if [ -f "./.claude/settings.json" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./.claude/settings.json → ~/.claude/settings.json"
-    record_step "Claude Code settings.json" "dry-run"
+    record_step "Claude Code settings.json" "dry-run" "would copy"
   else
+    detect_backup "$HOME/.claude/settings.json"
     # Backup existing settings.json if it exists
     if [ -f "$HOME/.claude/settings.json" ]; then
       cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup.$(date +%Y%m%d_%H%M%S)"
@@ -207,7 +256,7 @@ if [ -f "./.claude/settings.json" ]; then
     cp ./.claude/settings.json "$HOME/.claude/settings.json"
     echo "- copied settings.json to ~/.claude/"
     echo "- NOTE: You'll need to restart Claude Code for settings to take effect"
-    record_step "Claude Code settings.json" "done"
+    record_step "Claude Code settings.json" "done" "$(copy_detail)"
   fi
 else
   echo "- settings.json not found in ./.claude/"
@@ -223,8 +272,9 @@ mkdir -p "$HOME/.gemini"
 if [ -f "./ai/gemini_settings.json" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./ai/gemini_settings.json → ~/.gemini/settings.json"
-    record_step "Gemini settings.json" "dry-run"
+    record_step "Gemini settings.json" "dry-run" "would copy"
   else
+    detect_backup "$HOME/.gemini/settings.json"
     # Backup existing settings.json if it exists
     if [ -f "$HOME/.gemini/settings.json" ]; then
       cp "$HOME/.gemini/settings.json" "$HOME/.gemini/settings.json.backup.$(date +%Y%m%d_%H%M%S)"
@@ -232,7 +282,7 @@ if [ -f "./ai/gemini_settings.json" ]; then
     fi
     cp "./ai/gemini_settings.json" "$HOME/.gemini/settings.json"
     echo "- copied gemini_settings.json to ~/.gemini/"
-    record_step "Gemini settings.json" "done"
+    record_step "Gemini settings.json" "done" "$(copy_detail)"
   fi
 else
   echo "- gemini_settings.json not found in ./ai/"
@@ -252,18 +302,21 @@ if [ "$SHELL" == "/bin/bash" ]; then
     echo "[DRY RUN] Would copy: ./shell/bash/.bash_profile → ~/.bash_profile"
     SHELL_DRY_RUN_USED=true
   else
+    BASH_HAD_BACKUP=false
     if [ -f "$HOME/.bashrc" ]; then
       cp "$HOME/.bashrc" "$HOME/.bashrc.backup.$(date +%Y%m%d_%H%M%S)"
       echo "- backed up existing .bashrc"
+      BASH_HAD_BACKUP=true
     fi
     if [ -f "$HOME/.bash_profile" ]; then
       cp "$HOME/.bash_profile" "$HOME/.bash_profile.backup.$(date +%Y%m%d_%H%M%S)"
       echo "- backed up existing .bash_profile"
+      BASH_HAD_BACKUP=true
     fi
     cp ./shell/bash/.bashrc $HOME/.bashrc
     cp ./shell/bash/.bash_profile $HOME/.bash_profile
     echo "- copied bash 👾 configuration files to $HOME"
-    SHELL_COPIED+=("bash")
+    if [ "$BASH_HAD_BACKUP" = true ]; then SHELL_COPIED+=("bash (backup)"); else SHELL_COPIED+=("bash (first run)"); fi
   fi
 fi
 
@@ -273,13 +326,15 @@ if [ "$SHELL" == "/bin/zsh" ]; then
     echo "[DRY RUN] Would copy: ./shell/zsh/.zshrc → ~/.zshrc"
     SHELL_DRY_RUN_USED=true
   else
+    ZSH_HAD_BACKUP=false
     if [ -f "$HOME/.zshrc" ]; then
       cp "$HOME/.zshrc" "$HOME/.zshrc.backup.$(date +%Y%m%d_%H%M%S)"
       echo "- backed up existing .zshrc"
+      ZSH_HAD_BACKUP=true
     fi
     cp ./shell/zsh/.zshrc $HOME/.zshrc
     echo "- copied zsh 🍎 configuration files to $HOME"
-    SHELL_COPIED+=("zsh")
+    if [ "$ZSH_HAD_BACKUP" = true ]; then SHELL_COPIED+=("zsh (backup)"); else SHELL_COPIED+=("zsh (first run)"); fi
   fi
 fi
 
@@ -289,13 +344,15 @@ if command -v fish &> /dev/null; then
     echo "[DRY RUN] Would copy: ./shell/fish/config.fish → ~/.config/fish/config.fish"
     SHELL_DRY_RUN_USED=true
   else
+    FISH_HAD_BACKUP=false
     if [ -f "$HOME/.config/fish/config.fish" ]; then
       cp "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.backup.$(date +%Y%m%d_%H%M%S)"
       echo "- backed up existing config.fish"
+      FISH_HAD_BACKUP=true
     fi
     cp ./shell/fish/config.fish $HOME/.config/fish/config.fish
     echo "- copied fish 🐟 configuration files to $HOME/.config/fish"
-    SHELL_COPIED+=("fish")
+    if [ "$FISH_HAD_BACKUP" = true ]; then SHELL_COPIED+=("fish (backup)"); else SHELL_COPIED+=("fish (first run)"); fi
   fi
 fi
 
@@ -305,7 +362,7 @@ if [ "$SHELL" != "/bin/bash" ] && [ "$SHELL" != "/bin/zsh" ] && ! command -v fis
 fi
 
 if [ "$DRY_RUN" = true ] && [ "$SHELL_DRY_RUN_USED" = true ]; then
-  record_step "Shell configs" "dry-run"
+  record_step "Shell configs" "dry-run" "would copy shell rc files"
 elif [ "${#SHELL_COPIED[@]}" -gt 0 ]; then
   record_step "Shell configs" "done" "$(IFS=, ; echo "${SHELL_COPIED[*]}")"
 else
@@ -421,6 +478,7 @@ copy_ghostty_settings() {
     local config_target="$ghostty_config_dir/config"
 
     mkdir -p "$ghostty_config_dir"
+    COPY_BACKUP=false
 
     if [ -f "$config_source" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -429,6 +487,7 @@ copy_ghostty_settings() {
             if [ -f "$config_target" ]; then
                 cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
                 echo "- backed up existing ghostty config"
+                COPY_BACKUP=true
             fi
             if cp "$config_source" "$config_target"; then
                 echo "- copied Ghostty config to $config_target"
@@ -447,6 +506,7 @@ copy_starship_settings() {
     local config_target="$HOME/.config/starship.toml"
 
     mkdir -p "$HOME/.config"
+    COPY_BACKUP=false
 
     if [ -f "$config_source" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -455,6 +515,7 @@ copy_starship_settings() {
             if [ -f "$config_target" ]; then
                 cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
                 echo "- backed up existing starship config"
+                COPY_BACKUP=true
             fi
             if cp "$config_source" "$config_target"; then
                 echo "- copied Starship config to $config_target"
@@ -474,6 +535,7 @@ copy_atuin_settings() {
     local config_target="$atuin_config_dir/config.toml"
 
     mkdir -p "$atuin_config_dir"
+    COPY_BACKUP=false
 
     if [ -f "$config_source" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -482,6 +544,7 @@ copy_atuin_settings() {
             if [ -f "$config_target" ]; then
                 cp "$config_target" "$config_target.backup.$(date +%Y%m%d_%H%M%S)"
                 echo "- backed up existing atuin config"
+                COPY_BACKUP=true
             fi
             if cp "$config_source" "$config_target"; then
                 echo "- copied Atuin config to $config_target"
@@ -500,6 +563,8 @@ copy_nvim_settings() {
     local nvim_files=("init.lua" "lazy-lock.json" ".avante_pref")
 
     mkdir -p "$nvim_config_dir"
+    NVIM_FILES_COPIED=0
+    NVIM_BACKUPS=0
 
     for file in "${nvim_files[@]}"; do
         local source="$dotfiles_dir/nvim/$file"
@@ -512,9 +577,11 @@ copy_nvim_settings() {
                 if [ -f "$target" ]; then
                     cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
                     echo "- backed up existing $file"
+                    NVIM_BACKUPS=$((NVIM_BACKUPS + 1))
                 fi
                 if cp "$source" "$target"; then
                     echo "- copied $file to $nvim_config_dir/"
+                    NVIM_FILES_COPIED=$((NVIM_FILES_COPIED + 1))
                 else
                     echo "- failed to copy $file to $nvim_config_dir/"
                 fi
@@ -547,6 +614,7 @@ cleanup_backups() {
             else
                 rm "${backup_files[i]}"
                 echo "  Deleted: ${backup_files[i]}"
+                BACKUP_DELETED_TOTAL=$((BACKUP_DELETED_TOTAL + 1))
             fi
         done
     fi
@@ -557,9 +625,9 @@ echo "STEP: 💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "VS Code configs" "dry-run"
+        record_step "VS Code configs" "dry-run" "would copy settings.json, extensions.json"
     else
-        record_step "VS Code configs" "done"
+        record_step "VS Code configs" "done" "settings.json, extensions.json"
     fi
 else
     echo "Installation of VS Code settings.json skipped due to VS Code not being installed."
@@ -571,9 +639,9 @@ echo "STEP: 💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "Zed configs" "dry-run"
+        record_step "Zed configs" "dry-run" "would copy settings.json, keymap.json"
     else
-        record_step "Zed configs" "done"
+        record_step "Zed configs" "done" "settings.json, keymap.json"
     fi
 else
     echo "Zed is not installed. Installation of Zed settings.json skipped."
@@ -585,9 +653,9 @@ echo "STEP: 👻 copying Ghostty terminal config"
 if brew list --cask ghostty &> /dev/null 2>&1; then
     copy_ghostty_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "Ghostty config" "dry-run"
+        record_step "Ghostty config" "dry-run" "would copy"
     else
-        record_step "Ghostty config" "done"
+        record_step "Ghostty config" "done" "$(copy_detail)"
     fi
 else
     echo "Ghostty is not installed. Skipping ghostty config."
@@ -599,9 +667,9 @@ echo "STEP: 🚀 copying Starship prompt config"
 if command -v starship &> /dev/null; then
     copy_starship_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "Starship config" "dry-run"
+        record_step "Starship config" "dry-run" "would copy"
     else
-        record_step "Starship config" "done"
+        record_step "Starship config" "done" "$(copy_detail)"
     fi
 else
     echo "Starship is not installed. Skipping starship config."
@@ -613,9 +681,9 @@ echo "STEP: copying Atuin config"
 if command -v atuin &> /dev/null; then
     copy_atuin_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "Atuin config" "dry-run"
+        record_step "Atuin config" "dry-run" "would copy"
     else
-        record_step "Atuin config" "done"
+        record_step "Atuin config" "done" "$(copy_detail)"
     fi
 else
     echo "Atuin is not installed. Skipping atuin config."
@@ -627,9 +695,9 @@ echo "STEP: 💾 copying Neovim config"
 if command -v nvim &> /dev/null; then
     copy_nvim_settings
     if [ "$DRY_RUN" = true ]; then
-        record_step "Neovim config" "dry-run"
+        record_step "Neovim config" "dry-run" "would copy 3 files"
     else
-        record_step "Neovim config" "done"
+        record_step "Neovim config" "done" "${NVIM_FILES_COPIED} copied, ${NVIM_BACKUPS} backed up"
     fi
 else
     echo "Neovim is not installed. Skipping Neovim configuration."
@@ -642,13 +710,21 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
             echo "[DRY RUN] Would execute: mac/macos.sh"
-            record_step "macOS defaults" "dry-run"
+            record_step "macOS defaults" "dry-run" "would apply system settings"
         else
-            bash "$DOTFILES_PATH/mac/macos.sh"
-            if [ $? -eq 0 ]; then
-                record_step "macOS defaults" "done"
+            MACOS_OUT=$(bash "$DOTFILES_PATH/mac/macos.sh" 2>&1)
+            MACOS_RC=$?
+            printf '%s\n' "$MACOS_OUT"
+            if [ "$MACOS_RC" -eq 0 ]; then
+                MACOS_APPLIED=$(printf '%s\n' "$MACOS_OUT" | grep -c '^✅')
+                MACOS_NAMES=$(printf '%s\n' "$MACOS_OUT" | grep '^✅' | sed -E 's/^✅ //; s/ *\([^)]*\)$//' | paste -sd, -)
+                if [ -n "$MACOS_NAMES" ]; then
+                    record_step "macOS defaults" "done" "${MACOS_APPLIED} applied: ${MACOS_NAMES}"
+                else
+                    record_step "macOS defaults" "done" "${MACOS_APPLIED} applied"
+                fi
             else
-                record_step "macOS defaults" "failed" "macos.sh non-zero exit"
+                record_step "macOS defaults" "failed" "macos.sh exit $MACOS_RC"
             fi
         fi
     else
@@ -664,7 +740,7 @@ echo ""
 echo "STEP: 🧹 Cleaning up old backups"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would clean up old backup files, keeping only the 2 most recent."
-    record_step "Backup cleanup" "dry-run"
+    record_step "Backup cleanup" "dry-run" "would clean old backups"
 else
     # Clean up AGENTS.md backups
     cleanup_backups "$HOME" "AGENTS.md"
@@ -689,7 +765,11 @@ else
     cleanup_backups "$HOME/.config/nvim" "init.lua"
     cleanup_backups "$HOME/.config/nvim" "lazy-lock.json"
     cleanup_backups "$HOME/.config/nvim" ".avante_pref"
-    record_step "Backup cleanup" "done"
+    if [ "$BACKUP_DELETED_TOTAL" -eq 0 ]; then
+        record_step "Backup cleanup" "done" "nothing to clean"
+    else
+        record_step "Backup cleanup" "done" "${BACKUP_DELETED_TOTAL} old backups deleted"
+    fi
 fi
 
 echo ""
@@ -697,13 +777,18 @@ echo "STEP: 🎭 Installing Playwright browser binaries"
 if command -v uv &>/dev/null; then
     if [ "$DRY_RUN" = true ]; then
         echo "[DRY RUN] Would run: uv run --with playwright python3 -m playwright install chromium"
-        record_step "Playwright (chromium)" "dry-run"
+        record_step "Playwright (chromium)" "dry-run" "would install chromium"
     else
-        uv run --with playwright python3 -m playwright install chromium
+        PLAYWRIGHT_OUT=$(uv run --with playwright python3 -m playwright install chromium 2>&1)
         PLAYWRIGHT_RC=$?
+        printf '%s\n' "$PLAYWRIGHT_OUT"
         echo "- Playwright chromium binary installed"
         if [ "$PLAYWRIGHT_RC" -eq 0 ]; then
-            record_step "Playwright (chromium)" "done"
+            if printf '%s' "$PLAYWRIGHT_OUT" | grep -q "is already installed"; then
+                record_step "Playwright (chromium)" "done" "chromium (already installed)"
+            else
+                record_step "Playwright (chromium)" "done" "chromium installed"
+            fi
         else
             record_step "Playwright (chromium)" "failed" "exit $PLAYWRIGHT_RC"
         fi
@@ -718,10 +803,16 @@ echo "STEP: 🔄 Keeping sibling repos current (repo-current)"
 REPO_CURRENT_DIR="$DOTFILES_PATH/../repo-current"
 REPO_CURRENT_SCRIPT="$REPO_CURRENT_DIR/git_pull_all.sh"
 REPO_CURRENT_URL="https://github.com/sharkymark/repo-current.git"
+REPO_CURRENT_FRESH_CLONE=false
+# Hardcoded default scan path. Stored as a literal string with $HOME so
+# git_pull_all.sh expands it at read time. Edit directories.txt after the
+# first run if your dev tree lives somewhere else on a given Mac.
+REPO_CURRENT_PREFERRED_PATH='$HOME/Documents/dev_and_debug/src'
 
 if [ ! -d "$REPO_CURRENT_DIR" ]; then
     if [ "$DRY_RUN" = true ]; then
         echo "[DRY RUN] Would clone $REPO_CURRENT_URL into $REPO_CURRENT_DIR"
+        echo "[DRY RUN] Would set directories.txt to: $REPO_CURRENT_PREFERRED_PATH"
         record_step "repo-current" "dry-run" "would clone"
         REPO_CURRENT_READY=false
     else
@@ -729,6 +820,7 @@ if [ ! -d "$REPO_CURRENT_DIR" ]; then
         if git clone "$REPO_CURRENT_URL" "$REPO_CURRENT_DIR"; then
             echo "- cloned repo-current"
             REPO_CURRENT_READY=true
+            REPO_CURRENT_FRESH_CLONE=true
         else
             echo "- failed to clone repo-current"
             record_step "repo-current" "failed" "clone failed"
@@ -736,33 +828,76 @@ if [ ! -d "$REPO_CURRENT_DIR" ]; then
         fi
     fi
 else
+    echo "- using existing repo-current at $REPO_CURRENT_DIR (re-using your directories.txt)"
     REPO_CURRENT_READY=true
 fi
 
 if [ "$REPO_CURRENT_READY" = true ]; then
     REPO_CURRENT_DIRS_FILE="$REPO_CURRENT_DIR/directories.txt"
-    if [ ! -f "$REPO_CURRENT_DIRS_FILE" ]; then
+
+    if [ "$REPO_CURRENT_FRESH_CLONE" = true ]; then
+        # We just cloned, so directories.txt is the upstream generic default
+        # ($HOME/Documents/src) that doesn't fit our layout. Replace it with
+        # the actual sibling-repos root on this machine. Safe because we just
+        # created the file ourselves — no user customizations to destroy.
+        echo "$REPO_CURRENT_PREFERRED_PATH" > "$REPO_CURRENT_DIRS_FILE"
+        echo "- initialized $REPO_CURRENT_DIRS_FILE to scan: $REPO_CURRENT_PREFERRED_PATH"
+        echo "  (edit that file to add or change directories to scan)"
+    elif [ ! -f "$REPO_CURRENT_DIRS_FILE" ]; then
         if [ "$DRY_RUN" = true ]; then
-            echo "[DRY RUN] Would seed $REPO_CURRENT_DIRS_FILE with: \$HOME/Documents/dev_and_debug/src"
+            echo "[DRY RUN] Would seed $REPO_CURRENT_DIRS_FILE with: $REPO_CURRENT_PREFERRED_PATH"
         else
-            echo '$HOME/Documents/dev_and_debug/src' > "$REPO_CURRENT_DIRS_FILE"
-            echo "- seeded $REPO_CURRENT_DIRS_FILE"
+            echo "$REPO_CURRENT_PREFERRED_PATH" > "$REPO_CURRENT_DIRS_FILE"
+            echo "- seeded $REPO_CURRENT_DIRS_FILE with: $REPO_CURRENT_PREFERRED_PATH"
         fi
+    fi
+
+    # Validate directories.txt entries against the real filesystem.
+    # Do NOT overwrite the file when it pre-existed — those are user customizations.
+    REPO_CURRENT_VALID=0
+    REPO_CURRENT_INVALID=0
+    if [ -f "$REPO_CURRENT_DIRS_FILE" ]; then
+        while IFS= read -r raw || [ -n "$raw" ]; do
+            case "$raw" in ''|\#*) continue;; esac
+            expanded=$(eval echo "$raw")
+            if [ -d "$expanded" ]; then
+                REPO_CURRENT_VALID=$((REPO_CURRENT_VALID + 1))
+            else
+                REPO_CURRENT_INVALID=$((REPO_CURRENT_INVALID + 1))
+            fi
+        done < "$REPO_CURRENT_DIRS_FILE"
     fi
 
     if [ ! -f "$REPO_CURRENT_SCRIPT" ]; then
         echo "- git_pull_all.sh missing in $REPO_CURRENT_DIR"
         record_step "repo-current" "failed" "git_pull_all.sh missing"
+    elif [ "$REPO_CURRENT_VALID" -eq 0 ] && [ "$DRY_RUN" != true ]; then
+        echo "- WARNING: no valid directories found in $REPO_CURRENT_DIRS_FILE"
+        echo "  current contents:"
+        sed 's/^/    /' "$REPO_CURRENT_DIRS_FILE"
+        echo "  none of those paths exist on this machine."
+        echo "  To use this machine's standard layout, run:"
+        echo "    echo \"$REPO_CURRENT_PREFERRED_PATH\" > \"$REPO_CURRENT_DIRS_FILE\""
+        echo "  Then re-run install.sh."
+        record_step "repo-current" "skipped" "no valid dirs in directories.txt"
     elif [ "$DRY_RUN" = true ]; then
         echo "[DRY RUN] Would execute: (cd $REPO_CURRENT_DIR && ./git_pull_all.sh --summary-only)"
-        record_step "repo-current" "dry-run"
+        record_step "repo-current" "dry-run" "${REPO_CURRENT_VALID} valid dir(s)"
     else
-        ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only )
+        REPO_CURRENT_OUT=$( ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only ) 2>&1 )
         REPO_CURRENT_RC=$?
+        printf '%s\n' "$REPO_CURRENT_OUT"
+        # Parse footer lines emitted by git_pull_all.sh
+        RC_PROCESSED=$(printf '%s\n' "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories processed:/ {print $2; exit}')
+        RC_PULLED=$(printf '%s\n'    "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories with actual changes pulled:/ {print $2; exit}')
+        RC_UPTODATE=$(printf '%s\n'  "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories already up to date:/ {print $2; exit}')
+        RC_PROBLEMS=$(printf '%s\n'  "$REPO_CURRENT_OUT" | awk -F': ' '/^Total repositories with problems:/ {print $2; exit}')
+        : "${RC_PROCESSED:=?}"; : "${RC_PULLED:=0}"; : "${RC_UPTODATE:=0}"; : "${RC_PROBLEMS:=0}"
+        REPO_CURRENT_DETAIL="${RC_PULLED} updated, ${RC_UPTODATE} unchanged, ${RC_PROBLEMS} problems (of ${RC_PROCESSED})"
         if [ "$REPO_CURRENT_RC" -eq 0 ]; then
-            record_step "repo-current" "done"
+            record_step "repo-current" "done" "$REPO_CURRENT_DETAIL"
         else
-            record_step "repo-current" "failed" "exit $REPO_CURRENT_RC"
+            record_step "repo-current" "failed" "exit $REPO_CURRENT_RC ($REPO_CURRENT_DETAIL)"
         fi
     fi
 fi
