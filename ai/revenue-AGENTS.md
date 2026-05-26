@@ -29,4 +29,6 @@ if i say 'find more' it means find more contacts to prospect into, who have resp
 
 Check if the company is in Salesforce as an account, and add people as contacts. In the company background you gather, in the description field of the account, and the LinkedIn profile URL in the contact's description. Try and guess the email address and add, and only use the email finder if asked.
 
+if i ask you about a company, do the company research, check if in salesforce, if so, append/not replace the description, and if not, create the account with type Target Account and the appropriate Market Segment, web site URL, and look up tech leadership contacts, incl. their LinkedIn URLs, title, and email and add as contacts with Omit = true, Founder = false.
+
 i may ask you to recall information or summarize information from my google drive notes. use the nuon mcp server to access my google drive of txt note files.
