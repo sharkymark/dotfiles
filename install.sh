@@ -784,6 +784,64 @@ else
 fi
 
 echo ""
+echo "STEP: 🔑 Configuring SSH github.com keychain integration"
+# Adds a github.com block to ~/.ssh/config with UseKeychain + AddKeysToAgent so
+# the SSH key is auto-loaded into the system ssh-agent from macOS keychain on
+# first use after reboot/sleep. Intentionally omits IdentityFile so this is
+# portable across macs whose default key may be id_rsa, id_ed25519, etc. — ssh
+# will try the usual candidates and the keychain directives still do their job.
+# Block is delimited with markers so re-runs are idempotent.
+SSH_CONFIG="$HOME/.ssh/config"
+SSH_MARKER_START="# DOTFILES-MANAGED-START github.com"
+SSH_MARKER_END="# DOTFILES-MANAGED-END github.com"
+if [ "$DRY_RUN" = true ]; then
+    if [ -f "$SSH_CONFIG" ] && grep -qF "$SSH_MARKER_START" "$SSH_CONFIG"; then
+        echo "[DRY RUN] github.com block already present (dotfiles-managed) in $SSH_CONFIG"
+        record_step "SSH github.com block" "dry-run" "already present (managed)"
+    elif [ -f "$SSH_CONFIG" ] && grep -qiE '^[[:space:]]*Host[[:space:]]+([^#]*[[:space:]])?github\.com([[:space:]]|$)' "$SSH_CONFIG"; then
+        echo "[DRY RUN] existing manual github.com block detected in $SSH_CONFIG, would skip"
+        record_step "SSH github.com block" "dry-run" "manual block present"
+    else
+        echo "[DRY RUN] Would append github.com block to $SSH_CONFIG"
+        record_step "SSH github.com block" "dry-run" "would append"
+    fi
+else
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    if [ ! -f "$SSH_CONFIG" ]; then
+        touch "$SSH_CONFIG"
+        chmod 600 "$SSH_CONFIG"
+    fi
+    if grep -qF "$SSH_MARKER_START" "$SSH_CONFIG"; then
+        echo "- github.com block already present (dotfiles-managed), leaving $SSH_CONFIG untouched"
+        record_step "SSH github.com block" "done" "already present (managed)"
+    elif grep -qiE '^[[:space:]]*Host[[:space:]]+([^#]*[[:space:]])?github\.com([[:space:]]|$)' "$SSH_CONFIG"; then
+        echo "- existing manual github.com block detected in $SSH_CONFIG, leaving it untouched"
+        echo "  (to let install.sh manage it, replace it with the dotfiles-marked block)"
+        record_step "SSH github.com block" "skipped" "manual block present"
+    else
+        {
+            printf '\n%s\n' "$SSH_MARKER_START"
+            printf '# Added by dotfiles install.sh. Enables macOS keychain integration\n'
+            printf '# so the SSH key auto-loads on first use after reboot/sleep.\n'
+            printf 'Host github.com\n'
+            printf '    HostName github.com\n'
+            printf '    User git\n'
+            printf '    UseKeychain yes\n'
+            printf '    AddKeysToAgent yes\n'
+            printf '%s\n' "$SSH_MARKER_END"
+        } >> "$SSH_CONFIG"
+        echo "- appended github.com block to $SSH_CONFIG"
+        if command -v ssh-add &> /dev/null && ! ssh-add -l &> /dev/null; then
+            echo "- NOTE: ssh-agent has no keys loaded. Seed the keychain once with:"
+            echo "    ssh-add --apple-use-keychain ~/.ssh/id_rsa"
+            echo "    (or whichever key file lives in ~/.ssh, e.g. id_ed25519)"
+        fi
+        record_step "SSH github.com block" "done" "appended"
+    fi
+fi
+
+echo ""
 echo "STEP: 🔄 Keeping sibling repos current (repo-current)"
 # Resolve the parent of dotfiles to a clean absolute path so the displayed
 # repo-current location doesn't include a literal "..".
@@ -856,15 +914,14 @@ if [ "$REPO_CURRENT_READY" = true ]; then
             if [ -d "$expanded" ]; then
                 REPO_CURRENT_VALID=$((REPO_CURRENT_VALID + 1))
                 if [ "$SHOW_REPO_PATH" = true ]; then
-                    while IFS= read -r -d '' git_dir; do
-                        repo_dir=$(dirname "$git_dir")
+                    while IFS= read -r -d '' repo_dir; do
                         repo_name=$(basename "$repo_dir")
                         case "$repo_dir" in
                             "$HOME"/*) display_path="~${repo_dir#$HOME}" ;;
                             *) display_path="$repo_dir" ;;
                         esac
                         printf '%s\t%s\n' "$repo_name" "$display_path" >> "$REPO_CURRENT_MAP"
-                    done < <(find "$expanded" -type d -name .git -print0 2>/dev/null)
+                    done < <(find "$expanded" -type d \( -exec test -e {}/.git \; \) -prune -print0 2>/dev/null)
                 fi
             else
                 REPO_CURRENT_INVALID=$((REPO_CURRENT_INVALID + 1))
@@ -888,8 +945,24 @@ if [ "$REPO_CURRENT_READY" = true ]; then
         echo "[DRY RUN] Would execute: (cd $REPO_CURRENT_DIR && ./git_pull_all.sh --summary-only)"
         record_step "repo-current" "dry-run" "${REPO_CURRENT_VALID} valid dir(s)"
     else
-        REPO_CURRENT_OUT=$( ( cd "$REPO_CURRENT_DIR" && bash ./git_pull_all.sh --summary-only ) 2>&1 )
-        REPO_CURRENT_RC=$?
+        # Run repo-current non-interactively so missing creds fail fast instead
+        # of hanging. git_pull_all.sh wraps each `git pull` in $(...) which makes
+        # stderr non-tty, so any HTTPS-credential or SSH-passphrase prompt would
+        # silently block on stdin we can't see. These env vars prevent the prompts:
+        #   GIT_TERMINAL_PROMPT=0        -> git won't ask for username/password
+        #   ssh -o BatchMode=yes         -> ssh won't ask for a passphrase
+        #   ssh -o StrictHostKeyChecking=accept-new -> auto-accept first-time host keys
+        # Repos that need creds will be reported under "Other problems" instead.
+        # Stream output live via tee so the user sees progress; the tempfile
+        # keeps the full transcript for the summary parser below.
+        REPO_CURRENT_TMP=$(mktemp -t repo-current-out.XXXXXX)
+        ( cd "$REPO_CURRENT_DIR" && \
+          GIT_TERMINAL_PROMPT=0 \
+          GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new" \
+          bash ./git_pull_all.sh --summary-only ) 2>&1 | tee "$REPO_CURRENT_TMP"
+        REPO_CURRENT_RC=${PIPESTATUS[0]}
+        REPO_CURRENT_OUT=$(cat "$REPO_CURRENT_TMP")
+        rm -f "$REPO_CURRENT_TMP"
         if [ "$SHOW_REPO_PATH" = true ]; then
             # Rewrite "  - <repo>  <url>" lines inside AFFECTED REPOSITORIES to
             # "  - <full-path>  <url>" so each repo's location is unambiguous.
@@ -915,7 +988,9 @@ if [ "$REPO_CURRENT_READY" = true ]; then
                 }
             ')
         fi
-        printf '%s\n' "$REPO_CURRENT_OUT"
+        # Output was already streamed live above via tee; do not re-print here.
+        # The --show-repo-path rewrites still flow into REPO_CURRENT_CHANGES and
+        # appear (with full paths) in the end-of-run "Repo-current changes:" block.
         REPO_CURRENT_CHANGES=$(printf '%s\n' "$REPO_CURRENT_OUT" \
             | awk '/=== AFFECTED REPOSITORIES ===/,/^Finished processing directories\./' \
             | sed '$d')
