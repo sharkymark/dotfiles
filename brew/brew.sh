@@ -15,6 +15,13 @@ fi
 
 echo ""
 
+# Refresh Homebrew formulae and taps so brew bundle/upgrade below see the
+# latest versions. Homebrew's auto-update is throttled (24h by default), so
+# third-party tap formulae (e.g. nuonco/tap's `nuon`) can otherwise be stale.
+echo "🔄 Refreshing Homebrew formulae and taps..."
+brew update
+echo ""
+
 # Install packages from Brewfile if it exists
 if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   echo "📦 Installing development tools and applications from Brewfile..."
