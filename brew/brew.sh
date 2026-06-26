@@ -41,6 +41,27 @@ recover_drifted_casks() {
   return 0
 }
 
+# Some cask upgrades abort with "It seems there is already an App at
+# '/opt/homebrew/Caskroom/<cask>/<old>/<App>.app'" when the previously staged
+# app still sits in the Caskroom (e.g. whatsapp, which updates itself out of
+# band). Homebrew won't clobber it, so the upgrade fails. Detect those casks
+# from a captured log and force-reinstall them, which overwrites the stale app.
+recover_clobbered_casks() {
+  local log_file="$1"
+  local stuck_casks
+  stuck_casks=$(grep -oE "Error: [^:]+: It seems there is already an App at" "$log_file" 2>/dev/null \
+    | sed -E "s/Error: ([^:]+): It seems there is already an App at/\\1/" | sort -u)
+  [ -z "$stuck_casks" ] && return 1
+  echo ""
+  echo "🔧 Recovering casks blocked by a pre-existing staged app..."
+  while IFS= read -r cask; do
+    [ -z "$cask" ] && continue
+    echo "   reinstalling $cask"
+    brew reinstall --cask --force "$cask"
+  done <<< "$stuck_casks"
+  return 0
+}
+
 # Recent Homebrew refuses to load formulae from third-party (non-official) taps
 # until they're explicitly trusted, e.g. "Refusing to load formula X from
 # untrusted tap T". A single untrusted tap aborts the whole `brew bundle` run,
@@ -75,6 +96,7 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
     bundle_recovered=1
     trust_untrusted_taps "$bundle_log" && bundle_recovered=0
     recover_drifted_casks "$bundle_log" && bundle_recovered=0
+    recover_clobbered_casks "$bundle_log" && bundle_recovered=0
     if [ "$bundle_recovered" -eq 0 ]; then
       echo ""
       echo "🔁 Re-running brew bundle after recovery..."
@@ -89,6 +111,7 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   upgrade_recovered=1
   trust_untrusted_taps "$upgrade_log" && upgrade_recovered=0
   recover_drifted_casks "$upgrade_log" && upgrade_recovered=0
+  recover_clobbered_casks "$upgrade_log" && upgrade_recovered=0
   if [ "$upgrade_recovered" -eq 0 ]; then
     echo ""
     echo "🔁 Re-running brew upgrade after recovery..."
