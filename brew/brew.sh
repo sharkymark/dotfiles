@@ -62,27 +62,32 @@ recover_clobbered_casks() {
   return 0
 }
 
-# Recent Homebrew refuses to load formulae from third-party (non-official) taps
-# until they're explicitly trusted, e.g. "Refusing to load formula X from
-# untrusted tap T". A single untrusted tap aborts the whole `brew bundle` run,
-# so later entries never install. Detect every tap Homebrew flagged in a
-# captured log and trust it, generically, so any third-party tap works without
-# hardcoding names.
-trust_untrusted_taps() {
-  local log_file="$1"
-  local untrusted_taps
-  untrusted_taps=$(grep -oE "untrusted tap [^ ]+" "$log_file" 2>/dev/null \
-    | sed -E "s/untrusted tap //; s/[.]$//" | sort -u)
-  [ -z "$untrusted_taps" ] && return 1
-  echo ""
-  echo "🔧 Trusting third-party taps flagged by Homebrew..."
-  while IFS= read -r tap; do
+# Recent Homebrew refuses to load formulae/casks from third-party (non-
+# homebrew/*) taps until they're explicitly trusted, emitting warnings like
+# "Skipping <tap> because it is not trusted. Run `brew trust <tap>` to
+# trust it." These are warnings, not errors, so brew bundle/upgrade still
+# exit 0 while silently skipping those packages. Trust every currently-
+# tapped third-party tap up front so nothing gets skipped.
+trust_third_party_taps() {
+  local tap
+  brew tap 2>/dev/null | while IFS= read -r tap; do
     [ -z "$tap" ] && continue
-    echo "   trusting $tap"
-    brew trust --tap "$tap"
-  done <<< "$untrusted_taps"
-  return 0
+    case "$tap" in
+      homebrew/*) ;;
+      *)
+        if brew trust "$tap" >/dev/null 2>&1; then
+          echo "   trusted $tap"
+        else
+          echo "   ⚠️  failed to trust $tap"
+        fi
+        ;;
+    esac
+  done
 }
+
+echo "🔐 Trusting third-party Homebrew taps..."
+trust_third_party_taps
+echo ""
 
 # Install packages from Brewfile if it exists
 if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
@@ -94,7 +99,6 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   bundle_status=${PIPESTATUS[0]}
   if [ "$bundle_status" -ne 0 ]; then
     bundle_recovered=1
-    trust_untrusted_taps "$bundle_log" && bundle_recovered=0
     recover_drifted_casks "$bundle_log" && bundle_recovered=0
     recover_clobbered_casks "$bundle_log" && bundle_recovered=0
     if [ "$bundle_recovered" -eq 0 ]; then
@@ -105,11 +109,13 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   fi
   rm -f "$bundle_log"
   echo ""
+  echo "🔐 Re-checking third-party tap trust before upgrade..."
+  trust_third_party_taps
+  echo ""
   echo "⬆️  Upgrading outdated packages..."
   upgrade_log=$(mktemp)
   brew upgrade 2>&1 | tee "$upgrade_log"
   upgrade_recovered=1
-  trust_untrusted_taps "$upgrade_log" && upgrade_recovered=0
   recover_drifted_casks "$upgrade_log" && upgrade_recovered=0
   recover_clobbered_casks "$upgrade_log" && upgrade_recovered=0
   if [ "$upgrade_recovered" -eq 0 ]; then
