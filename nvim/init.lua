@@ -79,7 +79,7 @@ require("lazy").setup({
         local v = tonumber(f:read("*l")); f:close()
         if v == 1 then
           local fork_path = vim.fn.expand(
-            os.getenv("AVANTE_FORK_PATH") or "~/Documents/dev_and_debug/src/mark/avante.nvim"
+            os.getenv("AVANTE_FORK_PATH") or "~/src/mark/avante.nvim"
           )
           if vim.fn.isdirectory(fork_path) == 1 then
             vim.g.avante_fork_loaded = "jon"
@@ -149,7 +149,7 @@ require("lazy").setup({
         -- Guard: if jon's fork is selected but directory not present, warn and skip
         if cfg.fork == "jon" then
           local fork_path = vim.fn.expand(
-            os.getenv("AVANTE_FORK_PATH") or "~/Documents/dev_and_debug/src/mark/avante.nvim"
+            os.getenv("AVANTE_FORK_PATH") or "~/src/mark/avante.nvim"
           )
           if vim.fn.isdirectory(fork_path) ~= 1 then
             vim.notify("Jon's avante fork not found at " .. fork_path .. ".\nClone: https://github.com/jonmorehouse/avante.nvim\nOr set AVANTE_FORK_PATH env var.", vim.log.levels.ERROR)
@@ -195,7 +195,7 @@ require("lazy").setup({
       -- To add a new provider, add an entry to provider_configs in config above.
       -- ====================================================
 
-      shortcuts_directory = vim.fn.expand("~/Documents/dev_and_debug/src/mark/avante-shortcuts"),
+      shortcuts_directory = vim.fn.expand("~/src/mark/avante-shortcuts"),
 
       -- ACP provider configuration for Claude Code
       -- This section is only used when provider = "claude-code"
