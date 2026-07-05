@@ -197,7 +197,7 @@ fi
 
 echo ""
 echo "STEP: copying revenue-AGENTS.md to Google Drive notes"
-GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/notes"
+GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/Notes"
 if [ ! -d "$GDRIVE_NOTES" ]; then
   echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
   record_step "revenue-AGENTS.md -> Gdrive" "skipped" "Gdrive not mounted"
