@@ -853,7 +853,7 @@ REPO_CURRENT_FRESH_CLONE=false
 # Hardcoded default scan path. Stored as a literal string with $HOME so
 # git_pull_all.sh expands it at read time. Edit directories.txt after the
 # first run if your dev tree lives somewhere else on a given Mac.
-REPO_CURRENT_PREFERRED_PATH='$HOME/Documents/dev_and_debug/src'
+REPO_CURRENT_PREFERRED_PATH='$HOME/src'
 
 if [ ! -d "$REPO_CURRENT_DIR" ]; then
     if [ "$DRY_RUN" = true ]; then
