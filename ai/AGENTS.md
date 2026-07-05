@@ -1,10 +1,10 @@
 Workflow Orchestration
 
-1. Plan Node Default
+1. Plan Mode Default
 
-Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+Enter plan mode for architectural, multi-file, or hard-to-reverse changes; skip it for small, single-file, or obvious edits
 If something goes sideways, STOP and re-plan immediately – don't keep pushing
-Use plan mode for verification steps, not just building
+Use plan mode for verification steps too, not just building
 Write detailed specs upfront to reduce ambiguity
 
 2. Subagent Strategy
@@ -16,10 +16,9 @@ One tack per subagent for focused execution
 
 3. Self-Improvement Loop
 
-After ANY correction from the user: update tasks/lessons.md with the pattern
-Write rules for yourself that prevent the same mistake
-Ruthlessly iterate on these lessons until mistake rate drops
-Review lessons at session start for relevant project
+After ANY correction from the user: save the lesson to persistent project memory (a memory file plus its MEMORY.md index line) so it auto-loads next session
+Do not rely on tasks/lessons.md for this — it is not auto-read into context, so lessons written there are forgotten
+Write rules for yourself that prevent the same mistake and iterate until the mistake rate drops
 
 4. Verification Before Done
 
@@ -50,7 +49,7 @@ Verify Plan: Check in before starting implementation
 Track Progress: Mark items complete as you go
 Explain Changes: High-level summary at each step
 Document Results: Add review section to tasks/todo.md
-Capture Lessons: Update tasks/lessons.md after corrections
+Capture Lessons: Save corrections to persistent project memory, not tasks/lessons.md
 
 
 Core Principles
@@ -59,6 +58,35 @@ Simplicity First: Make every change as simple as possible. Impact minimal code.
 No Laziness: Find root causes. No temporary fixes. Senior developer standards.
 Minimal Impact: Changes should only touch what's necessary. Avoid introducing bugs.
 
+
+Language and Tooling Defaults
+
+These apply when a repo has no CLAUDE.md/AGENTS.md of its own. A repo-level file always overrides this section.
+
+Git and commits:
+- do not commit or push unless I ask; if on a default branch, branch first
+- end commit messages with the Co-Authored-By trailer for the model in use
+- prefer small, focused commits over large mixed ones
+
+Go:
+- format with gofmt (or goimports); run go vet before considering work done
+- test with go test ./... ; run a single package with go test ./path/to/pkg and a single test with go test -run TestName ./path/to/pkg
+- build with go build ./... ; keep the module path in go.mod correct
+- handle every error explicitly; do not swallow errors or use panic for control flow
+
+Python:
+- prefer uv for envs and installs (uv venv, uv pip install); fall back to the repo's venv/ and requirements.txt if that is the pattern
+- format and lint with ruff (ruff format, ruff check); test with pytest
+- run scripts inside the repo's venv, not system Python
+
+Terraform:
+- run terraform fmt and terraform validate before done
+- NEVER run terraform apply automatically; show the plan and let me apply
+- treat state as sensitive; never print or commit state or secrets
+
+Bash:
+- start scripts with #!/usr/bin/env bash and set -euo pipefail
+- check with shellcheck; quote variable expansions; prefer explicit over clever
 
 Output Formatting
 
