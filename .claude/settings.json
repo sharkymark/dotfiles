@@ -2,6 +2,10 @@
 	"enabledPlugins": {
 		"gopls-lsp@claude-plugins-official": true
 	},
+	"statusLine": {
+		"type": "command",
+		"command": "jq -r '(.workspace.current_dir | split(\"/\") | last) as $dir | \"\\(.model.display_name) | $\\(.cost.total_cost_usd * 100 | round / 100) | \\($dir)\"'"
+	},
 	"permissions": {
 		"allow": [
 			"Read",
