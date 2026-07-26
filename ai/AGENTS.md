@@ -41,6 +41,12 @@ Point at logs, errors, failing tests – then resolve them
 Zero context switching required from the user
 Go fix failing CI tests without being told how
 
+7. Model Tiering
+
+Use the strongest model your session is configured to use for planning and hard or ambiguous reasoning; switch to a cheaper, faster model to execute a well-specified plan. Do not escalate to a pricier tier than the session is set to
+When spawning subagents, route mechanical execution work (edits, running tests, applying a plan) to a cheaper model and reserve the configured planning model for planning and ambiguous reasoning
+This only holds when the plan is detailed (see Plan Mode Default); a vague plan hands the cheaper model too much room
+
 
 Task Management
 

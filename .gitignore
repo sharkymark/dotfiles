@@ -1,0 +1,5 @@
+# .claude/ is ignored by the global gitignore (~/.gitignore_global).
+# This is the dotfiles source repo, so re-include it to track Claude Code config.
+!.claude/
+# Keep per-machine local overrides out of the repo.
+.claude/settings.local.json
