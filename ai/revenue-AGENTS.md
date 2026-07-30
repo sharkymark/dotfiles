@@ -36,3 +36,5 @@ for an inbound person or email, search Leads by email first (via SOQL) and appen
 if i ask you to interpret, summarize, or analyze something tied to a company or person, ask me whether i want it logged as a Salesforce Task before creating one — do not auto-create tasks. when logging a task on an account, link a Contact, not a Lead.
 
 i may ask you to recall information or summarize information from my google drive notes. use the nuon mcp server to access my google drive of txt note files.
+
+if i ask you to summarize a meeting, review the grain recording via the grain mcp server (fetch the meeting, its transcript, and its notes) and any related notes in my google drive via the nuon mcp server, then create a salesforce task with the meeting summary on the relevant lead and/or account record. a meeting summary task is the exception to the ask-first rule above — create it automatically. when logging on an account link a Contact, and when logging on a lead link the Lead.
