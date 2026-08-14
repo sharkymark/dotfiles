@@ -94,8 +94,12 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   echo "📦 Installing development tools and applications from Brewfile..."
   echo "   (This may take several minutes on a fresh install)"
   echo ""
+  # --no-upgrade: `brew bundle install` upgrades already-installed outdated
+  # dependencies by default, including cask app bundles in /Applications
+  # that need sudo (e.g. whatsapp). Keep bundle to installing what's missing;
+  # the explicit upgrade step below handles upgrades on our terms.
   bundle_log=$(mktemp)
-  brew bundle --file="$DOTFILES_PATH/brew/Brewfile" 2>&1 | tee "$bundle_log"
+  brew bundle --file="$DOTFILES_PATH/brew/Brewfile" --no-upgrade 2>&1 | tee "$bundle_log"
   bundle_status=${PIPESTATUS[0]}
   if [ "$bundle_status" -ne 0 ]; then
     bundle_recovered=1
@@ -104,7 +108,7 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
     if [ "$bundle_recovered" -eq 0 ]; then
       echo ""
       echo "🔁 Re-running brew bundle after recovery..."
-      brew bundle --file="$DOTFILES_PATH/brew/Brewfile"
+      brew bundle --file="$DOTFILES_PATH/brew/Brewfile" --no-upgrade
     fi
   fi
   rm -f "$bundle_log"
