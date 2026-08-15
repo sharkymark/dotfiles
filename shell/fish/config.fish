@@ -1,5 +1,8 @@
 fish_add_path /opt/homebrew/opt/node@24/bin
 
+# Homebrew 6.0 made `--ask` the default for install/reinstall/upgrade; never prompt.
+set -gx HOMEBREW_NO_ASK 1
+
 # 2024-12-25 python vitual env display
 
 function fish_prompt

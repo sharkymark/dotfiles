@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Homebrew 6.0 made `--ask` the default for install/reinstall/upgrade, so every
+# brew call below would otherwise block on "Do you want to proceed? [y/n]".
+# This script runs unattended from install.sh; never prompt.
+export HOMEBREW_NO_ASK=1
+
 echo "Setting up Homebrew package manager..."
 echo ""
 
@@ -7,7 +12,7 @@ echo ""
 if ! command -v brew &> /dev/null; then
   echo "📦 Homebrew not installed - installing now..."
   echo "   (This may take a few minutes)"
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   echo "✅ Homebrew installed successfully!"
 else
   echo "✅ Homebrew is already installed"
