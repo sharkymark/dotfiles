@@ -8,6 +8,9 @@ export HISTFILE="$HOME/.bash_history"
 export HISTSIZE=10000
 export HISTFILESIZE=100000
 export HISTCONTROL=ignoredups:erasedups
+
+# Homebrew 6.0 made `--ask` the default for install/reinstall/upgrade; never prompt.
+export HOMEBREW_NO_ASK=1
 # append to the history file instead of overwriting it when shell closed
 shopt -s histappend
 

@@ -1,5 +1,8 @@
 export PATH="/opt/homebrew/opt/node@24/bin:$PATH"
 
+# Homebrew 6.0 made `--ask` the default for install/reinstall/upgrade; never prompt.
+export HOMEBREW_NO_ASK=1
+
 # zsh configurations
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=999999
