@@ -19,6 +19,107 @@ extensions:
     timeout: 300
     type: streamable_http
     uri: http://127.0.0.1:8000/mcp
+  grain:
+    bundled: null
+    description: Grain MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: grain
+    timeout: 300
+    type: streamable_http
+    uri: https://api.grain.com/_/mcp
+  superhuman-mail:
+    bundled: null
+    description: Superhuman Mail MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: superhuman-mail
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.mail.superhuman.com/mcp
+  linear:
+    bundled: null
+    description: Linear MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: linear
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.linear.app/mcp
+  airtable:
+    bundled: null
+    description: Airtable MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: airtable
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.airtable.com/mcp
+  salesforce-dx:
+    args:
+    - -y
+    - "@salesforce/mcp@latest"
+    - --orgs
+    - DEFAULT_TARGET_ORG
+    - --toolsets
+    - orgs,data,users
+    - --no-telemetry
+    bundled: null
+    cmd: npx
+    description: Salesforce DX MCP server (orgs, data, users toolsets)
+    enabled: true
+    env_keys: []
+    envs: {}
+    name: salesforce-dx
+    timeout: 300
+    type: stdio
+  nuonco-slack-personal-token:
+    args:
+    - -c
+    - 'SLACK_MCP_XOXC_TOKEN="$SLACK_MCP_XOXC_TOKEN_NUONCO" SLACK_MCP_XOXD_TOKEN="$SLACK_MCP_XOXD_TOKEN_NUONCO" exec npx -y slack-mcp-server@latest --transport stdio'
+    bundled: null
+    cmd: sh
+    description: Slack MCP server for the nuonco workspace (personal token)
+    enabled: true
+    env_keys: []
+    envs: {}
+    name: nuonco-slack-personal-token
+    timeout: 300
+    type: stdio
+  nuon-byoc-slack-personal-token:
+    args:
+    - -c
+    - 'SLACK_MCP_XOXC_TOKEN="$SLACK_MCP_XOXC_TOKEN_NUON_BYOC" SLACK_MCP_XOXD_TOKEN="$SLACK_MCP_XOXD_TOKEN_NUON_BYOC" exec npx -y slack-mcp-server@latest --transport stdio'
+    bundled: null
+    cmd: sh
+    description: Slack MCP server for the nuon-byoc workspace (personal token)
+    enabled: true
+    env_keys: []
+    envs: {}
+    name: nuon-byoc-slack-personal-token
+    timeout: 300
+    type: stdio
+  plausible-analytics:
+    args:
+    - -c
+    - 'PLAUSIBLE_API_KEY="$PLAUSIBLE_API_KEY" exec npx -y plausible-mcp'
+    bundled: null
+    cmd: sh
+    description: Plausible Analytics MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    name: plausible-analytics
+    timeout: 300
+    type: stdio
   apps:
     enabled: true
     type: platform
