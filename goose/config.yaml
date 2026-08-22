@@ -55,7 +55,7 @@ extensions:
   airtable:
     bundled: null
     description: Airtable MCP server
-    enabled: true
+    enabled: false
     env_keys: []
     envs: {}
     headers: {}
@@ -75,7 +75,7 @@ extensions:
     bundled: null
     cmd: npx
     description: Salesforce DX MCP server (orgs, data, users toolsets)
-    enabled: true
+    enabled: false
     env_keys: []
     envs: {}
     name: salesforce-dx
@@ -114,7 +114,7 @@ extensions:
     bundled: null
     cmd: sh
     description: Plausible Analytics MCP server
-    enabled: true
+    enabled: false
     env_keys: []
     envs: {}
     name: plausible-analytics
