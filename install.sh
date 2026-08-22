@@ -603,6 +603,41 @@ copy_nvim_settings() {
     done
 }
 
+copy_goose_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local goose_config_dir="$HOME/.config/goose"
+    local goose_files=("config.yaml" "permission.yaml" ".gooseignore")
+
+    mkdir -p "$goose_config_dir"
+    GOOSE_FILES_COPIED=0
+    GOOSE_BACKUPS=0
+
+    for file in "${goose_files[@]}"; do
+        local source="$dotfiles_dir/goose/$file"
+        local target="$goose_config_dir/$file"
+
+        if [ -f "$source" ]; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY RUN] Would copy: $source → $target"
+            else
+                if [ -f "$target" ]; then
+                    cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
+                    echo "- backed up existing $file"
+                    GOOSE_BACKUPS=$((GOOSE_BACKUPS + 1))
+                fi
+                if cp "$source" "$target"; then
+                    echo "- copied $file to $goose_config_dir/"
+                    GOOSE_FILES_COPIED=$((GOOSE_FILES_COPIED + 1))
+                else
+                    echo "- failed to copy $file to $goose_config_dir/"
+                fi
+            fi
+        else
+            echo "- goose/$file not found in $dotfiles_dir/goose"
+        fi
+    done
+}
+
 # Function to clean up old backups, keeping only the two most recent
 cleanup_backups() {
     local target_dir="$1"
@@ -716,6 +751,20 @@ else
 fi
 
 echo ""
+echo "STEP: 🪿 copying Goose config"
+if command -v goose &> /dev/null; then
+    copy_goose_settings
+    if [ "$DRY_RUN" = true ]; then
+        record_step "Goose config" "dry-run" "would copy 3 files"
+    else
+        record_step "Goose config" "done" "${GOOSE_FILES_COPIED} copied, ${GOOSE_BACKUPS} backed up"
+    fi
+else
+    echo "Goose is not installed. Skipping Goose configuration."
+    record_step "Goose config" "skipped" "Goose not installed"
+fi
+
+echo ""
 echo "STEP: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
@@ -776,6 +825,10 @@ else
     cleanup_backups "$HOME/.config/nvim" "init.lua"
     cleanup_backups "$HOME/.config/nvim" "lazy-lock.json"
     cleanup_backups "$HOME/.config/nvim" ".avante_pref"
+    # Clean up Goose config backups
+    cleanup_backups "$HOME/.config/goose" "config.yaml"
+    cleanup_backups "$HOME/.config/goose" "permission.yaml"
+    cleanup_backups "$HOME/.config/goose" ".gooseignore"
     if [ "$BACKUP_DELETED_TOTAL" -eq 0 ]; then
         record_step "Backup cleanup" "done" "nothing to clean"
     else

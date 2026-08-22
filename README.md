@@ -28,8 +28,28 @@ This script copies configuration files to their appropriate locations:
 - Prettier formatting config
 - Ghostty terminal config (if installed)
 - Starship prompt config (if installed)
+- Goose config (if installed)
 
 On macOS, also runs Homebrew package installation and system defaults.
+
+## Goose Configuration
+
+The vendored `goose/config.yaml` has no provider or model pinned — pass them as
+environment variables at launch instead:
+
+```bash
+GOOSE_PROVIDER=ollama GOOSE_MODEL=qwen2.5:14b-instruct goose
+```
+
+Goose reads the available model list live from the Ollama server, so any model
+you've pulled shows up without editing config. Pull the models you want to use:
+
+```bash
+ollama pull qwen2.5:7b-instruct
+ollama pull llama3.1:8b
+ollama pull qwen2.5:14b-instruct
+ollama pull qwen3-coder:30b
+```
 
 ## Post-Installation: Git Configuration
 
