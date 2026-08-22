@@ -22,17 +22,15 @@ Write rules for yourself that prevent the same mistake and iterate until the mis
 
 4. Verification Before Done
 
+For small, single-file, or obvious edits: run the relevant test/build/lint and call it done
+For multi-file, architectural, or behavior-changing work: also diff behavior between main and the change, and demonstrate correctness with logs or a test run before marking complete
 Never mark a task complete without proving it works
-Diff behavior between main and your changes when relevant
-Ask yourself: "Would a staff engineer approve this?"
-Run tests, check logs, demonstrate correctness
 
 5. Demand Elegance (Balanced)
 
-For non-trivial changes: pause and ask "is there a more elegant way?"
-If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
 Skip this for simple, obvious fixes – don't over-engineer
-Challenge your own work before presenting it
+For non-trivial changes: pause and ask "is there a more elegant way?" before presenting it
+If a fix feels hacky, say so and implement the elegant solution instead
 
 6. Autonomous Bug Fixing
 
