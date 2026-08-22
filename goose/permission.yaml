@@ -1,0 +1,18 @@
+smart_approve:
+  always_allow:
+  - developer__text_editor
+  ask_before:
+  - developer__shell
+  - edit
+  - extensionmanager__manage_extensions
+  - read_image
+  - shell
+  - todo__todo_write
+  - write
+  never_allow: []
+user:
+  always_allow:
+  - developer__shell
+  - developer__text_editor
+  ask_before: []
+  never_allow: []
