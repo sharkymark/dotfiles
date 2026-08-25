@@ -27,6 +27,9 @@ alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
 alias nctl='~/nuonco/mono/run-nuonctl.sh'
 alias nuonstage="nuon -f ~/.stage"
 
+# AI-related
+alias claudeteam='env -u ANTHROPIC_API_KEY claude'
+
 # starship cross-shell prompt
 # https://starship.rs/
 eval "$(starship init zsh)"
