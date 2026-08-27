@@ -25,7 +25,7 @@ fi
 # Nuon-related
 alias nuonctl='~/nuonco/mono/run-nuonctl.sh'
 alias nctl='~/nuonco/mono/run-nuonctl.sh'
-alias nuonstage="nuon -f ~/.stage"
+alias nuonstage="nuon --config ~/.stage"
 
 # AI-related
 alias claudeteam='env -u ANTHROPIC_API_KEY claude'
