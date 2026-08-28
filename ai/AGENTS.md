@@ -44,6 +44,18 @@ Go fix failing CI tests without being told how
 Use the strongest model your session is configured to use for planning and hard or ambiguous reasoning; switch to a cheaper, faster model to execute a well-specified plan. Do not escalate to a pricier tier than the session is set to
 When spawning subagents, route mechanical execution work (edits, running tests, applying a plan) to a cheaper model and reserve the configured planning model for planning and ambiguous reasoning
 This only holds when the plan is detailed (see Plan Mode Default); a vague plan hands the cheaper model too much room
+Section 7 applies to Claude Code, Gemini CLI, Goose, and other non-Cursor tools. In Cursor, see the Cursor section below instead of manually picking models for the parent agent
+
+
+Cursor
+
+For Cursor IDE and CLI sessions, use Auto (Cursor Router) as the default model selection. Do not manually pick Composer, Grok, or Claude unless the user explicitly requests a specific model
+Daily work: Auto with Balance optimization
+Budget-conscious or high-volume execution: Auto with Cost
+Complex multi-step agent work: Auto with Intelligence
+Architectural or ambiguous work: switch to Plan mode before implementing; do not rely on Auto routing alone for the planning phase
+If the user pins a model (e.g. Opus 5), use that model for the session
+Explore and other mechanical subagents use Composer 2.5 via cursor/cli-config.json subagentModels; do not override unless the user asks
 
 
 Task Management
