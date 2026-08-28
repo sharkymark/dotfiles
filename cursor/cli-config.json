@@ -4,6 +4,12 @@
     "vimMode": false
   },
   "notifications": true,
+  "subagentModels": {
+    "explore": {
+      "modelId": "composer-2.5"
+    }
+  },
+  "exploreSubagentModel": "default",
   "permissions": {
     "allow": [
       "Read(**)",
