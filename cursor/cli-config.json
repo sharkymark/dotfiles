@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "editor": {
+    "vimMode": false
+  },
+  "notifications": true,
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "WebFetch(*)",
+      "Shell(find)",
+      "Shell(grep)",
+      "Shell(env)",
+      "Shell(ls)",
+      "Mcp(nuon:*)",
+      "Mcp(nuon-local:*)",
+      "Mcp(nuon-slack:*)",
+      "Mcp(nuon-byoc-slack:*)",
+      "Mcp(nuon-byoc-slack-personal-token:*)",
+      "Mcp(nuonco-slack-personal-token:*)",
+      "Mcp(coder:list_sources)",
+      "Mcp(coder:search_all)",
+      "Mcp(coder:search_repo)",
+      "Mcp(coder:read_file)",
+      "Mcp(coder:list_files)",
+      "Mcp(coder:get_directory_tree)",
+      "Mcp(firecrawl:firecrawl_scrap)",
+      "Mcp(firecrawl:firecrawl_search)",
+      "Mcp(grain:search_meetings)",
+      "Mcp(grain:list_attended_meetings)",
+      "Mcp(grain:fetch_meeting_notes)",
+      "Mcp(grain:fetch_meeting_transcript)",
+      "Mcp(grain:search_companies)",
+      "Mcp(grain:fetch_meeting)",
+      "Mcp(grain:search_persons)",
+      "Mcp(grain:list_meetings)",
+      "Mcp(pylon:search_accounts)",
+      "Mcp(pylon:search_issues)",
+      "Mcp(pylon:get_account)",
+      "Mcp(pylon:get_issue)",
+      "Mcp(pylon:get_issue_messages)",
+      "Mcp(datadog-mcp:search_datadog_monitors)",
+      "Mcp(datadog-mcp:search_datadog_hosts)",
+      "Mcp(datadog-mcp:search_datadog_events)",
+      "Mcp(datadog-mcp:search_datadog_logs)"
+    ],
+    "deny": []
+  }
+}
