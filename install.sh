@@ -638,6 +638,41 @@ copy_goose_settings() {
     done
 }
 
+copy_cursor_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local cursor_config_dir="$HOME/.cursor"
+    local cursor_files=("cli-config.json" "mcp.json")
+
+    mkdir -p "$cursor_config_dir"
+    CURSOR_FILES_COPIED=0
+    CURSOR_BACKUPS=0
+
+    for file in "${cursor_files[@]}"; do
+        local source="$dotfiles_dir/cursor/$file"
+        local target="$cursor_config_dir/$file"
+
+        if [ -f "$source" ]; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY RUN] Would copy: $source → $target"
+            else
+                if [ -f "$target" ]; then
+                    cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
+                    echo "- backed up existing $file"
+                    CURSOR_BACKUPS=$((CURSOR_BACKUPS + 1))
+                fi
+                if cp "$source" "$target"; then
+                    echo "- copied $file to $cursor_config_dir/"
+                    CURSOR_FILES_COPIED=$((CURSOR_FILES_COPIED + 1))
+                else
+                    echo "- failed to copy $file to $cursor_config_dir/"
+                fi
+            fi
+        else
+            echo "- cursor/$file not found in $dotfiles_dir/cursor"
+        fi
+    done
+}
+
 # Function to clean up old backups, keeping only the two most recent
 cleanup_backups() {
     local target_dir="$1"
@@ -765,6 +800,20 @@ else
 fi
 
 echo ""
+echo "STEP: 🖱️  copying Cursor CLI config"
+if command -v cursor-agent &> /dev/null; then
+    copy_cursor_settings
+    if [ "$DRY_RUN" = true ]; then
+        record_step "Cursor CLI config" "dry-run" "would copy 2 files"
+    else
+        record_step "Cursor CLI config" "done" "${CURSOR_FILES_COPIED} copied, ${CURSOR_BACKUPS} backed up"
+    fi
+else
+    echo "Cursor CLI is not installed. Skipping Cursor configuration."
+    record_step "Cursor CLI config" "skipped" "Cursor CLI not installed"
+fi
+
+echo ""
 echo "STEP: 🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
@@ -829,6 +878,9 @@ else
     cleanup_backups "$HOME/.config/goose" "config.yaml"
     cleanup_backups "$HOME/.config/goose" "permission.yaml"
     cleanup_backups "$HOME/.config/goose" ".gooseignore"
+    # Clean up Cursor CLI config backups
+    cleanup_backups "$HOME/.cursor" "cli-config.json"
+    cleanup_backups "$HOME/.cursor" "mcp.json"
     if [ "$BACKUP_DELETED_TOTAL" -eq 0 ]; then
         record_step "Backup cleanup" "done" "nothing to clean"
     else

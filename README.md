@@ -29,6 +29,7 @@ This script copies configuration files to their appropriate locations:
 - Ghostty terminal config (if installed)
 - Starship prompt config (if installed)
 - Goose config (if installed)
+- Cursor CLI config and MCP servers (if installed)
 
 On macOS, also runs Homebrew package installation and system defaults.
 

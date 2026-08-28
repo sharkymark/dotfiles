@@ -131,7 +131,7 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   # binaries under $HOMEBREW_PREFIX, which never need sudo. Everything else
   # self-updates on its own or gets upgraded manually with
   # `brew upgrade --cask <name>` when you're ready to enter your password.
-  SAFE_UPGRADE_CASKS=(codex claude-code)
+  SAFE_UPGRADE_CASKS=(codex claude-code cursor-cli)
   echo "⬆️  Upgrading sudo-free casks (${SAFE_UPGRADE_CASKS[*]})..."
   upgrade_log=$(mktemp)
   brew upgrade --cask "${SAFE_UPGRADE_CASKS[@]}" 2>&1 | tee "$upgrade_log"

@@ -1,0 +1,67 @@
+{
+  "mcpServers": {
+    "nuon-local": {
+      "url": "http://127.0.0.1:8000/mcp"
+    },
+    "grain": {
+      "url": "https://api.grain.com/_/mcp"
+    },
+    "superhuman-mail": {
+      "url": "https://mcp.mail.superhuman.com/mcp"
+    },
+    "nuon-byoc-slack-personal-token": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "slack-mcp-server@latest",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${env:SLACK_MCP_XOXC_TOKEN_NUON_BYOC}",
+        "SLACK_MCP_XOXD_TOKEN": "${env:SLACK_MCP_XOXD_TOKEN_NUON_BYOC}"
+      }
+    },
+    "nuonco-slack-personal-token": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "slack-mcp-server@latest",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${env:SLACK_MCP_XOXC_TOKEN_NUONCO}",
+        "SLACK_MCP_XOXD_TOKEN": "${env:SLACK_MCP_XOXD_TOKEN_NUONCO}"
+      }
+    },
+    "plausible-analytics": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "plausible-mcp"
+      ],
+      "env": {
+        "PLAUSIBLE_API_KEY": "${env:PLAUSIBLE_API_KEY}"
+      }
+    },
+    "salesforce-dx": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@salesforce/mcp@latest",
+        "--orgs",
+        "DEFAULT_TARGET_ORG",
+        "--toolsets",
+        "orgs,data,users",
+        "--no-telemetry"
+      ]
+    },
+    "linear": {
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "airtable": {
+      "url": "https://mcp.airtable.com/mcp"
+    }
+  }
+}
