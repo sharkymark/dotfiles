@@ -19,7 +19,7 @@
       "Shell(env)",
       "Shell(ls)",
       "Mcp(nuon:*)",
-      "Mcp(nuon-local:*)",
+      "Mcp(shark-local:*)",
       "Mcp(nuon-slack:*)",
       "Mcp(nuon-byoc-slack:*)",
       "Mcp(nuon-byoc-slack-personal-token:*)",

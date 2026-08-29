@@ -8,14 +8,14 @@ extensions:
     display_name: Developer
     timeout: null
     bundled: true
-  nuon-local:
+  shark-local:
     bundled: null
-    description: Nuon local MCP server for Google Drive notes
+    description: Personal local MCP server for repos, notes, Messages, and Salesforce
     enabled: true
     env_keys: []
     envs: {}
     headers: {}
-    name: nuon-local
+    name: shark-local
     timeout: 300
     type: streamable_http
     uri: http://127.0.0.1:8000/mcp
