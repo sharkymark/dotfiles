@@ -215,6 +215,28 @@ else
 fi
 
 echo ""
+echo "STEP: copying Claude Code .mcp.json to Google Drive notes"
+if [ ! -d "$GDRIVE_NOTES" ]; then
+  echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
+  record_step "Claude .mcp.json -> Gdrive" "skipped" "Gdrive not mounted"
+elif [ ! -f "./.claude/mcp.json" ]; then
+  echo "- skipping: ./.claude/mcp.json not found"
+  record_step "Claude .mcp.json -> Gdrive" "skipped" "source missing"
+elif [ "$DRY_RUN" = true ]; then
+  echo "[DRY RUN] Would copy: ./.claude/mcp.json → $GDRIVE_NOTES/.mcp.json"
+  echo "[DRY RUN] Would copy: ./.claude/mcp.json → $GDRIVE_NOTES/4-nuon/.mcp.json"
+  record_step "Claude .mcp.json -> Gdrive" "dry-run" "would copy to Notes and 4-nuon"
+else
+  detect_backup "$GDRIVE_NOTES/.mcp.json"
+  cp "./.claude/mcp.json" "$GDRIVE_NOTES/.mcp.json"
+  echo "- copied .claude/mcp.json to $GDRIVE_NOTES/.mcp.json"
+  mkdir -p "$GDRIVE_NOTES/4-nuon"
+  cp "./.claude/mcp.json" "$GDRIVE_NOTES/4-nuon/.mcp.json"
+  echo "- copied .claude/mcp.json to $GDRIVE_NOTES/4-nuon/.mcp.json"
+  record_step "Claude .mcp.json -> Gdrive" "done" "Notes/.mcp.json, 4-nuon/.mcp.json"
+fi
+
+echo ""
 echo "STEP: 🔗 Symlinking AI configurations"
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would create symlinks for AI configurations"
@@ -272,6 +294,45 @@ if [ -f "./.claude/settings.json" ]; then
 else
   echo "- settings.json not found in ./.claude/"
   record_step "Claude Code settings.json" "skipped" "source missing"
+fi
+
+# Copy Claude Code MCP servers (project .mcp.json format) into ~/.claude and
+# merge into ~/.claude.json user-scope mcpServers.
+if [ -f "./.claude/mcp.json" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./.claude/mcp.json → ~/.claude/mcp.json"
+    echo "[DRY RUN] Would merge mcpServers into ~/.claude.json"
+    record_step "Claude Code mcp.json" "dry-run" "would copy + merge user mcpServers"
+  else
+    detect_backup "$HOME/.claude/mcp.json"
+    if [ -f "$HOME/.claude/mcp.json" ]; then
+      cp "$HOME/.claude/mcp.json" "$HOME/.claude/mcp.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing ~/.claude/mcp.json"
+    fi
+    cp ./.claude/mcp.json "$HOME/.claude/mcp.json"
+    echo "- copied mcp.json to ~/.claude/"
+    python3 - "$HOME/.claude.json" "./.claude/mcp.json" <<'PY'
+import json, sys
+claude_json, mcp_json = sys.argv[1], sys.argv[2]
+with open(mcp_json) as f:
+    mcp = json.load(f)
+servers = mcp.get("mcpServers") or {}
+try:
+    with open(claude_json) as f:
+        cfg = json.load(f)
+except FileNotFoundError:
+    cfg = {}
+cfg["mcpServers"] = servers
+with open(claude_json, "w") as f:
+    json.dump(cfg, f, indent=2)
+    f.write("\n")
+PY
+    echo "- merged mcpServers into ~/.claude.json (user scope)"
+    record_step "Claude Code mcp.json" "done" "$(copy_detail)"
+  fi
+else
+  echo "- mcp.json not found in ./.claude/"
+  record_step "Claude Code mcp.json" "skipped" "source missing"
 fi
 
 echo ""
@@ -869,6 +930,7 @@ else
     cleanup_backups "$HOME" "AGENTS.md"
     # Clean up Claude settings.json backups
     cleanup_backups "$HOME/.claude" "settings.json"
+    cleanup_backups "$HOME/.claude" "mcp.json"
     # Clean up old CLAUDE.md files (that were backed up before it became a symlink)
     cleanup_backups "$HOME/.claude" "CLAUDE.md"
     # Clean up Gemini settings.json backups
