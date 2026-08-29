@@ -345,6 +345,20 @@ if [ "$SHELL" == "/bin/zsh" ]; then
     fi
     cp ./shell/zsh/.zshrc $HOME/.zshrc
     echo "- copied zsh 🍎 configuration files to $HOME"
+    GHOSTTY_CURSOR_MARKER="# dotfiles: ghostty block cursor"
+    GHOSTTY_CURSOR_SOURCE="[[ -f \"$DOTFILES_PATH/shell/zsh/ghostty-cursor.zsh\" ]] && source \"$DOTFILES_PATH/shell/zsh/ghostty-cursor.zsh\""
+    if [ -f "$HOME/.zshenv" ] && ! grep -qF "$GHOSTTY_CURSOR_MARKER" "$HOME/.zshenv"; then
+      tmp_zshenv="$(mktemp)"
+      {
+        echo "$GHOSTTY_CURSOR_MARKER"
+        echo "$GHOSTTY_CURSOR_SOURCE"
+        echo ""
+        cat "$HOME/.zshenv"
+      } > "$tmp_zshenv"
+      cp "$tmp_zshenv" "$HOME/.zshenv"
+      rm -f "$tmp_zshenv"
+      echo "- wired ghostty block cursor into ~/.zshenv"
+    fi
     if [ "$ZSH_HAD_BACKUP" = true ]; then SHELL_COPIED+=("zsh (backup)"); else SHELL_COPIED+=("zsh (first run)"); fi
   fi
 fi

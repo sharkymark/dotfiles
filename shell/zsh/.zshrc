@@ -30,6 +30,21 @@ alias nuonstage="nuon --config ~/.stage"
 # AI-related
 alias claudeteam='env -u ANTHROPIC_API_KEY claude'
 
+# Ghostty: blinking block cursor (bar override if integration already loaded).
+if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
+  _ghostty_block_cursor() { print -n $'\e[1 q' >&2; }
+  precmd_functions+=(_ghostty_block_cursor)
+  if (( ${+functions[_ghostty_zle_line_init]} )); then
+    functions[_ghostty_zle_line_init_orig]=$functions[_ghostty_zle_line_init]
+    _ghostty_zle_line_init() {
+      _ghostty_zle_line_init_orig "$@"
+      _ghostty_block_cursor
+    }
+    zle -N zle-line-init _ghostty_zle_line_init
+    zle -N zle-keymap-select _ghostty_zle_keymap_select
+  fi
+fi
+
 # starship cross-shell prompt
 # https://starship.rs/
 eval "$(starship init zsh)"

@@ -1,2 +1,40 @@
+# Ghostty — Mitchell-style setup
+# Reload: Cmd+Shift+, (background-opacity changes need a full restart on macOS)
+
+# Theme and colors
+theme = Catppuccin Mocha
+minimum-contrast = 1.2
+
+# Font (Nerd Font icons for Starship directory/git symbols)
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+font-thicken = true
+
+# Translucent window over the desktop wallpaper
+background-opacity = 0.92
+background-blur = 20
+
+# Window / tabs
+macos-titlebar-style = tabs
+window-padding-x = 8
+window-padding-y = 4
+window-padding-balance = true
+unfocused-split-opacity = 0.65
+scrollbar = never
+
+# Solid white block cursor. Disable shell-integration cursor override.
+cursor-style = block
+cursor-style-blink = true
+
+# macOS conveniences
+macos-option-as-alt = left
+mouse-hide-while-typing = true
+window-inherit-working-directory = true
+
+# Keep prompt markers + title/path; drop the bar-cursor override.
+shell-integration = detect
+shell-integration-features = no-cursor,no-sudo,title,no-ssh-env,no-ssh-terminfo,path
+
+# Splits
 keybind = cmd+d=new_split:right
 keybind = cmd+shift+d=new_split:down
