@@ -3,12 +3,12 @@
 command_timeout = 5000
 add_newline = false
 
-# Pure-style minimal prompt: path + purple chevron left, clock right.
-format = "$directory$character"
+# Path + branch left; clock right.
+format = "$directory$git_branch$character"
 right_format = "$time"
 
 [directory]
-format = "[$path]($style)"
+format = "[$path]($style) "
 style = "bold blue"
 truncate_to_repo = true
 truncation_length = 3
@@ -38,7 +38,10 @@ disabled = true
 [golang]
 disabled = true
 [git_branch]
-disabled = true
+disabled = false
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+style = "bold purple"
+
 [git_commit]
 disabled = true
 [git_status]
