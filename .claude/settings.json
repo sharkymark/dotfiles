@@ -15,7 +15,7 @@
 			"WebSearch",
 			"WebFetch",
 			"mcp__nuon__*",
-			"mcp__nuon-local__*",
+			"mcp__shark-local__*",
 			"mcp__nuon-slack__*",
 			"mcp__nuon-byoc-slack__*",
 			"mcp__nuon-byoc-slack-personal-token__*",

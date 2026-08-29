@@ -7,9 +7,9 @@
   },
   "mcpServers": {
     "nuon": {
-      "command": "/Users/markmilligan/src/mark/nuon-mcp/venv/bin/python",
+      "command": "/Users/markmilligan/src/mark/shark-mcp/venv/bin/python",
       "args": [
-        "/Users/markmilligan/src/mark/nuon-mcp/server.py"
+        "/Users/markmilligan/src/mark/shark-mcp/server.py"
       ],
       "env": {}
     }
