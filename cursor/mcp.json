@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "nuon": {
+      "command": "nuon",
+      "args": ["agents", "mcp"]
+    },
     "nuon-local": {
       "url": "http://127.0.0.1:8000/mcp"
     },
