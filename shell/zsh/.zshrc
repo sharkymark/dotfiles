@@ -29,6 +29,7 @@ alias nuonstage="nuon --config ~/.stage"
 
 # AI-related
 alias claudeteam='env -u ANTHROPIC_API_KEY claude'
+alias ca='cursor-agent'
 
 # Ghostty: blinking block cursor (bar override if integration already loaded).
 if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
