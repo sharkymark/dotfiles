@@ -38,3 +38,5 @@ if i ask you to interpret, summarize, or analyze something tied to a company or 
 i may ask you to recall information or summarize information from my google drive notes. use the nuon mcp server to access my google drive of txt note files.
 
 if i ask you to summarize a meeting, review the grain recording via the grain mcp server (fetch the meeting, its transcript, and its notes) and any related notes in my google drive via the nuon mcp server, then create a salesforce task with the meeting summary on the relevant lead and/or account record. a meeting summary task is the exception to the ask-first rule above — create it automatically. when logging on an account link a Contact, and when logging on a lead link the Lead.
+
+Model selection: follow global Cursor section (Auto + Cost). Do not pin Claude, Opus, or Composer for this workspace unless Mark asks. For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice.
