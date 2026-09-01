@@ -65,6 +65,8 @@ Do not pin Composer 2.5 as the parent-session model. It is a coding-optimized mo
 
 For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice
 
+Turn off Cursor commit and PR attribution in Cursor Settings > Agents > Attribution (or Git & PRs > Attribution). Keep attributeCommitsToAgent and attributePRsToAgent false in ~/.cursor/cli-config.json
+
 
 Task Management
 
@@ -89,8 +91,11 @@ These apply when a repo has no CLAUDE.md/AGENTS.md of its own. A repo-level file
 
 Git and commits:
 - do not commit or push unless I ask; if on a default branch, branch first
-- end commit messages with the Co-Authored-By trailer for the model in use
 - prefer small, focused commits over large mixed ones
+- never add Co-authored-by, Made-with, or any AI, agent, or bot attribution to commit messages, PR titles, or PR bodies
+- never set git author or committer to an agent or bot identity (e.g. cursoragent@cursor.com); commits must use the human user only
+- do not install git hooks to strip or rewrite attribution; fix attribution at the source (agent behavior and Cursor settings) instead
+- if attribution was already pushed, rewrite commit messages to remove it and force-push only on feature branches the user owns, using --force-with-lease
 
 Go:
 - format with gofmt (or goimports); run go vet before considering work done
