@@ -4,6 +4,32 @@
     "vimMode": false
   },
   "notifications": true,
+  "model": {
+    "modelId": "auto-smart",
+    "displayModelId": "auto-smart",
+    "displayName": "Auto Cost",
+    "displayNameShort": "Auto Cost",
+    "aliases": [],
+    "maxMode": false
+  },
+  "hasChangedDefaultModel": true,
+  "modelParameters": {
+    "auto-smart": [
+      {
+        "id": "optimize_for",
+        "value": "cost"
+      }
+    ]
+  },
+  "selectedModel": {
+    "modelId": "auto-smart",
+    "parameters": [
+      {
+        "id": "optimize_for",
+        "value": "cost"
+      }
+    ]
+  },
   "subagentModels": {
     "explore": {
       "modelId": "composer-2.5"
