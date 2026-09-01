@@ -40,3 +40,5 @@ i may ask you to recall information or summarize information from my google driv
 if i ask you to summarize a meeting, review the grain recording via the grain mcp server (fetch the meeting, its transcript, and its notes) and any related notes in my google drive via the nuon mcp server, then create a salesforce task with the meeting summary on the relevant lead and/or account record. a meeting summary task is the exception to the ask-first rule above — create it automatically. when logging on an account link a Contact, and when logging on a lead link the Lead.
 
 Model selection: follow global Cursor section (Auto + Cost) in the global AGENTS.md. Do not pin Claude, Opus, or Composer for this workspace unless Mark asks. For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice.
+
+Git: never co-author commits or add agent or bot attribution to git or PR operations; follow the Git and commits rules in global AGENTS.md.

@@ -35,7 +35,6 @@
       "modelId": "composer-2.5"
     }
   },
-  "exploreSubagentModel": "default",
   "permissions": {
     "allow": [
       "Read(**)",
@@ -77,5 +76,9 @@
       "Mcp(datadog-mcp:search_datadog_logs)"
     ],
     "deny": []
+  },
+  "attribution": {
+    "attributeCommitsToAgent": false,
+    "attributePRsToAgent": false
   }
 }

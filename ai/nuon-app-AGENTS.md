@@ -28,3 +28,5 @@ the name broken up by dashes if needed. look at the examples repo for style.
 
 keep comments in the toml, manifest, helm, and terraform files to a minimum, or
 none at all.
+
+Git: never co-author commits or add agent or bot attribution to git or PR operations; follow the Git and commits rules in global AGENTS.md.
