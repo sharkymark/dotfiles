@@ -50,13 +50,19 @@ Section 7 applies to Claude Code, Gemini CLI, Goose, and other non-Cursor tools.
 Cursor
 
 For Cursor IDE and CLI sessions, use Auto (Cursor Router) as the default model selection. Do not manually pick Composer, Grok, or Claude unless the user explicitly requests a specific model
+
 Default for all work: Auto with Cost optimization. Cost routing prefers Composer 2.5 and Cursor Grok, which draw from the Cursor Models pool and are exempt from the Cursor Token Rate that third-party models incur on Teams plans
+
 Do not use Auto with Balance or Auto with Intelligence by default. Both route freely to third-party models (Claude, GPT, Gemini), which draw from the smaller Other Models pool and bill at provider list price plus $0.25 per million tokens. Escalate to Balance or Intelligence only for a specific hard task, and drop back to Cost afterward
+
 Architectural or ambiguous work: switch to Plan mode before implementing; do not rely on Auto routing alone for the planning phase
 If the user pins a model (e.g. Opus 5), use that model for the session
+
 Explore and other mechanical subagents use Composer 2.5 via cursor/cli-config.json subagentModels; do not override unless the user asks
 Do not pin Claude, Opus, or Composer for the parent session unless Mark asks
+
 Do not pin Composer 2.5 as the parent-session model. It is a coding-optimized model and is the wrong fit for research, CRM, and meeting-summary work; let Auto Cost pick between Composer and Grok instead
+
 For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice
 
 
@@ -115,4 +121,3 @@ Output Formatting
 - write in clean, dense paragraphs or flat hyphen-bulleted lists
 - do not use markdown headers, bold, italics, or any other markdown formatting
 - do not add any preamble, closing remarks, or meta-commentary about the output
-

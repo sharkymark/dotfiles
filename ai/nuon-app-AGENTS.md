@@ -7,7 +7,7 @@ reasons. The end customers also want the experience of SaaS, where the vendor
 uses Nuon to install and operate their software, but in the customer's cloud
 VPC.
 
-use the nuon mcp server to review example app configs and other repositories to
+use the shark-local (or similarly named) mcp server to review example app configs and other repositories to
 learn how app configs are designed. also use the nuon documentation which is a
 repository available in the mcp.
 

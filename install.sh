@@ -13,12 +13,19 @@ for arg in "$@"; do
             ;;
     esac
 done
+# Local wall clock: 2026-09-01 11:17:32 AM CDT
+now_stamp() {
+    date '+%Y-%m-%d %I:%M:%S %p %Z'
+}
+
 if [ "$DRY_RUN" = true ]; then
     echo "🔍 DRY RUN MODE - No files will be modified"
     echo ""
 fi
 
+INSTALL_STARTED="$(now_stamp)"
 echo "RUNNING dotfiles repo install.sh"
+echo "Started: $INSTALL_STARTED"
 
 # Export DOTFILES_PATH (needed by brew.sh and referenced throughout)
 export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -57,8 +64,12 @@ copy_detail() {
     fi
 }
 
-echo ""
-echo "STEP: 🍺 setting up Homebrew packages"
+print_step() {
+    echo ""
+    echo "STEP: [$(now_stamp)] $*"
+}
+
+print_step "🍺 setting up Homebrew packages"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -149,8 +160,7 @@ else
     record_step "Homebrew packages" "skipped" "non-Darwin system"
 fi
 
-echo ""
-echo "STEP: 💾 copying .gitignore_global"
+print_step "💾 copying .gitignore_global"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./git/.gitignore_global → ~/.gitignore_global"
     record_step ".gitignore_global" "dry-run" "would copy"
@@ -161,8 +171,7 @@ else
     record_step ".gitignore_global" "done" "$(copy_detail)"
 fi
 
-echo ""
-echo "STEP: 💾 copying prettier formatting files"
+print_step "💾 copying prettier formatting files"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./prettier/.prettierrc → ~/.prettierrc"
     record_step "Prettier config" "dry-run" "would copy"
@@ -173,8 +182,7 @@ else
     record_step "Prettier config" "done" "$(copy_detail)"
 fi
 
-echo ""
-echo "STEP: 🤖 Installing Agent Definitions (AGENTS.md)"
+print_step "🤖 Installing Agent Definitions (AGENTS.md)"
 if [ -f "./ai/AGENTS.md" ]; then
   if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would copy: ./ai/AGENTS.md → ~/AGENTS.md"
@@ -195,8 +203,7 @@ else
   record_step "AGENTS.md" "skipped" "./ai/AGENTS.md missing"
 fi
 
-echo ""
-echo "STEP: copying revenue-AGENTS.md to Google Drive notes"
+print_step "copying revenue-AGENTS.md to Google Drive notes"
 GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/Notes"
 if [ ! -d "$GDRIVE_NOTES" ]; then
   echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
@@ -214,8 +221,7 @@ else
   record_step "revenue-AGENTS.md -> Gdrive" "done" "$(copy_detail)"
 fi
 
-echo ""
-echo "STEP: copying Claude Code .mcp.json to Google Drive notes"
+print_step "copying Claude Code .mcp.json to Google Drive notes"
 if [ ! -d "$GDRIVE_NOTES" ]; then
   echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
   record_step "Claude .mcp.json -> Gdrive" "skipped" "Gdrive not mounted"
@@ -236,8 +242,7 @@ else
   record_step "Claude .mcp.json -> Gdrive" "done" "Notes/.mcp.json, 4-nuon/.mcp.json"
 fi
 
-echo ""
-echo "STEP: 🔗 Symlinking AI configurations"
+print_step "🔗 Symlinking AI configurations"
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would create symlinks for AI configurations"
   record_step "AI config symlinks" "dry-run" "CLAUDE.md, GEMINI.md"
@@ -269,8 +274,7 @@ else
   record_step "AI config symlinks" "done" "CLAUDE.md, GEMINI.md (${SYMLINK_REPLACED} replaced)"
 fi
 
-echo ""
-echo "STEP: 🤖 copying Claude Code configuration files"
+print_step "🤖 copying Claude Code configuration files"
 # Ensure ~/.claude directory exists
 mkdir -p "$HOME/.claude"
 
@@ -335,8 +339,7 @@ else
   record_step "Claude Code mcp.json" "skipped" "source missing"
 fi
 
-echo ""
-echo "STEP: 🤖 copying Gemini configuration files"
+print_step "🤖 copying Gemini configuration files"
 # Ensure ~/.gemini directory exists
 mkdir -p "$HOME/.gemini"
 
@@ -361,8 +364,7 @@ else
   record_step "Gemini settings.json" "skipped" "source missing"
 fi
 
-echo ""
-echo "STEP: 💾 copying shell configuration files e.g., bash, fish, zsh"
+print_step "💾 copying shell configuration files e.g., bash, fish, zsh"
 echo "🐚 shell is $SHELL"
 SHELL_COPIED=()
 SHELL_DRY_RUN_USED=false
@@ -776,8 +778,7 @@ cleanup_backups() {
     fi
 }
 
-echo ""
-echo "STEP: 💾 copying VS Code IDE configs"
+print_step "💾 copying VS Code IDE configs"
 if check_vscode_installed; then
     copy_vscode_settings
     if [ "$DRY_RUN" = true ]; then
@@ -790,8 +791,7 @@ else
     record_step "VS Code configs" "skipped" "VS Code not installed"
 fi
 
-echo ""
-echo "STEP: 💾 copying Zed IDE configs"
+print_step "💾 copying Zed IDE configs"
 if command -v zed &> /dev/null; then
     copy_zed_settings
     if [ "$DRY_RUN" = true ]; then
@@ -804,8 +804,7 @@ else
     record_step "Zed configs" "skipped" "Zed not installed"
 fi
 
-echo ""
-echo "STEP: 👻 copying Ghostty terminal config"
+print_step "👻 copying Ghostty terminal config"
 if brew list --cask ghostty &> /dev/null 2>&1; then
     copy_ghostty_settings
     if [ "$DRY_RUN" = true ]; then
@@ -818,8 +817,7 @@ else
     record_step "Ghostty config" "skipped" "Ghostty not installed"
 fi
 
-echo ""
-echo "STEP: 🚀 copying Starship prompt config"
+print_step "🚀 copying Starship prompt config"
 if command -v starship &> /dev/null; then
     copy_starship_settings
     if [ "$DRY_RUN" = true ]; then
@@ -832,8 +830,7 @@ else
     record_step "Starship config" "skipped" "Starship not installed"
 fi
 
-echo ""
-echo "STEP: copying Atuin config"
+print_step "copying Atuin config"
 if command -v atuin &> /dev/null; then
     copy_atuin_settings
     if [ "$DRY_RUN" = true ]; then
@@ -846,8 +843,7 @@ else
     record_step "Atuin config" "skipped" "Atuin not installed"
 fi
 
-echo ""
-echo "STEP: 💾 copying Neovim config"
+print_step "💾 copying Neovim config"
 if command -v nvim &> /dev/null; then
     copy_nvim_settings
     if [ "$DRY_RUN" = true ]; then
@@ -860,8 +856,7 @@ else
     record_step "Neovim config" "skipped" "Neovim not installed"
 fi
 
-echo ""
-echo "STEP: 🪿 copying Goose config"
+print_step "🪿 copying Goose config"
 if command -v goose &> /dev/null; then
     copy_goose_settings
     if [ "$DRY_RUN" = true ]; then
@@ -874,8 +869,7 @@ else
     record_step "Goose config" "skipped" "Goose not installed"
 fi
 
-echo ""
-echo "STEP: 🖱️  copying Cursor CLI config"
+print_step "🖱️  copying Cursor CLI config"
 if command -v cursor-agent &> /dev/null; then
     copy_cursor_settings
     if [ "$DRY_RUN" = true ]; then
@@ -888,8 +882,7 @@ else
     record_step "Cursor CLI config" "skipped" "Cursor CLI not installed"
 fi
 
-echo ""
-echo "STEP: 🍎 configuring macOS defaults"
+print_step "🍎 configuring macOS defaults"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/mac/macos.sh" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -920,8 +913,7 @@ else
     record_step "macOS defaults" "skipped" "non-Darwin system"
 fi
 
-echo ""
-echo "STEP: 🧹 Cleaning up old backups"
+print_step "🧹 Cleaning up old backups"
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] Would clean up old backup files, keeping only the 2 most recent."
     record_step "Backup cleanup" "dry-run" "would clean old backups"
@@ -964,8 +956,7 @@ else
     fi
 fi
 
-echo ""
-echo "STEP: 🔑 Configuring SSH github.com keychain integration"
+print_step "🔑 Configuring SSH github.com keychain integration"
 # Adds a github.com block to ~/.ssh/config with UseKeychain + AddKeysToAgent so
 # the SSH key is auto-loaded into the system ssh-agent from macOS keychain on
 # first use after reboot/sleep. Intentionally omits IdentityFile so this is
@@ -1022,8 +1013,7 @@ else
     fi
 fi
 
-echo ""
-echo "STEP: 🔄 Keeping sibling repos current (repo-current)"
+print_step "🔄 Keeping sibling repos current (repo-current)"
 # Resolve the parent of dotfiles to a clean absolute path so the displayed
 # repo-current location doesn't include a literal "..".
 REPO_CURRENT_PARENT="$(cd "$DOTFILES_PATH/.." && pwd)"
@@ -1254,4 +1244,8 @@ fi
 
 echo ""
 echo "Totals: ${COUNT_DONE} done, ${COUNT_SKIPPED} skipped, ${COUNT_FAILED} failed, ${COUNT_DRY} dry-run"
+echo ""
+INSTALL_COMPLETED="$(now_stamp)"
+echo "Started:   $INSTALL_STARTED"
+echo "Completed: $INSTALL_COMPLETED"
 echo ""
