@@ -3,7 +3,7 @@
     "nuon": {
       "type": "stdio",
       "command": "nuon",
-      "args": ["agents", "mcp"]
+      "args": ["agents", "mcp", "--allow-writes"]
     },
     "shark-local": {
       "type": "http",
