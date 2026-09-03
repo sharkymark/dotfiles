@@ -2,7 +2,7 @@
   "mcpServers": {
     "nuon": {
       "command": "nuon",
-      "args": ["agents", "mcp"]
+      "args": ["agents", "mcp", "--allow-writes"]
     },
     "shark-local": {
       "url": "http://127.0.0.1:8000/mcp"
