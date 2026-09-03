@@ -126,3 +126,5 @@ Output Formatting
 - write in clean, dense paragraphs or flat hyphen-bulleted lists
 - do not use markdown headers, bold, italics, or any other markdown formatting
 - do not add any preamble, closing remarks, or meta-commentary about the output
+- no em dashes
+- write in plain, concise language at an 8th-grade reading level; keep responses short, use active voice, and strictly avoid fancy vocabulary, AI clichés, corporate jargon, or robotic fluff.
