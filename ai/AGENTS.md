@@ -120,6 +120,7 @@ Bash:
 Nuon:
 - for any Nuon work, first check whether the Nuon MCP is available in this session
 - if the Nuon MCP is available, use only the Nuon MCP; do not run the Nuon CLI
+- when Nuon MCP is available, do not shell out to python, jq, or other scripts to parse MCP dumps; read tool results and call narrower MCP tools if a response is large
 - use the Nuon CLI only when the Nuon MCP is not available
 - when falling back to the Nuon CLI, tell the user in the agent UI that the Nuon MCP is unavailable and that you are using the Nuon CLI instead
 
