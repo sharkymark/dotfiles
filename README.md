@@ -33,6 +33,11 @@ This script copies configuration files to their appropriate locations:
 
 On macOS, also runs Homebrew package installation and system defaults.
 
+Each run also installs any missing Nuon CLI extensions from the marketplace, upgrades
+installed ones, updates global Claude skills (via `npx skills`), and refreshes Claude
+plugin marketplaces plus installed plugins, with a progress bar and a Tool updates
+section in the final summary.
+
 ## Goose Configuration
 
 The vendored `goose/config.yaml` has no provider or model pinned — pass them as
