@@ -35,6 +35,7 @@ export DOTFILES_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STEP_RESULTS=()
 BREW_CHANGES=""
 REPO_CURRENT_CHANGES=""
+TOOL_UPDATES_CHANGES=""
 BACKUP_DELETED_TOTAL=0
 
 record_step() {
@@ -43,6 +44,64 @@ record_step() {
     local status="$2"
     local detail="${3:--}"
     STEP_RESULTS+=("${status}"$'\t'"${name}"$'\t'"${detail}")
+}
+
+# TTY progress bar: [=====>----] 3/11 label
+# Non-TTY: one plain line per tick (no \r redraws).
+progress_bar() {
+    local current="$1"
+    local total="$2"
+    local label="${3:-}"
+    local width=20
+    local filled empty bar empty_bar
+    if [ "$total" -le 0 ]; then
+        total=1
+    fi
+    if [ "$current" -gt "$total" ]; then
+        current="$total"
+    fi
+    filled=$(( current * width / total ))
+    empty=$(( width - filled ))
+    if [ "$filled" -gt 0 ]; then
+        bar=$(printf '%*s' "$filled" '' | tr ' ' '=')
+        if [ "$filled" -lt "$width" ]; then
+            bar="${bar%?}>"
+        fi
+    else
+        bar=""
+    fi
+    empty_bar=$(printf '%*s' "$empty" '' | tr ' ' '-')
+    if [ -t 1 ]; then
+        printf '\r[%s%s] %s/%s %s' "$bar" "$empty_bar" "$current" "$total" "$label"
+        if [ "$current" -ge "$total" ]; then
+            printf '\n'
+        fi
+    else
+        printf '[%s%s] %s/%s %s\n' "$bar" "$empty_bar" "$current" "$total" "$label"
+    fi
+}
+
+# Clear an in-progress TTY progress line before printing a normal status line.
+progress_clear_line() {
+    if [ -t 1 ]; then
+        printf '\r\033[K'
+    fi
+}
+
+append_tool_change() {
+    # Usage: append_tool_change <line>
+    TOOL_UPDATES_CHANGES+="  $1"$'\n'
+}
+
+# Record a version change in the summary and print it live.
+# Usage: report_upgrade <name> <before> <after>
+report_upgrade() {
+    local name="$1"
+    local before="$2"
+    local after="$3"
+    progress_clear_line
+    echo "  upgraded: $name  $before -> $after"
+    append_tool_change "upgraded: $name $before -> $after"
 }
 
 # Sets COPY_BACKUP=true if target exists before the copy, false otherwise.
@@ -1013,6 +1072,547 @@ else
     fi
 fi
 
+# ---------------------------------------------------------------------------
+# Keep Nuon extensions (install missing from marketplace, then upgrade),
+# Claude skills, and Claude plugins current.
+# Progress bars advance per item; diffs feed TOOL_UPDATES_CHANGES.
+# ---------------------------------------------------------------------------
+
+print_step "Installing and upgrading Nuon CLI extensions"
+if ! command -v nuon &> /dev/null; then
+    echo "- skipping: nuon not installed"
+    record_step "Nuon extensions" "skipped" "nuon not installed"
+else
+    # Marketplace browse prints a "Found N extension(s)" line before JSON.
+    # Prefer --output agent ({ok,data}) and fall back to stripping to the first [/{.
+    NUON_BROWSE_RAW=$(nuon extensions browse --output agent 2>/dev/null || true)
+    NUON_MISSING=$(python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+# Strip any leading non-JSON banner lines
+start = raw.find("{")
+if start < 0:
+    start = raw.find("[")
+if start > 0:
+    raw = raw[start:]
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+items = data.get("data") if isinstance(data, dict) else data
+if not isinstance(items, list):
+    sys.exit(0)
+for item in items:
+    if not isinstance(item, dict):
+        continue
+    if item.get("installed"):
+        continue
+    name = item.get("name") or ""
+    repo = item.get("repo") or name
+    tag = item.get("latest_tag") or ""
+    if name:
+        print("%s\t%s\t%s" % (name, repo, tag))
+' <<< "$NUON_BROWSE_RAW")
+    NUON_MISSING_TOTAL=$(printf '%s\n' "$NUON_MISSING" | awk 'NF' | wc -l | tr -d ' ')
+
+    NUON_LIST_JSON=$(nuon extensions list --output json 2>/dev/null || true)
+    NUON_NAMES=$(python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
+if not isinstance(items, list):
+    sys.exit(0)
+for item in items:
+    name = item.get("name") or ""
+    ver = item.get("version") or item.get("tag") or "?"
+    if name:
+        print(f"{name}\t{ver}")
+' <<< "$NUON_LIST_JSON")
+    NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
+
+    if [ "$NUON_MISSING_TOTAL" -eq 0 ] && [ "$NUON_TOTAL" -eq 0 ]; then
+        echo "- no Nuon marketplace extensions found and none installed"
+        record_step "Nuon extensions" "skipped" "none available"
+    elif [ "$DRY_RUN" = true ]; then
+        if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
+            echo "[DRY RUN] Would install $NUON_MISSING_TOTAL marketplace extension(s):"
+            while IFS=$'\t' read -r name repo tag; do
+                [ -z "$name" ] && continue
+                if [ -n "$tag" ]; then
+                    echo "  - $name ($repo@$tag)"
+                else
+                    echo "  - $name ($repo)"
+                fi
+            done <<< "$NUON_MISSING"
+        else
+            echo "[DRY RUN] All marketplace extensions already installed"
+        fi
+        if [ "$NUON_TOTAL" -gt 0 ]; then
+            echo "[DRY RUN] Would upgrade $NUON_TOTAL installed Nuon extension(s):"
+            while IFS=$'\t' read -r name ver; do
+                [ -z "$name" ] && continue
+                echo "  - $name ($ver)"
+            done <<< "$NUON_NAMES"
+        fi
+        record_step "Nuon extensions" "dry-run" "would install $NUON_MISSING_TOTAL, upgrade $NUON_TOTAL"
+    else
+        TOOL_UPDATES_CHANGES+="Nuon extensions:"$'\n'
+        NUON_INSTALLED=0
+        NUON_UPGRADED=0
+        NUON_UNCHANGED=0
+        NUON_FAILED=0
+
+        # Install missing marketplace extensions first.
+        if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
+            echo "- installing $NUON_MISSING_TOTAL missing marketplace extension(s)"
+            NUON_I=0
+            while IFS=$'\t' read -r name repo tag; do
+                [ -z "$name" ] && continue
+                NUON_I=$((NUON_I + 1))
+                progress_bar "$NUON_I" "$NUON_MISSING_TOTAL" "install $name"
+                # Short name works for nuonco marketplace; use name for install.
+                NUON_OUT=$(nuon extensions install "$name" --output agent 2>/dev/null || true)
+                if printf '%s' "$NUON_OUT" | grep -Fq '"ok":true'; then
+                    NUON_INSTALLED=$((NUON_INSTALLED + 1))
+                    progress_clear_line
+                    echo "  installed: $name"
+                    append_tool_change "installed: $name"
+                else
+                    NUON_FAILED=$((NUON_FAILED + 1))
+                    progress_clear_line
+                    echo "  failed: install $name"
+                    append_tool_change "failed: install $name"
+                fi
+            done <<< "$NUON_MISSING"
+        else
+            echo "- all marketplace extensions already installed"
+            append_tool_change "marketplace: all already installed"
+        fi
+
+        # Re-list after installs so upgrades cover newly installed extensions.
+        NUON_LIST_JSON=$(nuon extensions list --output json 2>/dev/null || true)
+        NUON_NAMES=$(python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
+if not isinstance(items, list):
+    sys.exit(0)
+for item in items:
+    name = item.get("name") or ""
+    ver = item.get("version") or item.get("tag") or "?"
+    if name:
+        print(f"{name}\t{ver}")
+' <<< "$NUON_LIST_JSON")
+        NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
+
+        if [ "$NUON_TOTAL" -eq 0 ]; then
+            NUON_DETAIL="${NUON_INSTALLED} installed, 0 upgraded, ${NUON_FAILED} failed"
+            if [ "$NUON_FAILED" -gt 0 ]; then
+                record_step "Nuon extensions" "failed" "$NUON_DETAIL"
+            else
+                record_step "Nuon extensions" "done" "$NUON_DETAIL"
+            fi
+            echo "- $NUON_DETAIL"
+        else
+            NUON_I=0
+            # bash 3.2 has no associative arrays on macOS default bash — use temp files
+            NUON_BEFORE_FILE=$(mktemp -t nuon-before.XXXXXX)
+            NUON_AFTER_FILE=$(mktemp -t nuon-after.XXXXXX)
+            printf '%s\n' "$NUON_NAMES" > "$NUON_BEFORE_FILE"
+            while IFS=$'\t' read -r name ver; do
+                [ -z "$name" ] && continue
+                NUON_I=$((NUON_I + 1))
+                progress_bar "$NUON_I" "$NUON_TOTAL" "upgrade $name ($ver)"
+                # Per-name upgrade exits 1 when already latest; treat that as success.
+                NUON_OUT=$(nuon extensions upgrade "$name" --output agent 2>/dev/null || true)
+                if printf '%s' "$NUON_OUT" | grep -Fq '"error"'; then
+                    if printf '%s' "$NUON_OUT" | grep -Fq 'already at the latest'; then
+                        :
+                    else
+                        NUON_FAILED=$((NUON_FAILED + 1))
+                        progress_clear_line
+                        echo "  failed: $name (was $ver)"
+                        append_tool_change "failed: $name (was $ver; upgrade error)"
+                    fi
+                fi
+            done <<< "$NUON_NAMES"
+            NUON_LIST_AFTER=$(nuon extensions list --output json 2>/dev/null || true)
+            python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
+if not isinstance(items, list):
+    sys.exit(0)
+for item in items:
+    name = item.get("name") or ""
+    ver = item.get("version") or item.get("tag") or "?"
+    if name:
+        print(f"{name}\t{ver}")
+' <<< "$NUON_LIST_AFTER" > "$NUON_AFTER_FILE"
+            while IFS=$'\t' read -r name before_ver; do
+                [ -z "$name" ] && continue
+                after_ver=$(awk -F'\t' -v n="$name" '$1==n {print $2; exit}' "$NUON_AFTER_FILE")
+                after_ver="${after_ver:-?}"
+                if printf '%s' "$TOOL_UPDATES_CHANGES" | grep -Fq "failed: $name "; then
+                    continue
+                fi
+                # Newly installed this run: already counted under installed.
+                if printf '%s' "$TOOL_UPDATES_CHANGES" | grep -Fq "installed: $name"; then
+                    continue
+                fi
+                if [ "$before_ver" != "$after_ver" ]; then
+                    NUON_UPGRADED=$((NUON_UPGRADED + 1))
+                    report_upgrade "$name" "$before_ver" "$after_ver"
+                else
+                    NUON_UNCHANGED=$((NUON_UNCHANGED + 1))
+                    append_tool_change "unchanged: $name ($before_ver)"
+                fi
+            done < "$NUON_BEFORE_FILE"
+            rm -f "$NUON_BEFORE_FILE" "$NUON_AFTER_FILE"
+            NUON_DETAIL="${NUON_INSTALLED} installed, ${NUON_UPGRADED} upgraded, ${NUON_UNCHANGED} unchanged, ${NUON_FAILED} failed"
+            if [ "$NUON_FAILED" -gt 0 ]; then
+                record_step "Nuon extensions" "failed" "$NUON_DETAIL"
+            else
+                record_step "Nuon extensions" "done" "$NUON_DETAIL"
+            fi
+            echo "- $NUON_DETAIL"
+        fi
+    fi
+fi
+
+print_step "Updating Claude skills"
+if ! command -v npx &> /dev/null; then
+    echo "- skipping: npx not installed"
+    record_step "Claude skills" "skipped" "npx not installed"
+else
+    SKILLS_JSON=$(npx --yes skills list -g --json 2>/dev/null || true)
+    SKILLS_ROWS=$(python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+if not isinstance(data, list):
+    sys.exit(0)
+for item in data:
+    name = item.get("name") or ""
+    source = item.get("source") or ""
+    if name:
+        remote = "1" if source else "0"
+        label = source if source else "local"
+        print("%s\t%s\t%s" % (name, label, remote))
+' <<< "$SKILLS_JSON")
+    SKILLS_TOTAL=$(printf '%s\n' "$SKILLS_ROWS" | awk 'NF' | wc -l | tr -d ' ')
+    if [ "$SKILLS_TOTAL" -eq 0 ]; then
+        echo "- no global Claude skills installed"
+        record_step "Claude skills" "skipped" "none installed"
+    elif [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would check/update $SKILLS_TOTAL skill(s):"
+        while IFS=$'\t' read -r name source remote; do
+            [ -z "$name" ] && continue
+            cur=$(python3 -c '
+import json, os, sys, hashlib
+name, skills_json = sys.argv[1], sys.argv[2]
+ver = ""
+lock_path = os.path.expanduser("~/.agents/.skill-lock.json")
+if os.path.isfile(lock_path):
+    try:
+        with open(lock_path) as f:
+            lock = json.load(f).get("skills") or {}
+        if name in lock and lock[name].get("skillFolderHash"):
+            ver = lock[name]["skillFolderHash"][:12]
+    except Exception:
+        pass
+if not ver:
+    try:
+        data = json.loads(skills_json) if skills_json else []
+    except Exception:
+        data = []
+    for item in data if isinstance(data, list) else []:
+        if item.get("name") != name:
+            continue
+        path = item.get("path") or ""
+        if path and os.path.isdir(path):
+            h = hashlib.sha256()
+            for root, _, files in os.walk(path):
+                for f in sorted(files):
+                    fp = os.path.join(root, f)
+                    try:
+                        with open(fp, "rb") as fh:
+                            h.update(fh.read())
+                    except OSError:
+                        pass
+            ver = h.hexdigest()[:12]
+        break
+print(ver or "?")
+' "$name" "$SKILLS_JSON")
+            if [ "$remote" = "1" ]; then
+                echo "  - $name (update from $source, current $cur)"
+            else
+                echo "  - $name (local $cur, skip remote update)"
+            fi
+        done <<< "$SKILLS_ROWS"
+        record_step "Claude skills" "dry-run" "would check $SKILLS_TOTAL"
+    else
+        TOOL_UPDATES_CHANGES+="Claude skills:"$'\n'
+        SKILLS_UPGRADED=0
+        SKILLS_UNCHANGED=0
+        SKILLS_SKIPPED=0
+        SKILLS_FAILED=0
+        SKILLS_I=0
+        SKILLS_BEFORE_FILE=$(mktemp -t skills-before.XXXXXX)
+        # Prefer skill-lock folder hashes; fall back to content digest of the skill path.
+        python3 -c '
+import json, sys, os, hashlib
+raw = sys.stdin.read().strip()
+data = json.loads(raw) if raw else []
+lock_path = os.path.expanduser("~/.agents/.skill-lock.json")
+lock = {}
+if os.path.isfile(lock_path):
+    try:
+        with open(lock_path) as f:
+            lock = json.load(f).get("skills") or {}
+    except Exception:
+        lock = {}
+for item in data if isinstance(data, list) else []:
+    name = item.get("name") or ""
+    path = item.get("path") or ""
+    source = item.get("source") or "local"
+    ver = ""
+    if name in lock and lock[name].get("skillFolderHash"):
+        ver = lock[name]["skillFolderHash"][:12]
+    elif path and os.path.isdir(path):
+        h = hashlib.sha256()
+        for root, _, files in os.walk(path):
+            for f in sorted(files):
+                fp = os.path.join(root, f)
+                try:
+                    with open(fp, "rb") as fh:
+                        h.update(fh.read())
+                except OSError:
+                    pass
+        ver = h.hexdigest()[:12]
+    if name:
+        print("%s\t%s\t%s" % (name, source, ver or "?"))
+' <<< "$SKILLS_JSON" > "$SKILLS_BEFORE_FILE"
+        while IFS=$'\t' read -r name source remote; do
+            [ -z "$name" ] && continue
+            SKILLS_I=$((SKILLS_I + 1))
+            before_ver=$(awk -F'\t' -v n="$name" '$1==n {print $3; exit}' "$SKILLS_BEFORE_FILE")
+            before_ver="${before_ver:-?}"
+            progress_bar "$SKILLS_I" "$SKILLS_TOTAL" "$name ($before_ver)"
+            if [ "$remote" != "1" ]; then
+                SKILLS_SKIPPED=$((SKILLS_SKIPPED + 1))
+                append_tool_change "skipped: $name (local, $before_ver)"
+                continue
+            fi
+            if npx --yes skills update "$name" -g -y >/dev/null 2>&1; then
+                after_ver=$(python3 -c '
+import json, sys, os, hashlib
+name = sys.argv[1]
+lock_path = os.path.expanduser("~/.agents/.skill-lock.json")
+ver = ""
+if os.path.isfile(lock_path):
+    try:
+        with open(lock_path) as f:
+            lock = json.load(f).get("skills") or {}
+        if name in lock and lock[name].get("skillFolderHash"):
+            ver = lock[name]["skillFolderHash"][:12]
+    except Exception:
+        pass
+if not ver:
+    # Fall back to hashing the skill path from a fresh list
+    pass
+print(ver)
+' "$name")
+                if [ -z "$after_ver" ]; then
+                    after_json=$(npx --yes skills list -g --json 2>/dev/null || true)
+                    after_ver=$(python3 -c '
+import json, sys, os, hashlib
+name = sys.argv[1]
+raw = sys.stdin.read().strip()
+data = json.loads(raw) if raw else []
+for item in data if isinstance(data, list) else []:
+    if item.get("name") != name:
+        continue
+    path = item.get("path") or ""
+    if path and os.path.isdir(path):
+        h = hashlib.sha256()
+        for root, _, files in os.walk(path):
+            for f in sorted(files):
+                fp = os.path.join(root, f)
+                try:
+                    with open(fp, "rb") as fh:
+                        h.update(fh.read())
+                except OSError:
+                    pass
+        print(h.hexdigest()[:12])
+    break
+' "$name" <<< "$after_json")
+                fi
+                after_ver="${after_ver:-?}"
+                if [ "$before_ver" != "$after_ver" ]; then
+                    SKILLS_UPGRADED=$((SKILLS_UPGRADED + 1))
+                    report_upgrade "$name" "$before_ver" "$after_ver"
+                else
+                    SKILLS_UNCHANGED=$((SKILLS_UNCHANGED + 1))
+                    append_tool_change "unchanged: $name ($before_ver)"
+                fi
+            else
+                SKILLS_FAILED=$((SKILLS_FAILED + 1))
+                progress_clear_line
+                echo "  failed: $name (was $before_ver)"
+                append_tool_change "failed: $name (was $before_ver; update exit non-zero)"
+            fi
+        done <<< "$SKILLS_ROWS"
+        rm -f "$SKILLS_BEFORE_FILE"
+        SKILLS_DETAIL="${SKILLS_UPGRADED} upgraded, ${SKILLS_UNCHANGED} unchanged, ${SKILLS_SKIPPED} skipped, ${SKILLS_FAILED} failed"
+        if [ "$SKILLS_FAILED" -gt 0 ]; then
+            record_step "Claude skills" "failed" "$SKILLS_DETAIL"
+        else
+            record_step "Claude skills" "done" "$SKILLS_DETAIL"
+        fi
+        echo "- $SKILLS_DETAIL"
+    fi
+fi
+
+print_step "Updating Claude plugins"
+if ! command -v claude &> /dev/null; then
+    echo "- skipping: claude not installed"
+    record_step "Claude plugins" "skipped" "claude not installed"
+else
+    PLUGINS_JSON=$(claude plugin list --json 2>/dev/null || true)
+    PLUGINS_ROWS=$(python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+if not isinstance(data, list):
+    sys.exit(0)
+for item in data:
+    pid = item.get("id") or ""
+    ver = item.get("version") or "?"
+    if pid:
+        print(f"{pid}\t{ver}")
+' <<< "$PLUGINS_JSON")
+    PLUGINS_TOTAL=$(printf '%s\n' "$PLUGINS_ROWS" | awk 'NF' | wc -l | tr -d ' ')
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would update Claude marketplaces, then $PLUGINS_TOTAL plugin(s):"
+        while IFS=$'\t' read -r pid ver; do
+            [ -z "$pid" ] && continue
+            echo "  - $pid ($ver)"
+        done <<< "$PLUGINS_ROWS"
+        record_step "Claude plugins" "dry-run" "would update marketplaces + $PLUGINS_TOTAL plugins"
+    else
+        TOOL_UPDATES_CHANGES+="Claude plugins:"$'\n'
+        PLUGINS_UPGRADED=0
+        PLUGINS_UNCHANGED=0
+        PLUGINS_FAILED=0
+        echo "- refreshing marketplaces..."
+        progress_bar 1 1 "marketplaces"
+        if ! claude plugin marketplace update >/dev/null 2>&1; then
+            append_tool_change "failed: marketplace update (exit non-zero)"
+            PLUGINS_FAILED=$((PLUGINS_FAILED + 1))
+        else
+            append_tool_change "refreshed: marketplaces"
+        fi
+        if [ "$PLUGINS_TOTAL" -eq 0 ]; then
+            echo "- no Claude plugins installed"
+            if [ "$PLUGINS_FAILED" -gt 0 ]; then
+                record_step "Claude plugins" "failed" "marketplace failed, 0 plugins"
+            else
+                record_step "Claude plugins" "done" "marketplaces refreshed, 0 plugins"
+            fi
+        else
+            PLUGINS_BEFORE_FILE=$(mktemp -t plugins-before.XXXXXX)
+            printf '%s\n' "$PLUGINS_ROWS" > "$PLUGINS_BEFORE_FILE"
+            PLUGINS_I=0
+            while IFS=$'\t' read -r pid ver; do
+                [ -z "$pid" ] && continue
+                PLUGINS_I=$((PLUGINS_I + 1))
+                progress_bar "$PLUGINS_I" "$PLUGINS_TOTAL" "$pid ($ver)"
+                if claude plugin update "$pid" -y >/dev/null 2>&1; then
+                    :
+                else
+                    PLUGINS_FAILED=$((PLUGINS_FAILED + 1))
+                    progress_clear_line
+                    echo "  failed: $pid (was $ver)"
+                    append_tool_change "failed: $pid (was $ver; update exit non-zero)"
+                fi
+            done <<< "$PLUGINS_ROWS"
+            PLUGINS_AFTER_JSON=$(claude plugin list --json 2>/dev/null || true)
+            PLUGINS_AFTER_FILE=$(mktemp -t plugins-after.XXXXXX)
+            python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+if not isinstance(data, list):
+    sys.exit(0)
+for item in data:
+    pid = item.get("id") or ""
+    ver = item.get("version") or "?"
+    if pid:
+        print(f"{pid}\t{ver}")
+' <<< "$PLUGINS_AFTER_JSON" > "$PLUGINS_AFTER_FILE"
+            while IFS=$'\t' read -r pid before_ver; do
+                [ -z "$pid" ] && continue
+                if printf '%s' "$TOOL_UPDATES_CHANGES" | grep -Fq "failed: $pid "; then
+                    continue
+                fi
+                after_ver=$(awk -F'\t' -v n="$pid" '$1==n {print $2; exit}' "$PLUGINS_AFTER_FILE")
+                after_ver="${after_ver:-?}"
+                if [ "$before_ver" != "$after_ver" ]; then
+                    PLUGINS_UPGRADED=$((PLUGINS_UPGRADED + 1))
+                    report_upgrade "$pid" "$before_ver" "$after_ver"
+                else
+                    PLUGINS_UNCHANGED=$((PLUGINS_UNCHANGED + 1))
+                    append_tool_change "unchanged: $pid ($before_ver)"
+                fi
+            done < "$PLUGINS_BEFORE_FILE"
+            rm -f "$PLUGINS_BEFORE_FILE" "$PLUGINS_AFTER_FILE"
+            PLUGINS_DETAIL="${PLUGINS_UPGRADED} upgraded, ${PLUGINS_UNCHANGED} unchanged, ${PLUGINS_FAILED} failed"
+            if [ "$PLUGINS_FAILED" -gt 0 ]; then
+                record_step "Claude plugins" "failed" "$PLUGINS_DETAIL"
+            else
+                record_step "Claude plugins" "done" "$PLUGINS_DETAIL"
+            fi
+            echo "- $PLUGINS_DETAIL"
+        fi
+    fi
+fi
+
 print_step "🔄 Keeping sibling repos current (repo-current)"
 # Resolve the parent of dotfiles to a clean absolute path so the displayed
 # repo-current location doesn't include a literal "..".
@@ -1232,6 +1832,14 @@ if [ -z "$BREW_CHANGES" ]; then
 else
     # Trim trailing newline if present
     printf '%s' "$BREW_CHANGES"
+fi
+
+echo ""
+echo "Tool updates:"
+if [ -z "$TOOL_UPDATES_CHANGES" ]; then
+    echo "  (not run, or no changes)"
+else
+    printf '%s' "$TOOL_UPDATES_CHANGES"
 fi
 
 echo ""
