@@ -23,6 +23,48 @@ if [ "$DRY_RUN" = true ]; then
     echo ""
 fi
 
+# Abort if default IPv4 traffic is routed through a tunnel interface.
+# Full-tunnel VPNs change public egress and can flag partner GitHub admins.
+# Mesh overlays (without an exit node) leave the default route on Wi-Fi/Ethernet.
+default_iface=""
+case "$(uname -s)" in
+    Darwin)
+        default_iface=$(route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}')
+        ;;
+    Linux)
+        default_iface=$(ip -4 route show default 2>/dev/null | awk '{for (i = 1; i <= NF; i++) if ($i == "dev") { print $(i + 1); exit }}')
+        ;;
+esac
+
+vpn_default=false
+if [ -n "$default_iface" ]; then
+    case "$(uname -s)" in
+        Darwin)
+            case "$default_iface" in
+                utun*|ipsec*|ppp*|tun*|wg*) vpn_default=true ;;
+            esac
+            ;;
+        Linux)
+            if [ -r "/sys/class/net/$default_iface/type" ]; then
+                if [ "$(cat "/sys/class/net/$default_iface/type")" != "1" ]; then
+                    vpn_default=true
+                fi
+            else
+                case "$default_iface" in
+                    tun*|wg*|ppp*|ipsec*) vpn_default=true ;;
+                esac
+            fi
+            ;;
+    esac
+fi
+
+if [ "$vpn_default" = true ]; then
+    echo "ERROR: A VPN (or other tunnel) owns the default network route (interface: $default_iface)."
+    echo "Shut down the VPN (mesh overlays without an exit node are fine), then re-run."
+    echo "Your default route should be Wi-Fi or Ethernet, not a tunnel."
+    exit 1
+fi
+
 INSTALL_STARTED="$(now_stamp)"
 echo "RUNNING dotfiles repo install.sh"
 echo "Started: $INSTALL_STARTED"
