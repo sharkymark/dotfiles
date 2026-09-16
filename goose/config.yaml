@@ -41,6 +41,17 @@ extensions:
     timeout: 300
     type: streamable_http
     uri: https://mcp.mail.superhuman.com/mcp
+  pylon:
+    bundled: null
+    description: Pylon MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: pylon
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.usepylon.com/
   linear:
     bundled: null
     description: Linear MCP server

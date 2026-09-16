@@ -61,6 +61,9 @@
         "--no-telemetry"
       ]
     },
+    "pylon": {
+      "url": "https://mcp.usepylon.com/"
+    },
     "linear": {
       "url": "https://mcp.linear.app/mcp"
     },
