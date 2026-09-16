@@ -85,6 +85,17 @@ extensions:
     timeout: 300
     type: streamable_http
     uri: https://mcp.lovable.dev
+  notion:
+    bundled: null
+    description: Notion MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: notion
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.notion.com/mcp
   salesforce-dx:
     args:
     - -y

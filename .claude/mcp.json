@@ -84,6 +84,10 @@
     "lovable": {
       "type": "http",
       "url": "https://mcp.lovable.dev"
+    },
+    "notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp"
     }
   }
 }
