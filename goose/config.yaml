@@ -63,6 +63,17 @@ extensions:
     timeout: 300
     type: streamable_http
     uri: https://mcp.airtable.com/mcp
+  lovable:
+    bundled: null
+    description: Lovable MCP server
+    enabled: true
+    env_keys: []
+    envs: {}
+    headers: {}
+    name: lovable
+    timeout: 300
+    type: streamable_http
+    uri: https://mcp.lovable.dev
   salesforce-dx:
     args:
     - -y
