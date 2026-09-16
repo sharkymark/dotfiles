@@ -2,7 +2,10 @@
 
 # Parse arguments
 DRY_RUN=false
-SHOW_REPO_PATH=false
+# On by default so "Repo-current changes" lists ~/… paths, not bare basenames.
+# Pass --no-show-repo-path to keep basename-only lines (or when using an older
+# git_pull_all.sh that already prints paths and you want to skip the rewrite).
+SHOW_REPO_PATH=true
 for arg in "$@"; do
     case "$arg" in
         --dry-run|-n)
@@ -10,6 +13,9 @@ for arg in "$@"; do
             ;;
         --show-repo-path)
             SHOW_REPO_PATH=true
+            ;;
+        --no-show-repo-path)
+            SHOW_REPO_PATH=false
             ;;
     esac
 done
