@@ -1,9 +1,42 @@
 {
   "mcpServers": {
-    "nuon": {
+    "nuon-byoc": {
       "type": "stdio",
       "command": "nuon",
-      "args": ["agents", "mcp", "--allow-writes"]
+      "args": [
+        "agents",
+        "mcp",
+        "--name",
+        "nuon-byoc",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/byoc"
+      ]
+    },
+    "nuon-demo": {
+      "type": "stdio",
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-demo",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/demo"
+      ]
+    },
+    "nuon-shark": {
+      "type": "stdio",
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-shark",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/shark"
+      ]
     },
     "shark-local": {
       "type": "http",

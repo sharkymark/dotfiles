@@ -1,8 +1,39 @@
 {
   "mcpServers": {
-    "nuon": {
+    "nuon-byoc": {
       "command": "nuon",
-      "args": ["agents", "mcp", "--allow-writes"]
+      "args": [
+        "agents",
+        "mcp",
+        "--name",
+        "nuon-byoc",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/byoc"
+      ]
+    },
+    "nuon-demo": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-demo",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/demo"
+      ]
+    },
+    "nuon-shark": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-shark",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/shark"
+      ]
     },
     "shark-local": {
       "url": "http://127.0.0.1:8000/mcp"
