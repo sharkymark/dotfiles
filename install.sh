@@ -822,6 +822,37 @@ copy_goose_settings() {
     done
 }
 
+copy_amp_settings() {
+    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local amp_config_dir="$HOME/.config/amp"
+    local source="$dotfiles_dir/amp/settings.json"
+    local target="$amp_config_dir/settings.json"
+
+    mkdir -p "$amp_config_dir"
+    AMP_FILES_COPIED=0
+    AMP_BACKUPS=0
+
+    if [ -f "$source" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY RUN] Would copy: $source → $target"
+        else
+            if [ -f "$target" ]; then
+                cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "- backed up existing settings.json"
+                AMP_BACKUPS=$((AMP_BACKUPS + 1))
+            fi
+            if cp "$source" "$target"; then
+                echo "- copied settings.json to $amp_config_dir/"
+                AMP_FILES_COPIED=$((AMP_FILES_COPIED + 1))
+            else
+                echo "- failed to copy settings.json to $amp_config_dir/"
+            fi
+        fi
+    else
+        echo "- amp/settings.json not found in $dotfiles_dir/amp"
+    fi
+}
+
 copy_cursor_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local cursor_config_dir="$HOME/.cursor"
@@ -976,6 +1007,19 @@ else
     record_step "Goose config" "skipped" "Goose not installed"
 fi
 
+print_step "copying Amp config"
+if command -v amp &> /dev/null; then
+    copy_amp_settings
+    if [ "$DRY_RUN" = true ]; then
+        record_step "Amp config" "dry-run" "would copy settings.json"
+    else
+        record_step "Amp config" "done" "${AMP_FILES_COPIED} copied, ${AMP_BACKUPS} backed up"
+    fi
+else
+    echo "Amp is not installed. Skipping Amp configuration."
+    record_step "Amp config" "skipped" "Amp not installed"
+fi
+
 print_step "🖱️  copying Cursor CLI config"
 if command -v cursor-agent &> /dev/null; then
     copy_cursor_settings
@@ -1053,6 +1097,8 @@ else
     cleanup_backups "$HOME/.config/goose" "config.yaml"
     cleanup_backups "$HOME/.config/goose" "permission.yaml"
     cleanup_backups "$HOME/.config/goose" ".gooseignore"
+    # Clean up Amp config backups
+    cleanup_backups "$HOME/.config/amp" "settings.json"
     # Clean up Cursor CLI config backups
     cleanup_backups "$HOME/.cursor" "cli-config.json"
     cleanup_backups "$HOME/.cursor" "mcp.json"

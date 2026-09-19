@@ -1,0 +1,117 @@
+{
+  "amp.mcpServers": {
+    "nuon-byoc": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--name",
+        "nuon-byoc",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/byoc"
+      ]
+    },
+    "nuon-demo": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-demo",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/demo"
+      ]
+    },
+    "nuon-shark": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon-shark",
+        "-C",
+        "/Users/markmilligan/.config/nuon/contexts/shark"
+      ]
+    },
+    "shark-local": {
+      "url": "http://127.0.0.1:8000/mcp"
+    },
+    "grain": {
+      "url": "https://api.grain.com/_/mcp"
+    },
+    "superhuman-mail": {
+      "url": "https://mcp.mail.superhuman.com/mcp"
+    },
+    "nuon-byoc-slack-personal-token": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "slack-mcp-server@latest",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${SLACK_MCP_XOXC_TOKEN_NUON_BYOC}",
+        "SLACK_MCP_XOXD_TOKEN": "${SLACK_MCP_XOXD_TOKEN_NUON_BYOC}"
+      }
+    },
+    "nuonco-slack-personal-token": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "slack-mcp-server@latest",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${SLACK_MCP_XOXC_TOKEN_NUONCO}",
+        "SLACK_MCP_XOXD_TOKEN": "${SLACK_MCP_XOXD_TOKEN_NUONCO}"
+      }
+    },
+    "plausible-analytics": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "plausible-mcp"
+      ],
+      "env": {
+        "PLAUSIBLE_API_KEY": "${PLAUSIBLE_API_KEY}"
+      }
+    },
+    "salesforce-dx": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@salesforce/mcp@latest",
+        "--orgs",
+        "DEFAULT_TARGET_ORG",
+        "--toolsets",
+        "orgs,data,users",
+        "--no-telemetry"
+      ]
+    },
+    "pylon": {
+      "url": "https://mcp.usepylon.com/"
+    },
+    "linear": {
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "airtable": {
+      "url": "https://mcp.airtable.com/mcp"
+    },
+    "lovable": {
+      "url": "https://mcp.lovable.dev"
+    },
+    "notion": {
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ]
+    }
+  }
+}
