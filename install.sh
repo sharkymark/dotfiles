@@ -825,8 +825,10 @@ copy_goose_settings() {
 copy_amp_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local amp_config_dir="$HOME/.config/amp"
+    local amp_share_dir="$HOME/.local/share/amp"
     local source="$dotfiles_dir/amp/settings.json"
     local target="$amp_config_dir/settings.json"
+    local session_file="$amp_share_dir/session.json"
 
     mkdir -p "$amp_config_dir"
     AMP_FILES_COPIED=0
@@ -850,6 +852,39 @@ copy_amp_settings() {
         fi
     else
         echo "- amp/settings.json not found in $dotfiles_dir/amp"
+    fi
+
+    # Amp stores the dial default in session.json, not settings.json.
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would set agentMode=low in $session_file"
+    else
+        mkdir -p "$amp_share_dir"
+        if [ -f "$session_file" ]; then
+            if python3 -c '
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+if data.get("agentMode") == "low":
+    sys.exit(0)
+data["agentMode"] = "low"
+data["pluginAgentModeKey"] = None
+with open(path, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+' "$session_file"; then
+                echo "- set agentMode=low in $session_file"
+            else
+                echo "- failed to set agentMode=low in $session_file"
+            fi
+        else
+            printf '%s\n' '{
+  "agentMode": "low",
+  "pluginAgentModeKey": null,
+  "lastFastModeEnabled": false
+}' > "$session_file"
+            echo "- created $session_file with agentMode=low"
+        fi
     fi
 }
 

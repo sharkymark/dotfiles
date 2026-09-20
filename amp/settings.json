@@ -1,4 +1,11 @@
 {
+  "amp.showCosts": true,
+  "amp.tools.disable": [
+    "web_search",
+    "oracle",
+    "librarian",
+    "painter"
+  ],
   "amp.mcpServers": {
     "nuon": {
       "command": "nuon",
