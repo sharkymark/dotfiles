@@ -91,7 +91,10 @@ These apply when a repo has no CLAUDE.md/AGENTS.md of its own. A repo-level file
 
 Git and commits:
 - do not commit or push unless I ask; if on a default branch, branch first
+- name every new branch mm/<short-description> (kebab-case); apply this whenever a branch is created, not only in worktrees
+- when working in a worktree, rename the branch to mm/<short-description> before the first commit
 - prefer small, focused commits over large mixed ones
+- keep commit messages and PR titles/bodies to the point; never pad with test notes, filler, or meta commentary
 - never add Co-authored-by, Made-with, or any AI, agent, or bot attribution to commit messages, PR titles, or PR bodies
 - never set git author or committer to an agent or bot identity (e.g. cursoragent@cursor.com); commits must use the human user only
 - do not install git hooks to strip or rewrite attribution; fix attribution at the source (agent behavior and Cursor settings) instead
