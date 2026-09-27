@@ -6,6 +6,7 @@
       "args": [
         "agents",
         "mcp",
+        "--allow-writes",
         "--name",
         "nuon"
       ]
