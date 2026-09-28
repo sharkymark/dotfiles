@@ -60,6 +60,25 @@ chrome-debug() {
     2>/dev/null &
 }
 
+# Google Drive Notes shortcut — works whether this Mac uses the old
+# "<email> - Google Drive" mount or the new ~/Library/CloudStorage format
+_gdrive_email="mtm20176@gmail.com"
+_gdrive_new="$HOME/Library/CloudStorage/GoogleDrive-${_gdrive_email}/My Drive/Notes"
+_gdrive_old="$HOME/${_gdrive_email} - Google Drive/My Drive/Notes"
+
+if [ -d "$_gdrive_new" ]; then
+  export GDRIVE_NOTES="$_gdrive_new"
+elif [ -d "$_gdrive_old" ]; then
+  export GDRIVE_NOTES="$_gdrive_old"
+fi
+
+if [ -n "$GDRIVE_NOTES" ]; then
+  alias notes="cd \"$GDRIVE_NOTES\""
+fi
+
+unset _gdrive_email _gdrive_new _gdrive_old
+
+
 #prompt
 #PS1="%n@%m %1~ %# "
 #PS1="🍋 %1~ %# "
