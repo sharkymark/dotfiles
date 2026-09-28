@@ -33,13 +33,17 @@ alias claudeteam='env -u ANTHROPIC_API_KEY claude'
 alias ca='cursor-agent'
 
 # Ghostty: blinking block cursor (bar override if integration already loaded).
+# Snapshot Ghostty's handler once, then re-bind a single wrapper so
+# `source ~/.zshrc` cannot nest forever (FUNCNEST).
 if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
   _ghostty_block_cursor() { print -n $'\e[1 q' >&2; }
-  precmd_functions+=(_ghostty_block_cursor)
+  (( ${precmd_functions[(Ie)_ghostty_block_cursor]} )) || precmd_functions+=(_ghostty_block_cursor)
   if (( ${+functions[_ghostty_zle_line_init]} )); then
-    functions[_ghostty_zle_line_init_orig]=$functions[_ghostty_zle_line_init]
+    if ! (( ${+functions[_ghostty_zle_line_init_base]} )); then
+      functions[_ghostty_zle_line_init_base]=$functions[_ghostty_zle_line_init]
+    fi
     _ghostty_zle_line_init() {
-      _ghostty_zle_line_init_orig "$@"
+      _ghostty_zle_line_init_base "$@"
       _ghostty_block_cursor
     }
     zle -N zle-line-init _ghostty_zle_line_init
@@ -60,23 +64,8 @@ chrome-debug() {
     2>/dev/null &
 }
 
-# Google Drive Notes shortcut — works whether this Mac uses the old
-# "<email> - Google Drive" mount or the new ~/Library/CloudStorage format
-_gdrive_email="mtm20176@gmail.com"
-_gdrive_new="$HOME/Library/CloudStorage/GoogleDrive-${_gdrive_email}/My Drive/Notes"
-_gdrive_old="$HOME/${_gdrive_email} - Google Drive/My Drive/Notes"
-
-if [ -d "$_gdrive_new" ]; then
-  export GDRIVE_NOTES="$_gdrive_new"
-elif [ -d "$_gdrive_old" ]; then
-  export GDRIVE_NOTES="$_gdrive_old"
-fi
-
-if [ -n "$GDRIVE_NOTES" ]; then
-  alias notes="cd \"$GDRIVE_NOTES\""
-fi
-
-unset _gdrive_email _gdrive_new _gdrive_old
+# Google Drive Notes path (also linked from ~/notes — use: cd ~/notes)
+export GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/Notes"
 
 
 #prompt
