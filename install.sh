@@ -312,6 +312,27 @@ fi
 
 print_step "copying revenue-AGENTS.md to Google Drive notes"
 GDRIVE_NOTES="$HOME/Library/CloudStorage/GoogleDrive-mtm20176@gmail.com/My Drive/Notes"
+
+print_step "linking ~/notes -> Google Drive Notes"
+if [ ! -d "$GDRIVE_NOTES" ]; then
+  echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
+  record_step "~/notes symlink" "skipped" "Gdrive not mounted"
+elif [ "$DRY_RUN" = true ]; then
+  echo "[DRY RUN] Would symlink: ~/notes → $GDRIVE_NOTES"
+  record_step "~/notes symlink" "dry-run" "would link ~/notes"
+elif [ -L "$HOME/notes" ]; then
+  ln -sfn "$GDRIVE_NOTES" "$HOME/notes"
+  echo "- refreshed ~/notes -> $GDRIVE_NOTES"
+  record_step "~/notes symlink" "done" "refreshed"
+elif [ -e "$HOME/notes" ]; then
+  echo "- skipping: ~/notes exists and is not a symlink"
+  record_step "~/notes symlink" "skipped" "~/notes exists"
+else
+  ln -s "$GDRIVE_NOTES" "$HOME/notes"
+  echo "- linked ~/notes -> $GDRIVE_NOTES"
+  record_step "~/notes symlink" "done" "created"
+fi
+
 if [ ! -d "$GDRIVE_NOTES" ]; then
   echo "- skipping: Google Drive notes folder not mounted at $GDRIVE_NOTES"
   record_step "revenue-AGENTS.md -> Gdrive" "skipped" "Gdrive not mounted"
