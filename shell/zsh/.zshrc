@@ -31,6 +31,9 @@ alias oxf='npx --yes oxfmt@0.52.0'
 # AI-related
 alias claudeteam='env -u ANTHROPIC_API_KEY claude'
 alias ca='cursor-agent'
+# Avoid macOS Keychain errSecDuplicateItem on Cursor Agent token refresh.
+# Tokens go to ~/.cursor/auth.json (local only; do not commit that file).
+export AGENT_CLI_CREDENTIAL_STORE=file
 
 # Ghostty: blinking block cursor (bar override if integration already loaded).
 # Snapshot Ghostty's handler once, then re-bind a single wrapper so
