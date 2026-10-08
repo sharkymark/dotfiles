@@ -716,6 +716,11 @@ copy_ghostty_settings() {
     fi
 }
 
+# Starship prompt config (starship/starship.toml → ~/.config/starship.toml).
+# Includes a custom.nuon module that shells out to: nuon starship prompt
+# Extension: https://github.com/nuonco/nuon-ext-starship
+# Starship custom modules: https://starship.rs/config/#custom-commands
+# Nuon brand accent in the prompt is cyan (see https://nuon.co).
 copy_starship_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local config_source="$dotfiles_dir/starship/starship.toml"
@@ -742,6 +747,48 @@ copy_starship_settings() {
     else
         echo "- starship/starship.toml not found in $dotfiles_dir/starship"
     fi
+}
+
+# Warn if the Nuon Starship extension is missing or has no runnable binary.
+# Marketplace install often leaves source only when GitHub has no releases.
+# https://github.com/nuonco/nuon-ext-starship
+warn_nuon_starship_extension() {
+    local ext_dir="$HOME/.config/nuon/extensions/nuon-ext-starship"
+    local ext_bin="$ext_dir/nuon-ext-starship"
+
+    echo "- checking Nuon Starship extension (custom.nuon in starship.toml)"
+
+    if ! command -v nuon &> /dev/null; then
+        echo "WARNING: nuon CLI not found. Starship [custom.nuon] will not show org/install context."
+        echo "  Install the Nuon CLI, then the starship extension:"
+        echo "    brew install nuonco/tap/nuon"
+        echo "    nuon ext install nuonco/nuon-ext-starship"
+        echo "  Docs: https://github.com/nuonco/nuon-ext-starship"
+        echo "        https://docs.nuon.co/cli-commands"
+        return 1
+    fi
+
+    if ! nuon starship prompt >/dev/null 2>&1; then
+        echo "WARNING: nuon starship prompt failed. Prompt may show a broken cloud icon in app dirs."
+        echo "  Extension repo: https://github.com/nuonco/nuon-ext-starship"
+        echo "  Try install/upgrade first:"
+        echo "    nuon ext install nuonco/nuon-ext-starship"
+        echo "    nuon ext upgrade starship --force"
+        if [ -d "$ext_dir" ] && [ ! -x "$ext_bin" ]; then
+            echo "  No binary at $ext_bin (common: no GitHub releases for this ext)."
+            echo "  Build from the installed source, then re-check:"
+            echo "    cd \"$ext_dir\" && go build -o nuon-ext-starship ."
+            echo "    # ensure manifest.json has \"binary\": \"nuon-ext-starship\""
+            echo "    nuon starship init   # snippet already in starship/starship.toml"
+            echo "    nuon starship prompt"
+        elif [ ! -d "$ext_dir" ]; then
+            echo "  Extension directory missing: $ext_dir"
+        fi
+        return 1
+    fi
+
+    echo "- Nuon Starship extension OK (nuon starship prompt)"
+    return 0
 }
 
 copy_atuin_settings() {
@@ -1012,12 +1059,21 @@ else
 fi
 
 print_step "🚀 copying Starship prompt config"
+# Copies starship/starship.toml (includes [custom.nuon] for Nuon org/install context).
+# https://github.com/nuonco/nuon-ext-starship
 if command -v starship &> /dev/null; then
     copy_starship_settings
     if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would also check nuon starship extension"
         record_step "Starship config" "dry-run" "would copy"
+        record_step "Nuon Starship extension" "dry-run" "would check"
     else
         record_step "Starship config" "done" "$(copy_detail)"
+        if warn_nuon_starship_extension; then
+            record_step "Nuon Starship extension" "done" "nuon starship prompt OK"
+        else
+            record_step "Nuon Starship extension" "warn" "missing or binary broken; see WARNING above"
+        fi
     fi
 else
     echo "Starship is not installed. Skipping starship config."

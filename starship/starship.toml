@@ -3,8 +3,8 @@
 command_timeout = 5000
 add_newline = false
 
-# Path + branch left; clock right.
-format = "$directory$git_branch$character"
+# Path + branch left; clock right. Nuon context when in an app dir.
+format = "$directory$git_branch$custom$character"
 right_format = "$time"
 
 [directory]
@@ -50,3 +50,18 @@ disabled = true
 disabled = true
 [git_metrics]
 disabled = true
+
+# Nuon context (env / org / install) in dirs with runner.toml.
+# Requires the Nuon CLI starship extension:
+#   https://github.com/nuonco/nuon-ext-starship
+#   nuon ext install nuonco/nuon-ext-starship
+#   nuon starship init   # prints this snippet; already checked in here
+# If install leaves no binary (no GitHub releases), build locally:
+#   cd ~/.config/nuon/extensions/nuon-ext-starship && go build -o nuon-ext-starship .
+# Brand accent: cyan (https://nuon.co), not purple.
+[custom.nuon]
+command = "nuon starship prompt"
+detect_files = ["runner.toml"]
+format = "[$symbol($output )]($style)"
+symbol = "☁️ "
+style = "bold cyan"

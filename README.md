@@ -27,7 +27,7 @@ This script copies configuration files to their appropriate locations:
 - Zed editor settings and keymap (if installed)
 - Prettier formatting config
 - Ghostty terminal config (if installed)
-- Starship prompt config (if installed)
+- Starship prompt config (if installed), including Nuon `[custom.nuon]` (needs https://github.com/nuonco/nuon-ext-starship; install warns if the extension binary is missing)
 - Goose config (if installed)
 - Cursor CLI config and MCP servers (if installed)
 - Amp MCP servers (if installed)
