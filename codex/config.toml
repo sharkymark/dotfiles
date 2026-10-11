@@ -1,0 +1,32 @@
+# Mark prefers autonomous execution without permission prompts.
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[mcp_servers.openaiDeveloperDocs]
+default_tools_approval_mode = "approve"
+url = "https://developers.openai.com/mcp"
+
+[mcp_servers.nuon]
+default_tools_approval_mode = "approve"
+command = "nuon"
+args = ["agents", "mcp", "--allow-writes", "--name", "nuon"]
+
+[mcp_servers.shark-local]
+default_tools_approval_mode = "approve"
+url = "http://127.0.0.1:8000/mcp"
+
+# Forward workspace tokens explicitly, then map them to the Slack server's names.
+# Parameter checks stop startup with a useful message if a token is missing.
+[mcp_servers.nuon-byoc-slack-personal-token]
+default_tools_approval_mode = "approve"
+command = "/bin/sh"
+args = ["-c", 'export SLACK_MCP_XOXC_TOKEN="${SLACK_MCP_XOXC_TOKEN_NUON_BYOC:?Missing BYOC XOXC token}" SLACK_MCP_XOXD_TOKEN="${SLACK_MCP_XOXD_TOKEN_NUON_BYOC:?Missing BYOC XOXD token}"; exec npx -y slack-mcp-server@latest --transport stdio']
+env_vars = ["SLACK_MCP_XOXC_TOKEN_NUON_BYOC", "SLACK_MCP_XOXD_TOKEN_NUON_BYOC"]
+startup_timeout_sec = 60
+
+[mcp_servers.nuonco-slack-personal-token]
+default_tools_approval_mode = "approve"
+command = "/bin/sh"
+args = ["-c", 'export SLACK_MCP_XOXC_TOKEN="${SLACK_MCP_XOXC_TOKEN_NUONCO:?Missing Nuonco XOXC token}" SLACK_MCP_XOXD_TOKEN="${SLACK_MCP_XOXD_TOKEN_NUONCO:?Missing Nuonco XOXD token}"; exec npx -y slack-mcp-server@latest --transport stdio']
+env_vars = ["SLACK_MCP_XOXC_TOKEN_NUONCO", "SLACK_MCP_XOXD_TOKEN_NUONCO"]
+startup_timeout_sec = 60
