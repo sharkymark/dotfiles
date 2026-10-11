@@ -373,13 +373,13 @@ fi
 print_step "🔗 Symlinking AI configurations"
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] Would create symlinks for AI configurations"
-  record_step "AI config symlinks" "dry-run" "CLAUDE.md, GEMINI.md"
+  record_step "AI config symlinks" "dry-run" "CLAUDE.md, GEMINI.md, AGENTS.md"
 else
   SYMLINK_REPLACED=0
   # Ensure ~/.claude directory exists
   mkdir -p "$HOME/.claude"
-  # Remove existing CLAUDE.md if it's a file, to replace with symlink
-  if [ -f "$HOME/.claude/CLAUDE.md" ]; then
+  # Remove existing CLAUDE.md if it's a regular file, to replace with symlink
+  if [ -f "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
     rm "$HOME/.claude/CLAUDE.md"
     SYMLINK_REPLACED=$((SYMLINK_REPLACED + 1))
     echo "- removed old ~/.claude/CLAUDE.md file"
@@ -388,18 +388,18 @@ else
   ln -sf "$HOME/AGENTS.md" "$HOME/.claude/CLAUDE.md"
   echo "- symlinked ~/.claude/CLAUDE.md to ~/AGENTS.md"
 
-  # Ensure ~/.gemini directory exists
-  mkdir -p "$HOME/.gemini"
-  # Remove existing GEMINI.md if it's a file, to replace with symlink (assuming it might exist from previous manual setup)
-  if [ -f "$HOME/.gemini/GEMINI.md" ]; then
-    rm "$HOME/.gemini/GEMINI.md"
-    SYMLINK_REPLACED=$((SYMLINK_REPLACED + 1))
-    echo "- removed old ~/.gemini/GEMINI.md file"
-  fi
-  # Create symlink for GEMINI.md
-  ln -sf "$HOME/AGENTS.md" "$HOME/.gemini/GEMINI.md"
-  echo "- symlinked ~/.gemini/GEMINI.md to ~/AGENTS.md"
-  record_step "AI config symlinks" "done" "CLAUDE.md, GEMINI.md (${SYMLINK_REPLACED} replaced)"
+  # Ensure ~/.gemini and ~/.gemini/config directories exist
+  mkdir -p "$HOME/.gemini" "$HOME/.gemini/config"
+  for link_path in "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/AGENTS.md" "$HOME/.gemini/config/GEMINI.md" "$HOME/.gemini/config/AGENTS.md"; do
+    if [ -f "$link_path" ] && [ ! -L "$link_path" ]; then
+      rm "$link_path"
+      SYMLINK_REPLACED=$((SYMLINK_REPLACED + 1))
+      echo "- removed old file at $link_path"
+    fi
+    ln -sf "$HOME/AGENTS.md" "$link_path"
+    echo "- symlinked $link_path to ~/AGENTS.md"
+  done
+  record_step "AI config symlinks" "done" "CLAUDE.md, GEMINI.md, AGENTS.md (${SYMLINK_REPLACED} replaced)"
 fi
 
 print_step "🤖 copying Claude Code configuration files"
@@ -490,6 +490,48 @@ if [ -f "./ai/gemini_settings.json" ]; then
 else
   echo "- gemini_settings.json not found in ./ai/"
   record_step "Gemini settings.json" "skipped" "source missing"
+fi
+
+print_step "👾 copying Antigravity configuration files"
+mkdir -p "$HOME/.gemini/antigravity-cli"
+
+if [ -f "./ai/antigravity_settings.json" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./ai/antigravity_settings.json → ~/.gemini/antigravity-cli/settings.json"
+    record_step "Antigravity settings.json" "dry-run" "would copy"
+  else
+    detect_backup "$HOME/.gemini/antigravity-cli/settings.json"
+    if [ -f "$HOME/.gemini/antigravity-cli/settings.json" ]; then
+      cp "$HOME/.gemini/antigravity-cli/settings.json" "$HOME/.gemini/antigravity-cli/settings.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing ~/.gemini/antigravity-cli/settings.json"
+    fi
+    cp "./ai/antigravity_settings.json" "$HOME/.gemini/antigravity-cli/settings.json"
+    echo "- copied antigravity_settings.json to ~/.gemini/antigravity-cli/"
+    record_step "Antigravity settings.json" "done" "$(copy_detail)"
+  fi
+else
+  echo "- antigravity_settings.json not found in ./ai/"
+  record_step "Antigravity settings.json" "skipped" "source missing"
+fi
+
+mkdir -p "$HOME/.gemini/config"
+if [ -f "./ai/mcp_config.json" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would copy: ./ai/mcp_config.json → ~/.gemini/config/mcp_config.json"
+    record_step "Antigravity mcp_config.json" "dry-run" "would copy"
+  else
+    detect_backup "$HOME/.gemini/config/mcp_config.json"
+    if [ -f "$HOME/.gemini/config/mcp_config.json" ]; then
+      cp "$HOME/.gemini/config/mcp_config.json" "$HOME/.gemini/config/mcp_config.json.backup.$(date +%Y%m%d_%H%M%S)"
+      echo "- backed up existing ~/.gemini/config/mcp_config.json"
+    fi
+    cp "./ai/mcp_config.json" "$HOME/.gemini/config/mcp_config.json"
+    echo "- copied mcp_config.json to ~/.gemini/config/"
+    record_step "Antigravity mcp_config.json" "done" "$(copy_detail)"
+  fi
+else
+  echo "- mcp_config.json not found in ./ai/"
+  record_step "Antigravity mcp_config.json" "skipped" "source missing"
 fi
 
 print_step "💾 copying shell configuration files e.g., bash, fish, zsh"
@@ -956,6 +998,45 @@ with open(path, "w") as f:
     fi
 }
 
+copy_codex_settings() {
+    local codex_config_dir="${CODEX_HOME:-$HOME/.codex}"
+    local source="$DOTFILES_PATH/codex/config.toml"
+    local target="$codex_config_dir/config.toml"
+    local instructions="$codex_config_dir/AGENTS.md"
+
+    if [ ! -f "$source" ]; then
+        record_step "Codex config" "skipped" "source missing"
+        return
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would back up existing Codex config and instructions"
+        echo "[DRY RUN] Would copy: $source → $target"
+        echo "[DRY RUN] Would symlink: $instructions → $HOME/AGENTS.md"
+        record_step "Codex config" "dry-run" "would copy config.toml + link AGENTS.md"
+        return
+    fi
+
+    if ! mkdir -p "$codex_config_dir"; then
+        record_step "Codex config" "failed" "could not create config directory"
+        return 1
+    fi
+    local file
+    for file in "$target" "$instructions"; do
+        if [ -e "$file" ] || [ -L "$file" ]; then
+            if ! cp -P "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"; then
+                record_step "Codex config" "failed" "could not back up $file"
+                return 1
+            fi
+        fi
+    done
+    if cp "$source" "$target" && ln -sfn "$HOME/AGENTS.md" "$instructions"; then
+        record_step "Codex config" "done" "copied config.toml + linked AGENTS.md"
+    else
+        record_step "Codex config" "failed" "copy or instruction link failed"
+        return 1
+    fi
+}
+
 copy_cursor_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local cursor_config_dir="$HOME/.cursor"
@@ -1132,13 +1213,23 @@ else
     record_step "Amp config" "skipped" "Amp not installed"
 fi
 
+print_step "🤖 copying Codex config"
+copy_codex_settings
+
 print_step "🖱️  copying Cursor CLI config"
 if command -v cursor-agent &> /dev/null; then
     copy_cursor_settings
+    # Homebrew cursor-cli only installs `cursor-agent`; Cursor docs expect `agent`.
+    CURSOR_AGENT_BIN=$(command -v cursor-agent)
+    AGENT_LINK="$HOME/.local/bin/agent"
     if [ "$DRY_RUN" = true ]; then
-        record_step "Cursor CLI config" "dry-run" "would copy 2 files"
+        echo "[DRY RUN] Would symlink: $AGENT_LINK → $CURSOR_AGENT_BIN"
+        record_step "Cursor CLI config" "dry-run" "would copy 2 files + agent symlink"
     else
-        record_step "Cursor CLI config" "done" "${CURSOR_FILES_COPIED} copied, ${CURSOR_BACKUPS} backed up"
+        mkdir -p "$HOME/.local/bin"
+        ln -sfn "$CURSOR_AGENT_BIN" "$AGENT_LINK"
+        echo "- linked $AGENT_LINK → $CURSOR_AGENT_BIN"
+        record_step "Cursor CLI config" "done" "${CURSOR_FILES_COPIED} copied, ${CURSOR_BACKUPS} backed up, agent symlink"
     fi
 else
     echo "Cursor CLI is not installed. Skipping Cursor configuration."
@@ -1190,6 +1281,10 @@ else
     cleanup_backups "$HOME/.claude" "CLAUDE.md"
     # Clean up Gemini settings.json backups
     cleanup_backups "$HOME/.gemini" "settings.json"
+    # Clean up Antigravity settings.json backups
+    cleanup_backups "$HOME/.gemini/antigravity-cli" "settings.json"
+    # Clean up Antigravity mcp_config.json backups
+    cleanup_backups "$HOME/.gemini/config" "mcp_config.json"
     # Clean up shell backups
     cleanup_backups "$HOME" ".bashrc"
     cleanup_backups "$HOME" ".bash_profile"
@@ -1211,6 +1306,9 @@ else
     cleanup_backups "$HOME/.config/goose" ".gooseignore"
     # Clean up Amp config backups
     cleanup_backups "$HOME/.config/amp" "settings.json"
+    # Clean up Codex config backups
+    cleanup_backups "${CODEX_HOME:-$HOME/.codex}" "config.toml"
+    cleanup_backups "${CODEX_HOME:-$HOME/.codex}" "AGENTS.md"
     # Clean up Cursor CLI config backups
     cleanup_backups "$HOME/.cursor" "cli-config.json"
     cleanup_backups "$HOME/.cursor" "mcp.json"

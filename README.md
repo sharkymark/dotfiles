@@ -30,6 +30,7 @@ This script copies configuration files to their appropriate locations:
 - Starship prompt config (if installed), including Nuon `[custom.nuon]` (needs https://github.com/nuonco/nuon-ext-starship; install warns if the extension binary is missing)
 - Goose config (if installed)
 - Cursor CLI config and MCP servers (if installed)
+- Codex settings, MCP servers, and shared agent instructions
 - Amp MCP servers (if installed)
 
 On macOS, also runs Homebrew package installation and system defaults.
@@ -38,6 +39,38 @@ Each run also installs any missing Nuon CLI extensions from the marketplace, upg
 installed ones, updates global Claude skills (via `npx skills`), and refreshes Claude
 plugin marketplaces plus installed plugins, with a progress bar and a Tool updates
 section in the final summary.
+
+## Codex Configuration
+
+`codex/config.toml` is copied to `~/.codex/config.toml` (or `$CODEX_HOME/config.toml`
+when set). Existing configuration and instructions are backed up before replacement.
+The installer links Codex's `AGENTS.md` to the shared `~/AGENTS.md`. Only these files
+are deployed; authentication and session files stay local. Reconcile any local
+settings you want to retain before running the installer.
+
+Configured MCP servers: OpenAI developer documentation, Nuon, shark-local, and both
+Slack workspaces. Linear is omitted. Nuon retains the existing `--allow-writes` setting.
+Codex uses `approval_policy = "never"` and `sandbox_mode = "danger-full-access"`
+for command execution without approval prompts and with full filesystem/network
+access. All configured MCP servers use `default_tools_approval_mode = "approve"`,
+matching the Nuon, shark-local, and Slack permissions in Cursor and Claude.
+Restart Codex after installing; managed policies or app-specific overrides may
+still take precedence over these defaults.
+Slack uses `npx`, so Node.js must be available on Codex's PATH. shark-local requires
+its service to be running at `http://127.0.0.1:8000/mcp`.
+
+Export these variables in the environment that launches Codex; no token values
+belong in the repository:
+
+- `SLACK_MCP_XOXC_TOKEN_NUON_BYOC`
+- `SLACK_MCP_XOXD_TOKEN_NUON_BYOC`
+- `SLACK_MCP_XOXC_TOKEN_NUONCO`
+- `SLACK_MCP_XOXD_TOKEN_NUONCO`
+
+Each Slack launcher maps its workspace variables to the server's expected token
+names and fails with a clear message if a token is missing. Restart Codex after
+installation, check `codex mcp list`, then verify a read call in each Slack workspace.
+GUI launches also need access to the token variables and Node.js PATH.
 
 ## Goose Configuration
 

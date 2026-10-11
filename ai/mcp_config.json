@@ -1,0 +1,91 @@
+{
+  "mcpServers": {
+    "nuon": {
+      "command": "nuon",
+      "args": [
+        "agents",
+        "mcp",
+        "--allow-writes",
+        "--name",
+        "nuon"
+      ]
+    },
+    "aws-mcp": {
+      "command": "/bin/zsh",
+      "args": [
+        "-c",
+        "exec /opt/homebrew/bin/uvx mcp-proxy-for-aws-cli@latest https://aws-mcp.us-east-1.api.aws/mcp"
+      ]
+    },
+    "nuon-byoc-slack-personal-token": {
+      "command": "/bin/zsh",
+      "args": [
+        "-c",
+        "SLACK_MCP_XOXC_TOKEN=\"$SLACK_MCP_XOXC_TOKEN_NUON_BYOC\" SLACK_MCP_XOXD_TOKEN=\"$SLACK_MCP_XOXD_TOKEN_NUON_BYOC\" exec npx -y slack-mcp-server@latest --transport stdio"
+      ]
+    },
+    "nuonco-slack-personal-token": {
+      "command": "/bin/zsh",
+      "args": [
+        "-c",
+        "SLACK_MCP_XOXC_TOKEN=\"$SLACK_MCP_XOXC_TOKEN_NUONCO\" SLACK_MCP_XOXD_TOKEN=\"$SLACK_MCP_XOXD_TOKEN_NUONCO\" exec npx -y slack-mcp-server@latest --transport stdio"
+      ]
+    },
+    "shark-local": {
+      "url": "http://127.0.0.1:8000/mcp",
+      "disabled": true
+    },
+    "grain": {
+      "url": "https://api.grain.com/_/mcp",
+      "disabled": true
+    },
+    "superhuman-mail": {
+      "url": "https://mcp.mail.superhuman.com/mcp",
+      "disabled": true
+    },
+    "plausible-analytics": {
+      "command": "npx",
+      "disabled": true,
+      "args": [
+        "-y",
+        "plausible-mcp"
+      ],
+      "env": {
+        "PLAUSIBLE_API_KEY": "${PLAUSIBLE_API_KEY}"
+      }
+    },
+    "salesforce-dx": {
+      "command": "npx",
+      "disabled": true,
+      "args": [
+        "-y",
+        "@salesforce/mcp@latest",
+        "--orgs",
+        "DEFAULT_TARGET_ORG",
+        "--toolsets",
+        "orgs,data,users",
+        "--no-telemetry"
+      ]
+    },
+    "pylon": {
+      "url": "https://mcp.usepylon.com/",
+      "disabled": true
+    },
+    "linear": {
+      "url": "https://mcp.linear.app/mcp",
+      "disabled": true
+    },
+    "airtable": {
+      "url": "https://mcp.airtable.com/mcp",
+      "disabled": true
+    },
+    "lovable": {
+      "url": "https://mcp.lovable.dev",
+      "disabled": true
+    },
+    "notion": {
+      "url": "https://mcp.notion.com/mcp",
+      "disabled": true
+    }
+  }
+}
