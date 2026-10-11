@@ -31,6 +31,9 @@ alias oxf='npx --yes oxfmt@0.52.0'
 # AI-related
 alias claudeteam='env -u ANTHROPIC_API_KEY claude'
 alias ca='cursor-agent'
+# Homebrew cursor-cli only links cursor-agent; Cursor docs use `agent`.
+alias agent='cursor-agent'
+alias gplan='gemini --approval-mode plan'
 # Avoid macOS Keychain errSecDuplicateItem on Cursor Agent token refresh.
 # Tokens go to ~/.cursor/auth.json (local only; do not commit that file).
 export AGENT_CLI_CREDENTIAL_STORE=file

@@ -1,4 +1,5 @@
 Workflow Orchestration
+Read ~/src/mark/dotfiles/ai/memory/MEMORY.md at session start and apply its indexed lessons.
 
 1. Plan Mode Default
 
@@ -66,6 +67,16 @@ Do not pin Composer 2.5 as the parent-session model. It is a coding-optimized mo
 For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice
 
 Turn off Cursor commit and PR attribution in Cursor Settings > Agents > Attribution (or Git & PRs > Attribution). Keep attributeCommitsToAgent and attributePRsToAgent false in ~/.cursor/cli-config.json
+
+
+Gemini CLI and Antigravity
+
+For Gemini CLI and Antigravity sessions, use the Google AI Pro subscription tier
+Use the configured planning model for design, specs, and complex reasoning; use faster models for mechanical subagent tasks
+Planning mode: trigger planning conversationally; always output the complete plan directly in the terminal for user review before implementing
+Permissions: always use native agent read and search tools instead of shell commands to avoid permission prompt popups
+Keep permissions.allow updated in ~/.gemini/antigravity-cli/settings.json with toolPermission always-proceed and wildcard allows
+Mirror shared MCP servers in ai/gemini_settings.json and ai/mcp_config.json matching Cursor and Claude
 
 
 Task Management
