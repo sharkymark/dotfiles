@@ -125,6 +125,21 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   brew upgrade --formula
   echo ""
 
+  # Packages that moved from formula to cask keep the same name. If the old
+  # formula is still linked, it owns $HOMEBREW_PREFIX/bin/<name> and the
+  # cask upgrade never puts the real binary on PATH (seen with codex:
+  # Cellar 0.1.x Node CLI shadowed Caskroom 0.16x).
+  remove_formula_cask_clashes() {
+    local name
+    for name in "$@"; do
+      if brew list --formula "$name" >/dev/null 2>&1 \
+        && brew list --cask "$name" >/dev/null 2>&1; then
+        echo "⚠️  $name is installed as both formula and cask; removing formula"
+        brew uninstall --formula "$name"
+      fi
+    done
+  }
+
   # Most Brewfile casks install into /Applications and Homebrew may need sudo
   # to touch that bundle (e.g. whatsapp, which macOS/Homebrew has left
   # root-owned before). Only auto-upgrade casks known to install as plain
@@ -132,6 +147,9 @@ if [ -f "$DOTFILES_PATH/brew/Brewfile" ]; then
   # self-updates on its own or gets upgraded manually with
   # `brew upgrade --cask <name>` when you're ready to enter your password.
   SAFE_UPGRADE_CASKS=(codex claude-code cursor-cli)
+  echo "🧹 Checking for formula/cask name clashes..."
+  remove_formula_cask_clashes codex
+  echo ""
   echo "⬆️  Upgrading sudo-free casks (${SAFE_UPGRADE_CASKS[*]})..."
   upgrade_log=$(mktemp)
   brew upgrade --cask "${SAFE_UPGRADE_CASKS[@]}" 2>&1 | tee "$upgrade_log"

@@ -1,5 +1,6 @@
 Workflow Orchestration
 Read ~/src/mark/dotfiles/ai/memory/MEMORY.md at session start and apply its indexed lessons.
+That memory directory is gitignored and local-only; never commit lesson files.
 
 1. Plan Mode Default
 
