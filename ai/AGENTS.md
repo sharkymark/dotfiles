@@ -2,151 +2,68 @@ Workflow Orchestration
 Read ~/src/mark/dotfiles/ai/memory/MEMORY.md at session start and apply its indexed lessons.
 That memory directory is gitignored and local-only; never commit lesson files.
 
-1. Plan Mode Default
+1. Plan Mode Default — plan for architectural, multi-file, or hard-to-reverse changes; skip for small/obvious edits. If sideways, STOP and re-plan. Plan verification too. Write specs upfront.
+2. Subagent Strategy — use subagents liberally; one tack each; offload research and parallel analysis.
+3. Self-Improvement Loop — after ANY user correction, save a lesson to persistent project memory (a memory file plus its MEMORY.md index line).
+4. Verification Before Done — small edits: run the relevant lint/format/test for what you touched only. Multi-file or behavior changes: prove with a focused test, log, or quick check — not full-repo CI unless CI is already failing.
+5. Demand Elegance (Balanced) — skip for obvious fixes. For non-trivial work, prefer the elegant fix over a hack.
+6. Autonomous Bug Fixing — fix from logs/errors/failing tests; do not ask for hand-holding. Fix failing CI without being told how.
 
-Enter plan mode for architectural, multi-file, or hard-to-reverse changes; skip it for small, single-file, or obvious edits
-If something goes sideways, STOP and re-plan immediately – don't keep pushing
-Use plan mode for verification steps too, not just building
-Write detailed specs upfront to reduce ambiguity
+Specialized instructions (read when the task fits; do not paste up front). Prefer the local path; if missing, use the GitHub URL:
+- Nuon app configs: ~/src/mark/dotfiles/ai/nuon-app-AGENTS.md (else https://github.com/sharkymark/dotfiles/blob/main/ai/nuon-app-AGENTS.md)
+- Revenue / Salesforce / meetings: ~/src/mark/dotfiles/ai/revenue-AGENTS.md (else https://github.com/sharkymark/dotfiles/blob/main/ai/revenue-AGENTS.md)
+- Nuon platform understanding: Shark nuon-oss + nuon-docs (read-only unless asked to change OSS)
 
-2. Subagent Strategy
+Cursor (primary)
+Default: Auto with Cost. Do not manually pick Composer, Grok, or Claude unless Mark asks. Prefer Cursor Models pool (Composer 2.5 / Cursor Grok); escalate to Balance/Intelligence only for a hard task, then drop back to Cost. Plan mode for architectural/ambiguous work. Explore/mechanical subagents: Composer 2.5 via cli-config subagentModels. Prefer Grok over Composer for research, CRM, and meeting analysis when Auto Cost can choose. Keep attributeCommitsToAgent and attributePRsToAgent false.
 
-Use subagents liberally to keep main context window clean
-Offload research, exploration, and parallel analysis to subagents
-For complex problems, throw more compute at it via subagents
-One tack per subagent for focused execution
+Other agents (Claude Code, Codex, Gemini)
+Use the session's planning model for design/hard reasoning; cheaper/faster for mechanical subagent work. Do not escalate above the session tier. For Gemini/Antigravity: Google AI Pro; prefer native read/search tools over shell to avoid permission popups; keep MCP mirrors in ai/mcp_config.json / ai/gemini_settings.json.
 
-3. Self-Improvement Loop
-
-After ANY correction from the user: save the lesson to persistent project memory (a memory file plus its MEMORY.md index line) so it auto-loads next session
-Do not rely on tasks/lessons.md for this — it is not auto-read into context, so lessons written there are forgotten
-Write rules for yourself that prevent the same mistake and iterate until the mistake rate drops
-
-4. Verification Before Done
-
-For small, single-file, or obvious edits: run the relevant test/build/lint and call it done
-For multi-file, architectural, or behavior-changing work: also diff behavior between main and the change, and demonstrate correctness with logs or a test run before marking complete
-Never mark a task complete without proving it works
-
-5. Demand Elegance (Balanced)
-
-Skip this for simple, obvious fixes – don't over-engineer
-For non-trivial changes: pause and ask "is there a more elegant way?" before presenting it
-If a fix feels hacky, say so and implement the elegant solution instead
-
-6. Autonomous Bug Fixing
-
-When given a bug report: just fix it. Don't ask for hand-holding
-Point at logs, errors, failing tests – then resolve them
-Zero context switching required from the user
-Go fix failing CI tests without being told how
-
-7. Model Tiering
-
-Use the strongest model your session is configured to use for planning and hard or ambiguous reasoning; switch to a cheaper, faster model to execute a well-specified plan. Do not escalate to a pricier tier than the session is set to
-When spawning subagents, route mechanical execution work (edits, running tests, applying a plan) to a cheaper model and reserve the configured planning model for planning and ambiguous reasoning
-This only holds when the plan is detailed (see Plan Mode Default); a vague plan hands the cheaper model too much room
-Section 7 applies to Claude Code, Gemini CLI, Goose, and other non-Cursor tools. In Cursor, see the Cursor section below instead of manually picking models for the parent agent
-
-
-Cursor
-
-For Cursor IDE and CLI sessions, use Auto (Cursor Router) as the default model selection. Do not manually pick Composer, Grok, or Claude unless the user explicitly requests a specific model
-
-Default for all work: Auto with Cost optimization. Cost routing prefers Composer 2.5 and Cursor Grok, which draw from the Cursor Models pool and are exempt from the Cursor Token Rate that third-party models incur on Teams plans
-
-Do not use Auto with Balance or Auto with Intelligence by default. Both route freely to third-party models (Claude, GPT, Gemini), which draw from the smaller Other Models pool and bill at provider list price plus $0.25 per million tokens. Escalate to Balance or Intelligence only for a specific hard task, and drop back to Cost afterward
-
-Architectural or ambiguous work: switch to Plan mode before implementing; do not rely on Auto routing alone for the planning phase
-If the user pins a model (e.g. Opus 5), use that model for the session
-
-Explore and other mechanical subagents use Composer 2.5 via cursor/cli-config.json subagentModels; do not override unless the user asks
-Do not pin Claude, Opus, or Composer for the parent session unless Mark asks
-
-Do not pin Composer 2.5 as the parent-session model. It is a coding-optimized model and is the wrong fit for research, CRM, and meeting-summary work; let Auto Cost pick between Composer and Grok instead
-
-For research, CRM writes, and meeting analysis, Auto Cost should prefer Cursor Grok over Composer when the router has a choice
-
-Turn off Cursor commit and PR attribution in Cursor Settings > Agents > Attribution (or Git & PRs > Attribution). Keep attributeCommitsToAgent and attributePRsToAgent false in ~/.cursor/cli-config.json
-
-
-Gemini CLI and Antigravity
-
-For Gemini CLI and Antigravity sessions, use the Google AI Pro subscription tier
-Use the configured planning model for design, specs, and complex reasoning; use faster models for mechanical subagent tasks
-Planning mode: trigger planning conversationally; always output the complete plan directly in the terminal for user review before implementing
-Permissions: always use native agent read and search tools instead of shell commands to avoid permission prompt popups
-Keep permissions.allow updated in ~/.gemini/antigravity-cli/settings.json with toolPermission always-proceed and wildcard allows
-Mirror shared MCP servers in ai/gemini_settings.json and ai/mcp_config.json matching Cursor and Claude
-
-
-Task Management
-
-Plan First: Write plan to tasks/todo.md with checkable items
-Verify Plan: Check in before starting implementation
-Track Progress: Mark items complete as you go
-Explain Changes: High-level summary at each step
-Document Results: Add review section to tasks/todo.md
-Capture Lessons: Save corrections to persistent project memory, not tasks/lessons.md
-
+Task tracking
+Use the client's todo/plan tools. Capture lessons in persistent project memory.
 
 Core Principles
-
-Simplicity First: Make every change as simple as possible. Impact minimal code.
-No Laziness: Find root causes. No temporary fixes. Senior developer standards.
-Minimal Impact: Changes should only touch what's necessary. Avoid introducing bugs.
-
+Simplicity First. No Laziness (root causes). Minimal Impact (touch only what is needed).
 
 Language and Tooling Defaults
-
 These apply when a repo has no CLAUDE.md/AGENTS.md of its own. A repo-level file always overrides this section.
 
 Git and commits:
 - do not commit or push unless I ask; if on a default branch, branch first
-- name every new branch mm/<short-description> (kebab-case); apply this whenever a branch is created, not only in worktrees
-- when working in a worktree, rename the branch to mm/<short-description> before the first commit
-- prefer small, focused commits over large mixed ones
-- keep commit messages and PR titles/bodies to the point; never pad with test notes, filler, or meta commentary
-- never add Co-authored-by, Made-with, or any AI, agent, or bot attribution to commit messages, PR titles, or PR bodies
-- never set git author or committer to an agent or bot identity (e.g. cursoragent@cursor.com); commits must use the human user only
-- do not install git hooks to strip or rewrite attribution; fix attribution at the source (agent behavior and Cursor settings) instead
-- if attribution was already pushed, rewrite commit messages to remove it and force-push only on feature branches the user owns, using --force-with-lease
+- name every new branch mm/<short-description> (kebab-case); same for worktrees — rename before first commit
+- prefer small, focused commits; keep messages and PR titles/bodies to the point
+- never add Co-authored-by, Made-with, or any AI/agent/bot attribution to commits or PRs
+- never set git author/committer to an agent identity; commits must use the human user only
+- do not install hooks to strip attribution; fix at the source (agent behavior + Cursor settings)
+- if attribution was already pushed, rewrite messages and force-push only on feature branches I own, with --force-with-lease
 
 Go:
-- format with gofmt (or goimports); run go vet before considering work done
-- test with go test ./... ; run a single package with go test ./path/to/pkg and a single test with go test -run TestName ./path/to/pkg
-- build with go build ./... ; keep the module path in go.mod correct
-- handle every error explicitly; do not swallow errors or use panic for control flow
+- gofmt/goimports; go vet on touched packages
+- test/build the packages you changed (not go test ./... unless the change is broad); keep go.mod module path correct
+- handle every error; no panic for control flow
 
 Python:
-- prefer uv for envs and installs (uv venv, uv pip install); fall back to the repo's venv/ and requirements.txt if that is the pattern
-- format and lint with ruff (ruff format, ruff check); test with pytest
-- run scripts inside the repo's venv, not system Python
+- prefer uv; else repo venv/requirements.txt
+- ruff format + ruff check on touched files; pytest for the area you changed; run in the repo venv, not system Python
+
+TypeScript / React:
+- match the repo stack; do not invent a new one
+- use the project's formatter/linter
+- follow existing React patterns; do not add useMemo/useCallback by default unless the repo does
 
 Terraform:
-- run terraform fmt and terraform validate before done
-- NEVER run terraform apply automatically; show the plan and let me apply
-- treat state as sensitive; never print or commit state or secrets
+- in module/sandbox repos you maintain: terraform fmt + validate before done; never apply unless I ask; never print or commit state/secrets
+- for Nuon app-config work, follow nuon-app-AGENTS.md (write .tf OK; do not run terraform/helm/cloud CLIs unless approved)
 
 Bash:
-- start scripts with #!/usr/bin/env bash and set -euo pipefail
-- check with shellcheck; quote variable expansions; prefer explicit over clever
+- #!/usr/bin/env bash and set -euo pipefail
+- shellcheck; quote expansions; prefer explicit over clever
 
 Nuon:
-- for any Nuon work, first check whether the Nuon MCP is available in this session
-- if the Nuon MCP is available, use only the Nuon MCP; do not run the Nuon CLI
-- when Nuon MCP is available, do not shell out to python, jq, or other scripts to parse MCP dumps; read tool results and call narrower MCP tools if a response is large
-- use the Nuon CLI only when the Nuon MCP is not available
-- when falling back to the Nuon CLI, tell the user in the agent UI that the Nuon MCP is unavailable and that you are using the Nuon CLI instead
+- control-plane ops: prefer Nuon MCP when available; do not parse MCP dumps with python/jq — use narrower MCP tools
+- local app-config validate: use the Nuon CLI binary that started the MCP (same -C); say so if falling back to CLI for anything else
+- Nuon app-config create/edit/safety rules: read nuon-app-AGENTS.md (no create/delete apps or orgs unless asked)
 
-Output Formatting
-
-- no emojis or special characters used as bullets or decorators
-- no indentation
-- no extra blank lines between items
-- use plain hyphens (-) for bullet lists only, no other list markers
-- write in clean, dense paragraphs or flat hyphen-bulleted lists
-- do not use markdown headers, bold, italics, or any other markdown formatting
-- do not add any preamble, closing remarks, or meta-commentary about the output
-- no em dashes
-- write in plain, concise language at an 8th-grade reading level; keep responses short, use active voice, and strictly avoid fancy vocabulary, AI clichés, corporate jargon, or robotic fluff.
+Output
+Plain, concise, active voice. Prefer short dense paragraphs or hyphen bullets. No emoji bullets. No preamble or closing fluff. Fenced code and plan structure are fine in coding chats. Strict no-markdown paste rules live in revenue-AGENTS.md for CRM copy-paste.

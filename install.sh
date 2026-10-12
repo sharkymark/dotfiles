@@ -897,41 +897,6 @@ copy_nvim_settings() {
     done
 }
 
-copy_goose_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local goose_config_dir="$HOME/.config/goose"
-    local goose_files=("config.yaml" "permission.yaml" ".gooseignore")
-
-    mkdir -p "$goose_config_dir"
-    GOOSE_FILES_COPIED=0
-    GOOSE_BACKUPS=0
-
-    for file in "${goose_files[@]}"; do
-        local source="$dotfiles_dir/goose/$file"
-        local target="$goose_config_dir/$file"
-
-        if [ -f "$source" ]; then
-            if [ "$DRY_RUN" = true ]; then
-                echo "[DRY RUN] Would copy: $source → $target"
-            else
-                if [ -f "$target" ]; then
-                    cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
-                    echo "- backed up existing $file"
-                    GOOSE_BACKUPS=$((GOOSE_BACKUPS + 1))
-                fi
-                if cp "$source" "$target"; then
-                    echo "- copied $file to $goose_config_dir/"
-                    GOOSE_FILES_COPIED=$((GOOSE_FILES_COPIED + 1))
-                else
-                    echo "- failed to copy $file to $goose_config_dir/"
-                fi
-            fi
-        else
-            echo "- goose/$file not found in $dotfiles_dir/goose"
-        fi
-    done
-}
-
 copy_amp_settings() {
     local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local amp_config_dir="$HOME/.config/amp"
@@ -1072,7 +1037,7 @@ copy_cursor_settings() {
     done
 }
 
-# Function to clean up old backups, keeping only the two most recent
+# Function to clean up old backups, keeping only the newest one
 cleanup_backups() {
     local target_dir="$1"
     local base_filename="$2"
@@ -1085,10 +1050,9 @@ cleanup_backups() {
 
     local num_backups=${#backup_files[@]}
 
-    if (( num_backups > 2 )); then
-        echo "- Found $num_backups backups for $base_filename in "$target_dir". Keeping the 2 newest."
-        # Delete backups from the 3rd oldest onwards
-        for (( i=0; i < num_backups - 2; i++ )); do
+    if (( num_backups > 1 )); then
+        echo "- Found $num_backups backups for $base_filename in $target_dir. Keeping the newest."
+        for (( i=0; i < num_backups - 1; i++ )); do
             if [ "$DRY_RUN" = true ]; then
                 echo "[DRY RUN] Would delete old backup: ${backup_files[i]}"
             else
@@ -1187,19 +1151,6 @@ else
     record_step "Neovim config" "skipped" "Neovim not installed"
 fi
 
-print_step "🪿 copying Goose config"
-if command -v goose &> /dev/null; then
-    copy_goose_settings
-    if [ "$DRY_RUN" = true ]; then
-        record_step "Goose config" "dry-run" "would copy 3 files"
-    else
-        record_step "Goose config" "done" "${GOOSE_FILES_COPIED} copied, ${GOOSE_BACKUPS} backed up"
-    fi
-else
-    echo "Goose is not installed. Skipping Goose configuration."
-    record_step "Goose config" "skipped" "Goose not installed"
-fi
-
 print_step "copying Amp config"
 if command -v amp &> /dev/null; then
     copy_amp_settings
@@ -1269,7 +1220,7 @@ fi
 
 print_step "🧹 Cleaning up old backups"
 if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] Would clean up old backup files, keeping only the 2 most recent."
+    echo "[DRY RUN] Would clean up old backup files, keeping only the newest."
     record_step "Backup cleanup" "dry-run" "would clean old backups"
 else
     # Clean up AGENTS.md backups
@@ -1300,10 +1251,6 @@ else
     cleanup_backups "$HOME/.config/nvim" "init.lua"
     cleanup_backups "$HOME/.config/nvim" "lazy-lock.json"
     cleanup_backups "$HOME/.config/nvim" ".avante_pref"
-    # Clean up Goose config backups
-    cleanup_backups "$HOME/.config/goose" "config.yaml"
-    cleanup_backups "$HOME/.config/goose" "permission.yaml"
-    cleanup_backups "$HOME/.config/goose" ".gooseignore"
     # Clean up Amp config backups
     cleanup_backups "$HOME/.config/amp" "settings.json"
     # Clean up Codex config backups
@@ -1377,7 +1324,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Keep Nuon extensions (install missing from marketplace, then upgrade),
+# Keep Nuon extensions (browse marketplace, GitHub nuon-ext-* backup, then upgrade),
 # Claude skills, and Claude plugins current.
 # Progress bars advance per item; diffs feed TOOL_UPDATES_CHANGES.
 # ---------------------------------------------------------------------------
@@ -1442,12 +1389,58 @@ for item in items:
 ' <<< "$NUON_LIST_JSON")
     NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
 
+    # Backup when browse lags: GitHub org repos named nuon-ext-* with nuon-ext.toml.
+    # Skip WIP/demo-style and repos without a manifest. Requires gh.
+    NUON_GH_BACKUP_ADDED=0
+    NUON_GH_SKIPPED_NO_TOML=0
+    if command -v gh &> /dev/null; then
+        NUON_GH_REPOS=$(gh api 'orgs/nuonco/repos?per_page=100&type=all' --paginate --jq '.[] | select(.archived|not) | .name' 2>/dev/null | grep -- '-ext-' || true)
+        NUON_GH_EXTRA=""
+        while IFS= read -r repo_name; do
+            [ -z "$repo_name" ] && continue
+            case "$repo_name" in
+                nuon-ext-*) ;;
+                *) continue ;;
+            esac
+            short_name="${repo_name#nuon-ext-}"
+            case "$short_name" in
+                demo|demo-setup|debug) continue ;;
+            esac
+            if printf '%s\n' "$NUON_NAMES" | awk -F'\t' -v n="$short_name" '$1==n {found=1} END{exit !found}'; then
+                continue
+            fi
+            if printf '%s\n' "$NUON_MISSING" | awk -F'\t' -v n="$short_name" '$1==n {found=1} END{exit !found}'; then
+                continue
+            fi
+            # Installable extensions ship nuon-ext.toml (doctor etc. are stubs without it).
+            if ! gh api "repos/nuonco/${repo_name}/contents/nuon-ext.toml" >/dev/null 2>&1; then
+                NUON_GH_SKIPPED_NO_TOML=$((NUON_GH_SKIPPED_NO_TOML + 1))
+                echo "  - skip $short_name: no nuon-ext.toml"
+                continue
+            fi
+            NUON_GH_EXTRA+="${short_name}"$'\t'"nuonco/${repo_name}"$'\t'$'\n'
+            NUON_GH_BACKUP_ADDED=$((NUON_GH_BACKUP_ADDED + 1))
+        done <<< "$NUON_GH_REPOS"
+        if [ "$NUON_GH_BACKUP_ADDED" -gt 0 ]; then
+            NUON_MISSING=$(printf '%s%s' "$NUON_MISSING" "$NUON_GH_EXTRA")
+            NUON_MISSING_TOTAL=$(printf '%s\n' "$NUON_MISSING" | awk 'NF' | wc -l | tr -d ' ')
+            echo "- GitHub nuon-ext-* backup: $NUON_GH_BACKUP_ADDED not in browse (will install)"
+        else
+            echo "- GitHub nuon-ext-* backup: nothing extra beyond browse/installed"
+        fi
+        if [ "$NUON_GH_SKIPPED_NO_TOML" -gt 0 ]; then
+            echo "- GitHub nuon-ext-* backup: skipped $NUON_GH_SKIPPED_NO_TOML without nuon-ext.toml"
+        fi
+    else
+        echo "- GitHub nuon-ext-* backup skipped: gh not installed"
+    fi
+
     if [ "$NUON_MISSING_TOTAL" -eq 0 ] && [ "$NUON_TOTAL" -eq 0 ]; then
         echo "- no Nuon marketplace extensions found and none installed"
         record_step "Nuon extensions" "skipped" "none available"
     elif [ "$DRY_RUN" = true ]; then
         if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
-            echo "[DRY RUN] Would install $NUON_MISSING_TOTAL marketplace extension(s):"
+            echo "[DRY RUN] Would install $NUON_MISSING_TOTAL missing extension(s) (browse + GitHub backup):"
             while IFS=$'\t' read -r name repo tag; do
                 [ -z "$name" ] && continue
                 if [ -n "$tag" ]; then
@@ -1457,7 +1450,7 @@ for item in items:
                 fi
             done <<< "$NUON_MISSING"
         else
-            echo "[DRY RUN] All marketplace extensions already installed"
+            echo "[DRY RUN] All browse + GitHub nuon-ext-* extensions already installed"
         fi
         if [ "$NUON_TOTAL" -gt 0 ]; then
             echo "[DRY RUN] Would upgrade $NUON_TOTAL installed Nuon extension(s):"
@@ -1466,7 +1459,7 @@ for item in items:
                 echo "  - $name ($ver)"
             done <<< "$NUON_NAMES"
         fi
-        record_step "Nuon extensions" "dry-run" "would install $NUON_MISSING_TOTAL, upgrade $NUON_TOTAL"
+        record_step "Nuon extensions" "dry-run" "would install $NUON_MISSING_TOTAL (gh backup $NUON_GH_BACKUP_ADDED), upgrade $NUON_TOTAL"
     else
         TOOL_UPDATES_CHANGES+="Nuon extensions:"$'\n'
         NUON_INSTALLED=0
@@ -1474,31 +1467,51 @@ for item in items:
         NUON_UNCHANGED=0
         NUON_FAILED=0
 
-        # Install missing marketplace extensions first.
+        # Install missing extensions (browse marketplace + GitHub nuon-ext-* backup).
         if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
-            echo "- installing $NUON_MISSING_TOTAL missing marketplace extension(s)"
+            echo "- installing $NUON_MISSING_TOTAL missing extension(s)"
             NUON_I=0
             while IFS=$'\t' read -r name repo tag; do
                 [ -z "$name" ] && continue
                 NUON_I=$((NUON_I + 1))
                 progress_bar "$NUON_I" "$NUON_MISSING_TOTAL" "install $name"
-                # Short name works for nuonco marketplace; use name for install.
-                NUON_OUT=$(nuon extensions install "$name" --output agent 2>/dev/null || true)
+                # Prefer org/repo (and optional @tag); short name works for marketplace too.
+                if [ -n "$repo" ] && [[ "$repo" == */* ]]; then
+                    if [ -n "$tag" ]; then
+                        NUON_INSTALL_SPEC="${repo}@${tag}"
+                    else
+                        NUON_INSTALL_SPEC="$repo"
+                    fi
+                else
+                    NUON_INSTALL_SPEC="$name"
+                fi
+                # Keep stderr (clone progress); parse agent JSON from stdout.
+                NUON_OUT=$(nuon extensions install "$NUON_INSTALL_SPEC" --output agent 2>/dev/null || true)
                 if printf '%s' "$NUON_OUT" | grep -Fq '"ok":true'; then
                     NUON_INSTALLED=$((NUON_INSTALLED + 1))
                     progress_clear_line
-                    echo "  installed: $name"
+                    echo "  installed: $name ($NUON_INSTALL_SPEC)"
                     append_tool_change "installed: $name"
                 else
                     NUON_FAILED=$((NUON_FAILED + 1))
                     progress_clear_line
-                    echo "  failed: install $name"
-                    append_tool_change "failed: install $name"
+                    NUON_ERR=$(printf '%s' "$NUON_OUT" | python3 -c 'import json,sys,re
+t=sys.stdin.read()
+i=t.find("{")
+if i<0:
+    print((t.strip() or "unknown error")[:200]); raise SystemExit
+try:
+    print(json.loads(t[i:]).get("error") or t.strip()[:200])
+except Exception:
+    print(t.strip()[:200] or "unknown error")
+' 2>/dev/null || echo "unknown error")
+                    echo "  failed: install $name ($NUON_INSTALL_SPEC): $NUON_ERR"
+                    append_tool_change "failed: install $name ($NUON_ERR)"
                 fi
             done <<< "$NUON_MISSING"
         else
-            echo "- all marketplace extensions already installed"
-            append_tool_change "marketplace: all already installed"
+            echo "- all browse + GitHub nuon-ext-* extensions already installed"
+            append_tool_change "marketplace+github: all already installed"
         fi
 
         # Re-list after installs so upgrades cover newly installed extensions.

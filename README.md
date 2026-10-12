@@ -28,7 +28,6 @@ This script copies configuration files to their appropriate locations:
 - Prettier formatting config
 - Ghostty terminal config (if installed)
 - Starship prompt config (if installed), including Nuon `[custom.nuon]` (needs https://github.com/nuonco/nuon-ext-starship; install warns if the extension binary is missing)
-- Goose config (if installed)
 - Cursor CLI config and MCP servers (if installed)
 - Codex settings, MCP servers, and shared agent instructions
 - Amp MCP servers (if installed)
@@ -71,25 +70,6 @@ Each Slack launcher maps its workspace variables to the server's expected token
 names and fails with a clear message if a token is missing. Restart Codex after
 installation, check `codex mcp list`, then verify a read call in each Slack workspace.
 GUI launches also need access to the token variables and Node.js PATH.
-
-## Goose Configuration
-
-The vendored `goose/config.yaml` has no provider or model pinned — pass them as
-environment variables at launch instead:
-
-```bash
-GOOSE_PROVIDER=ollama GOOSE_MODEL=qwen2.5:14b-instruct goose
-```
-
-Goose reads the available model list live from the Ollama server, so any model
-you've pulled shows up without editing config. Pull the models you want to use:
-
-```bash
-ollama pull qwen2.5:7b-instruct
-ollama pull llama3.1:8b
-ollama pull qwen2.5:14b-instruct
-ollama pull qwen3-coder:30b
-```
 
 ## Post-Installation: Git Configuration
 
