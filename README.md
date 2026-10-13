@@ -19,6 +19,18 @@ This shows what files would be copied without actually modifying anything. Usefu
 ./install.sh
 ```
 
+Skip slow operations when you only want configuration updates:
+
+```bash
+./install.sh --skip brew,repo,nuon
+./install.sh --dry-run --skip=brew,repo
+```
+
+`brew` skips Homebrew packages, `repo` skips repo-current setup and sibling Git
+pulls, and `nuon` skips Nuon extension discovery, installation, and upgrades.
+All other steps still run. Repeat `--skip` to combine exclusions; use `--help`
+for the full option list. Without exclusions, the installer runs everything.
+
 This script copies configuration files to their appropriate locations:
 
 - Git global ignore (`.gitignore_global`)

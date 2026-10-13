@@ -6,18 +6,79 @@ DRY_RUN=false
 # Pass --no-show-repo-path to keep basename-only lines (or when using an older
 # git_pull_all.sh that already prints paths and you want to skip the rewrite).
 SHOW_REPO_PATH=true
-for arg in "$@"; do
-    case "$arg" in
-        --dry-run|-n)
-            DRY_RUN=true
+SKIP_PARTS=()
+
+usage() {
+    cat <<'EOF'
+Usage: ./install.sh [--dry-run|-n] [--skip brew,repo,nuon]
+
+  --skip LIST          Skip comma-separated slow operations (repeatable).
+                       brew: Homebrew package installation/upgrades
+                       repo: repo-current setup and sibling Git pulls
+                       nuon: Nuon extension discovery/install/upgrades
+  --dry-run, -n        Preview changes.
+  --show-repo-path     Show full repository paths (default).
+  --no-show-repo-path  Show repository basenames.
+  --help, -h           Show this help.
+
+Other steps: Git ignore, Prettier, agent instructions, Google Drive notes,
+AI client/MCP configs, shell/editor/terminal configs, macOS defaults,
+backup cleanup, GitHub SSH config, Claude skills/plugins, and run summary.
+EOF
+}
+
+argument_error() {
+    printf 'ERROR: %s\n' "$1" >&2
+    printf 'Run ./install.sh --help for usage.\n' >&2
+    exit 2
+}
+
+should_skip() {
+    local part
+    for part in "${SKIP_PARTS[@]}"; do
+        [ "$part" = "$1" ] && return 0
+    done
+    return 1
+}
+
+add_skips() {
+    local remaining="$1" part
+    while :; do
+        part="${remaining%%,*}"
+        # Trim surrounding whitespace without changing the section name.
+        part="${part#"${part%%[![:space:]]*}"}"
+        part="${part%"${part##*[![:space:]]}"}"
+        case "$part" in
+            brew|repo|nuon)
+                if ! should_skip "$part"; then
+                    SKIP_PARTS+=("$part")
+                fi
+                ;;
+            "") argument_error "--skip requires nonempty section names" ;;
+            *) argument_error "unknown skip section: $part" ;;
+        esac
+        case "$remaining" in
+            *,*) remaining="${remaining#*,}" ;;
+            *) break ;;
+        esac
+    done
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --dry-run|-n) DRY_RUN=true ;;
+        --show-repo-path) SHOW_REPO_PATH=true ;;
+        --no-show-repo-path) SHOW_REPO_PATH=false ;;
+        --skip)
+            [ "$#" -ge 2 ] || argument_error "--skip requires a list"
+            shift
+            add_skips "$1"
             ;;
-        --show-repo-path)
-            SHOW_REPO_PATH=true
-            ;;
-        --no-show-repo-path)
-            SHOW_REPO_PATH=false
-            ;;
+        --skip=*) add_skips "${1#--skip=}" ;;
+        --help|-h) usage; exit 0 ;;
+        *) argument_error "unknown option: $1" ;;
     esac
+    shift
 done
 # Local wall clock: 2026-09-01 11:17:32 AM CDT
 now_stamp() {
@@ -176,6 +237,9 @@ print_step() {
     echo "STEP: [$(now_stamp)] $*"
 }
 
+if should_skip brew; then
+    record_step "Homebrew packages" "skipped" "--skip brew"
+else
 print_step "🍺 setting up Homebrew packages"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -f "$DOTFILES_PATH/brew/brew.sh" ]; then
@@ -265,6 +329,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     echo "Skipping Homebrew setup on non-Darwin system"
     record_step "Homebrew packages" "skipped" "non-Darwin system"
+fi
 fi
 
 print_step "💾 copying .gitignore_global"
@@ -1329,6 +1394,9 @@ fi
 # Progress bars advance per item; diffs feed TOOL_UPDATES_CHANGES.
 # ---------------------------------------------------------------------------
 
+if should_skip nuon; then
+    record_step "Nuon extensions" "skipped" "--skip nuon"
+else
 print_step "Installing and upgrading Nuon CLI extensions"
 if ! command -v nuon &> /dev/null; then
     echo "- skipping: nuon not installed"
@@ -1615,6 +1683,7 @@ for item in items:
             echo "- $NUON_DETAIL"
         fi
     fi
+fi
 fi
 
 print_step "Updating Claude skills"
@@ -1930,6 +1999,9 @@ for item in data:
     fi
 fi
 
+if should_skip repo; then
+    record_step "repo-current" "skipped" "--skip repo"
+else
 print_step "🔄 Keeping sibling repos current (repo-current)"
 # Resolve the parent of dotfiles to a clean absolute path so the displayed
 # repo-current location doesn't include a literal "..".
@@ -2096,6 +2168,8 @@ if [ "$REPO_CURRENT_READY" = true ]; then
         fi
     fi
     [ -n "$REPO_CURRENT_MAP" ] && rm -f "$REPO_CURRENT_MAP"
+fi
+
 fi
 
 echo ""
