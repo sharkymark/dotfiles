@@ -47,8 +47,10 @@ The installer links Codex's `AGENTS.md` to the shared `~/AGENTS.md`. Only these 
 are deployed; authentication and session files stay local. Reconcile any local
 settings you want to retain before running the installer.
 
-Configured MCP servers: OpenAI developer documentation, Nuon, shark-local, and both
-Slack workspaces. Linear is omitted. Nuon retains the existing `--allow-writes` setting.
+Configured MCP servers match Cursor and Claude Code, plus OpenAI developer
+documentation: Nuon, shark-local, Grain, Superhuman Mail, both Slack workspaces,
+Plausible Analytics, Salesforce DX, Pylon, Linear, Airtable, Lovable, Notion, and
+AWS MCP. Nuon retains the existing `--allow-writes` setting.
 Codex uses `approval_policy = "never"` and `sandbox_mode = "danger-full-access"`
 for command execution without approval prompts and with full filesystem/network
 access. All configured MCP servers use `default_tools_approval_mode = "approve"`,
@@ -57,6 +59,13 @@ Restart Codex after installing; managed policies or app-specific overrides may
 still take precedence over these defaults.
 Slack uses `npx`, so Node.js must be available on Codex's PATH. shark-local requires
 its service to be running at `http://127.0.0.1:8000/mcp`.
+Grain uses the legacy `mcp-remote` bridge because native Codex OAuth login rejects
+Grain’s cross-origin authorization metadata. The bridge handles browser login and
+keeps its credentials locally; `codex mcp login grain` does not apply to this stdio server.
+Lovable also uses `mcp-remote` to work around native Codex OAuth discovery;
+the bridge stores its OAuth credentials locally.
+For Airtable login, use `codex mcp login airtable --oauth-client-registration dcr`;
+the default URL-based client registration was rejected by Airtable.
 
 Export these variables in the environment that launches Codex; no token values
 belong in the repository:
@@ -65,6 +74,7 @@ belong in the repository:
 - `SLACK_MCP_XOXD_TOKEN_NUON_BYOC`
 - `SLACK_MCP_XOXC_TOKEN_NUONCO`
 - `SLACK_MCP_XOXD_TOKEN_NUONCO`
+- `PLAUSIBLE_API_KEY`
 
 Each Slack launcher maps its workspace variables to the server's expected token
 names and fails with a clear message if a token is missing. Restart Codex after
