@@ -30,3 +30,56 @@ command = "/bin/sh"
 args = ["-c", 'export SLACK_MCP_XOXC_TOKEN="${SLACK_MCP_XOXC_TOKEN_NUONCO:?Missing Nuonco XOXC token}" SLACK_MCP_XOXD_TOKEN="${SLACK_MCP_XOXD_TOKEN_NUONCO:?Missing Nuonco XOXD token}"; exec npx -y slack-mcp-server@latest --transport stdio']
 env_vars = ["SLACK_MCP_XOXC_TOKEN_NUONCO", "SLACK_MCP_XOXD_TOKEN_NUONCO"]
 startup_timeout_sec = 60
+
+# Bridge Grain OAuth metadata that native Codex login currently rejects.
+[mcp_servers.grain]
+default_tools_approval_mode = "approve"
+command = "npx"
+args = ["-y", "mcp-remote", "https://api.grain.com/_/mcp"]
+startup_timeout_sec = 60
+
+[mcp_servers.superhuman-mail]
+default_tools_approval_mode = "approve"
+url = "https://mcp.mail.superhuman.com/mcp"
+
+[mcp_servers.plausible-analytics]
+default_tools_approval_mode = "approve"
+command = "npx"
+args = ["-y", "plausible-mcp"]
+env_vars = ["PLAUSIBLE_API_KEY"]
+startup_timeout_sec = 60
+
+[mcp_servers.salesforce-dx]
+default_tools_approval_mode = "approve"
+command = "npx"
+args = ["-y", "@salesforce/mcp@latest", "--orgs", "DEFAULT_TARGET_ORG", "--toolsets", "orgs,data,users", "--no-telemetry"]
+startup_timeout_sec = 60
+
+[mcp_servers.pylon]
+default_tools_approval_mode = "approve"
+url = "https://mcp.usepylon.com/"
+
+[mcp_servers.linear]
+default_tools_approval_mode = "approve"
+url = "https://mcp.linear.app/mcp"
+
+[mcp_servers.airtable]
+default_tools_approval_mode = "approve"
+url = "https://mcp.airtable.com/mcp"
+
+# Native Codex OAuth discovery rejects Lovable; bridge handles authentication.
+[mcp_servers.lovable]
+default_tools_approval_mode = "approve"
+command = "npx"
+args = ["-y", "mcp-remote", "https://mcp.lovable.dev"]
+startup_timeout_sec = 60
+
+[mcp_servers.notion]
+default_tools_approval_mode = "approve"
+url = "https://mcp.notion.com/mcp"
+
+[mcp_servers.aws-mcp]
+default_tools_approval_mode = "approve"
+command = "/bin/zsh"
+args = ["-c", "exec /opt/homebrew/bin/uvx mcp-proxy-for-aws-cli@latest https://aws-mcp.us-east-1.api.aws/mcp"]
+startup_timeout_sec = 60
