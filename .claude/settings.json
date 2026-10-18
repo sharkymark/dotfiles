@@ -1,4 +1,9 @@
 {
+	"attribution": {
+		"commit": "",
+		"pr": "",
+		"sessionUrl": false
+	},
 	"model": "opusplan",
 	"enabledPlugins": {
 		"gopls-lsp@claude-plugins-official": true
