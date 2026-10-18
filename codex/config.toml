@@ -67,13 +67,6 @@ url = "https://mcp.linear.app/mcp"
 default_tools_approval_mode = "approve"
 url = "https://mcp.airtable.com/mcp"
 
-# Native Codex OAuth discovery rejects Lovable; bridge handles authentication.
-[mcp_servers.lovable]
-default_tools_approval_mode = "approve"
-command = "npx"
-args = ["-y", "mcp-remote", "https://mcp.lovable.dev"]
-startup_timeout_sec = 60
-
 [mcp_servers.notion]
 default_tools_approval_mode = "approve"
 url = "https://mcp.notion.com/mcp"

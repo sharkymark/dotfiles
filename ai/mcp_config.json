@@ -79,10 +79,6 @@
       "url": "https://mcp.airtable.com/mcp",
       "disabled": true
     },
-    "lovable": {
-      "url": "https://mcp.lovable.dev",
-      "disabled": true
-    },
     "notion": {
       "url": "https://mcp.notion.com/mcp",
       "disabled": true

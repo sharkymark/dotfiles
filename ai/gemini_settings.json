@@ -82,9 +82,6 @@
     "airtable": {
       "url": "https://mcp.airtable.com/mcp"
     },
-    "lovable": {
-      "url": "https://mcp.lovable.dev"
-    },
     "notion": {
       "url": "https://mcp.notion.com/mcp"
     },

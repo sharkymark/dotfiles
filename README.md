@@ -61,7 +61,7 @@ settings you want to retain before running the installer.
 
 Configured MCP servers match Cursor and Claude Code, plus OpenAI developer
 documentation: Nuon, shark-local, Grain, Superhuman Mail, both Slack workspaces,
-Plausible Analytics, Salesforce DX, Pylon, Linear, Airtable, Lovable, Notion, and
+Plausible Analytics, Salesforce DX, Pylon, Linear, Airtable, Notion, and
 AWS MCP. Nuon retains the existing `--allow-writes` setting.
 Codex uses `approval_policy = "never"` and `sandbox_mode = "danger-full-access"`
 for command execution without approval prompts and with full filesystem/network
@@ -74,8 +74,6 @@ its service to be running at `http://127.0.0.1:8000/mcp`.
 Grain uses the legacy `mcp-remote` bridge because native Codex OAuth login rejects
 Grain’s cross-origin authorization metadata. The bridge handles browser login and
 keeps its credentials locally; `codex mcp login grain` does not apply to this stdio server.
-Lovable also uses `mcp-remote` to work around native Codex OAuth discovery;
-the bridge stores its OAuth credentials locally.
 For Airtable login, use `codex mcp login airtable --oauth-client-registration dcr`;
 the default URL-based client registration was rejected by Airtable.
 

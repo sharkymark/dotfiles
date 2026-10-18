@@ -76,12 +76,6 @@
     "airtable": {
       "url": "https://mcp.airtable.com/mcp"
     },
-    "lovable": {
-      "url": "https://mcp.lovable.dev",
-      "auth": {
-        "CLIENT_ID": "6d465f583e1e4ce5801b1616f735670c"
-      }
-    },
     "notion": {
       "url": "https://mcp.notion.com/mcp"
     },
