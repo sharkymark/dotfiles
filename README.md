@@ -51,6 +51,21 @@ installed ones, updates global Claude skills (via `npx skills`), and refreshes C
 plugin marketplaces plus installed plugins, with a progress bar and a Tool updates
 section in the final summary.
 
+## Node project dependencies
+
+Use `npm ci` for routine setup in npm projects and after pulling dependency changes. It uses the committed `package-lock.json` without rewriting it. Use `npm install <package>` when intentionally changing dependencies, and commit the manifest and lockfile together. Existing Bun lockfiles in Lovable projects remain for hosting compatibility.
+
+On another Mac, pull this repo and refresh the shared agent instructions:
+
+```bash
+cd ~/src/mark/dotfiles
+git pull --ff-only
+cp ~/AGENTS.md ~/AGENTS.md.backup.$(date +%Y%m%d_%H%M%S)
+cp ai/AGENTS.md ~/AGENTS.md
+```
+
+In each app repo, run `git status` before pulling. If only local lockfile changes block the pull, preserve them with `git stash push -u -m "before lockfile workflow update" -- package-lock.json`. Then pull with `git pull --ff-only` and run `npm ci` (`shark-mcp` installs its npm dependencies inside `browser/`). Preserve any other local work separately if it also blocks the pull. Review the saved stash afterward; restore intentional dependency work, but do not reapply obsolete generated lockfile changes over the repaired lockfile. If `npm ci` reports a manifest/lockfile mismatch, fix and commit it at the source instead of routinely falling back to `npm install` on each Mac.
+
 ## Codex Configuration
 
 `codex/config.toml` is copied to `~/.codex/config.toml` (or `$CODEX_HOME/config.toml`

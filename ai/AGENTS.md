@@ -49,6 +49,9 @@ Python:
 
 TypeScript / React:
 - match the repo stack; do not invent a new one
+- use the repo's package manager and keep its lockfile tracked; for npm repos, use npm ci for routine setup and after pulling dependency changes, not npm install
+- use npm install <package> for intentional npm dependency changes; update and commit package.json and the corresponding lockfile together
+- do not ignore tracked lockfiles globally or hide their changes with assume-unchanged/skip-worktree; preserve existing Bun lockfiles in Lovable repos unless explicitly migrating their hosting workflow
 - use the project's formatter/linter
 - follow existing React patterns; do not add useMemo/useCallback by default unless the repo does
 
