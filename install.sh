@@ -2035,7 +2035,23 @@ if [ ! -d "$REPO_CURRENT_DIR" ]; then
     fi
 else
     echo "- using existing repo-current at $REPO_CURRENT_DIR (re-using your directories.txt)"
-    REPO_CURRENT_READY=true
+    REPO_CURRENT_READY=false
+    REPO_CURRENT_BRANCH=$(git -C "$REPO_CURRENT_DIR" branch --show-current 2>/dev/null)
+    if [ "$REPO_CURRENT_BRANCH" != main ]; then
+        echo "- skipping repo-current refresh and execution: checkout is not on main"
+        record_step "repo-current" "skipped" "checkout is not on main"
+    elif [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would refresh repo-current with git -c pull.rebase=false pull --ff-only"
+        REPO_CURRENT_READY=true
+    elif GIT_TERMINAL_PROMPT=0 \
+        GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new" \
+        git -C "$REPO_CURRENT_DIR" -c pull.rebase=false pull --ff-only; then
+        echo "- refreshed repo-current (preserved local directories.txt)"
+        REPO_CURRENT_READY=true
+    else
+        echo "- repo-current refresh failed; skipping execution of the existing script"
+        record_step "repo-current" "failed" "refresh failed; execution skipped"
+    fi
 fi
 
 if [ "$REPO_CURRENT_READY" = true ]; then
