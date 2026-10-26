@@ -18,7 +18,7 @@ parser = source[:source.index('# Local wall clock:')]
 sections = []
 for start, end in [
     ('if should_skip brew; then', 'print_step "💾 copying .gitignore_global"'),
-    ('if should_skip nuon; then', 'print_step "Updating Claude skills"'),
+    ('if should_skip nuon; then', 'if should_skip repo; then'),
     ('if should_skip repo; then', 'echo ""\necho "======================================"\necho "📝 Git User Configuration"'),
 ]:
     sections.append(source[source.index(start):source.index(end, source.index(start))])
@@ -59,6 +59,10 @@ cat > "$fixture_dir/bin/git" <<'STUB'
 #!/usr/bin/env bash
 set -euo pipefail
 printf 'git %s\n' "$*" >> "$TEST_CALLS"
+# install.sh skips repo-current unless the checkout reports main.
+if [[ " $* " == *" branch --show-current "* ]]; then
+    printf 'main\n'
+fi
 STUB
 cat > "$fixture_dir/dotfiles/brew/brew.sh" <<'STUB'
 #!/usr/bin/env bash
@@ -118,7 +122,8 @@ run_case --skip ' brew, repo ' --skip=nuon,brew
 run_case -n --no-show-repo-path --skip=brew,repo,nuon
 [ ! -s "$TEST_CALLS" ]
 run_case --dry-run --show-repo-path --skip brew,nuon
-[ ! -s "$TEST_CALLS" ]
+# Repo dry-run still probes `git branch --show-current`; brew/nuon must stay quiet.
+assert_not_called '^brew|^nuon|^repo-work'
 rg -q 'repo-current: dry-run' "$fixture_dir/output"
 
 # Skipping repo also avoids clone/setup when repo-current is absent.
