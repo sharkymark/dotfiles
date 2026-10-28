@@ -82,6 +82,10 @@
     "notion": {
       "url": "https://mcp.notion.com/mcp",
       "disabled": true
+    },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp",
+      "disabled": true
     }
   }
 }

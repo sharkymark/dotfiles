@@ -86,6 +86,9 @@
     "notion": {
       "url": "https://mcp.notion.com/mcp"
     },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp"
+    },
     "chrome-devtools": {
       "command": "npx",
       "args": [

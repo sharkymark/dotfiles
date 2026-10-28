@@ -73,7 +73,7 @@ settings you want to retain before running the installer.
 
 Configured MCP servers match Cursor and Claude Code, plus OpenAI developer
 documentation: Nuon, shark-local, Grain, Superhuman Mail, both Slack workspaces,
-Plausible Analytics, Salesforce DX, Pylon, Linear, Airtable, Notion, and
+Plausible Analytics, Salesforce DX, Pylon, Linear, Airtable, Notion, PostHog, and
 AWS MCP. Nuon retains the existing `--allow-writes` setting.
 Codex uses `approval_policy = "never"` and `sandbox_mode = "danger-full-access"`
 for command execution without approval prompts and with full filesystem/network

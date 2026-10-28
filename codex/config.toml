@@ -71,6 +71,10 @@ url = "https://mcp.airtable.com/mcp"
 default_tools_approval_mode = "approve"
 url = "https://mcp.notion.com/mcp"
 
+[mcp_servers.posthog]
+default_tools_approval_mode = "approve"
+url = "https://mcp.posthog.com/mcp"
+
 [mcp_servers.aws-mcp]
 default_tools_approval_mode = "approve"
 command = "/bin/zsh"

@@ -85,6 +85,9 @@
     "notion": {
       "url": "https://mcp.notion.com/mcp"
     },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp"
+    },
     "aws-mcp": {
       "command": "/bin/zsh",
       "args": [
