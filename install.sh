@@ -1401,20 +1401,80 @@ if ! command -v nuon &> /dev/null; then
     echo "- skipping: nuon not installed"
     record_step "Nuon extensions" "skipped" "nuon not installed"
 else
+    # Parse `nuon extensions list` JSON → name\tversion lines.
+    # Strips ANSI + leading banners (CLI min-version warnings often land on stdout;
+    # ANSI CSI sequences contain "[" and must not be mistaken for a JSON array).
+    nuon_ext_list_names() {
+        python3 -c '
+import json, re, sys
+raw = re.sub(r"\x1b\[[0-9;]*[a-zA-Z]", "", sys.stdin.read()).strip()
+if not raw:
+    sys.exit(0)
+# Prefer the earliest { or [ so array payloads are not sliced at the first object.
+starts = [i for i in (raw.find("{"), raw.find("[")) if i >= 0]
+if not starts:
+    sys.exit(0)
+raw = raw[min(starts):]
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
+if not isinstance(items, list):
+    sys.exit(0)
+for item in items:
+    if not isinstance(item, dict):
+        continue
+    name = item.get("name") or ""
+    ver = item.get("version") or item.get("tag") or "?"
+    if name:
+        print("%s\t%s" % (name, ver))
+'
+    }
+
+    # Extract error from --output agent envelope in combined stdout/stderr.
+    # CLI sometimes emits invalid JSON (unescaped quotes inside error strings).
+    nuon_ext_agent_error() {
+        python3 -c '
+import json, re, sys
+t = re.sub(r"\x1b\[[0-9;]*[a-zA-Z]", "", sys.stdin.read())
+i = t.find("{")
+if i < 0:
+    print((t.strip() or "unknown error")[:200])
+    raise SystemExit
+blob = t[i:]
+try:
+    err = json.loads(blob).get("error")
+    print((err or blob.strip()[:200] or "unknown error")[:200])
+    raise SystemExit
+except Exception:
+    pass
+m = re.search(r"\"error\"\s*:\s*\"(.*)\"\s*\}\s*$", blob, re.S)
+if m:
+    print(m.group(1)[:200])
+    raise SystemExit
+for line in blob.splitlines():
+    line = line.strip()
+    if "\"error\"" in line or line.startswith("{"):
+        print(line[:200])
+        raise SystemExit
+print(blob.strip()[:200] or "unknown error")
+' 2>/dev/null || echo "unknown error"
+    }
+
     # Marketplace browse prints a "Found N extension(s)" line before JSON.
     # Prefer --output agent ({ok,data}) and fall back to stripping to the first [/{.
     NUON_BROWSE_RAW=$(nuon extensions browse --output agent 2>/dev/null || true)
     NUON_MISSING=$(python3 -c '
-import json, sys
-raw = sys.stdin.read().strip()
+import json, re, sys
+raw = re.sub(r"\x1b\[[0-9;]*[a-zA-Z]", "", sys.stdin.read()).strip()
 if not raw:
     sys.exit(0)
-# Strip any leading non-JSON banner lines
-start = raw.find("{")
-if start < 0:
-    start = raw.find("[")
-if start > 0:
-    raw = raw[start:]
+# Strip leading banners; earliest { or [ wins (agent object or bare array).
+starts = [i for i in (raw.find("{"), raw.find("[")) if i >= 0]
+if not starts:
+    sys.exit(0)
+raw = raw[min(starts):]
 try:
     data = json.loads(raw)
 except Exception:
@@ -1436,24 +1496,7 @@ for item in items:
     NUON_MISSING_TOTAL=$(printf '%s\n' "$NUON_MISSING" | awk 'NF' | wc -l | tr -d ' ')
 
     NUON_LIST_JSON=$(nuon extensions list --output json 2>/dev/null || true)
-    NUON_NAMES=$(python3 -c '
-import json, sys
-raw = sys.stdin.read().strip()
-if not raw:
-    sys.exit(0)
-try:
-    data = json.loads(raw)
-except Exception:
-    sys.exit(0)
-items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
-if not isinstance(items, list):
-    sys.exit(0)
-for item in items:
-    name = item.get("name") or ""
-    ver = item.get("version") or item.get("tag") or "?"
-    if name:
-        print(f"{name}\t{ver}")
-' <<< "$NUON_LIST_JSON")
+    NUON_NAMES=$(nuon_ext_list_names <<< "$NUON_LIST_JSON")
     NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
 
     # Backup when browse lags: GitHub org repos named nuon-ext-* with nuon-ext.toml.
@@ -1552,26 +1595,21 @@ for item in items:
                 else
                     NUON_INSTALL_SPEC="$name"
                 fi
-                # Keep stderr (clone progress); parse agent JSON from stdout.
-                NUON_OUT=$(nuon extensions install "$NUON_INSTALL_SPEC" --output agent 2>/dev/null || true)
+                # Agent envelope may land on stderr (CLI quirk); capture both.
+                NUON_OUT=$(nuon extensions install "$NUON_INSTALL_SPEC" --output agent 2>&1 || true)
                 if printf '%s' "$NUON_OUT" | grep -Fq '"ok":true'; then
                     NUON_INSTALLED=$((NUON_INSTALLED + 1))
                     progress_clear_line
                     echo "  installed: $name ($NUON_INSTALL_SPEC)"
                     append_tool_change "installed: $name"
+                elif printf '%s' "$NUON_OUT" | grep -Fqi 'already installed'; then
+                    progress_clear_line
+                    echo "  already installed: $name"
+                    append_tool_change "already installed: $name"
                 else
                     NUON_FAILED=$((NUON_FAILED + 1))
                     progress_clear_line
-                    NUON_ERR=$(printf '%s' "$NUON_OUT" | python3 -c 'import json,sys,re
-t=sys.stdin.read()
-i=t.find("{")
-if i<0:
-    print((t.strip() or "unknown error")[:200]); raise SystemExit
-try:
-    print(json.loads(t[i:]).get("error") or t.strip()[:200])
-except Exception:
-    print(t.strip()[:200] or "unknown error")
-' 2>/dev/null || echo "unknown error")
+                    NUON_ERR=$(printf '%s' "$NUON_OUT" | nuon_ext_agent_error)
                     echo "  failed: install $name ($NUON_INSTALL_SPEC): $NUON_ERR"
                     append_tool_change "failed: install $name ($NUON_ERR)"
                 fi
@@ -1583,24 +1621,7 @@ except Exception:
 
         # Re-list after installs so upgrades cover newly installed extensions.
         NUON_LIST_JSON=$(nuon extensions list --output json 2>/dev/null || true)
-        NUON_NAMES=$(python3 -c '
-import json, sys
-raw = sys.stdin.read().strip()
-if not raw:
-    sys.exit(0)
-try:
-    data = json.loads(raw)
-except Exception:
-    sys.exit(0)
-items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
-if not isinstance(items, list):
-    sys.exit(0)
-for item in items:
-    name = item.get("name") or ""
-    ver = item.get("version") or item.get("tag") or "?"
-    if name:
-        print(f"{name}\t{ver}")
-' <<< "$NUON_LIST_JSON")
+        NUON_NAMES=$(nuon_ext_list_names <<< "$NUON_LIST_JSON")
         NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
 
         if [ "$NUON_TOTAL" -eq 0 ]; then
@@ -1622,37 +1643,24 @@ for item in items:
                 NUON_I=$((NUON_I + 1))
                 progress_bar "$NUON_I" "$NUON_TOTAL" "upgrade $name ($ver)"
                 # Per-name upgrade exits 1 when already latest; treat that as success.
-                NUON_OUT=$(nuon extensions upgrade "$name" --output agent 2>/dev/null || true)
+                # Agent envelope / progress may land on stderr; capture both.
+                NUON_OUT=$(nuon extensions upgrade "$name" --output agent 2>&1 || true)
                 if printf '%s' "$NUON_OUT" | grep -Fq '"error"'; then
                     if printf '%s' "$NUON_OUT" | grep -Fq 'already at the latest'; then
+                        :
+                    elif printf '%s' "$NUON_OUT" | grep -Fqi 'already installed'; then
                         :
                     else
                         NUON_FAILED=$((NUON_FAILED + 1))
                         progress_clear_line
-                        echo "  failed: $name (was $ver)"
-                        append_tool_change "failed: $name (was $ver; upgrade error)"
+                        NUON_ERR=$(printf '%s' "$NUON_OUT" | nuon_ext_agent_error)
+                        echo "  failed: $name (was $ver): $NUON_ERR"
+                        append_tool_change "failed: $name (was $ver; $NUON_ERR)"
                     fi
                 fi
             done <<< "$NUON_NAMES"
             NUON_LIST_AFTER=$(nuon extensions list --output json 2>/dev/null || true)
-            python3 -c '
-import json, sys
-raw = sys.stdin.read().strip()
-if not raw:
-    sys.exit(0)
-try:
-    data = json.loads(raw)
-except Exception:
-    sys.exit(0)
-items = data if isinstance(data, list) else data.get("data", data.get("extensions", []))
-if not isinstance(items, list):
-    sys.exit(0)
-for item in items:
-    name = item.get("name") or ""
-    ver = item.get("version") or item.get("tag") or "?"
-    if name:
-        print(f"{name}\t{ver}")
-' <<< "$NUON_LIST_AFTER" > "$NUON_AFTER_FILE"
+            nuon_ext_list_names <<< "$NUON_LIST_AFTER" > "$NUON_AFTER_FILE"
             while IFS=$'\t' read -r name before_ver; do
                 [ -z "$name" ] && continue
                 after_ver=$(awk -F'\t' -v n="$name" '$1==n {print $2; exit}' "$NUON_AFTER_FILE")
