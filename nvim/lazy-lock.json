@@ -1,5 +1,4 @@
 {
-  "amp.nvim": { "branch": "main", "commit": "3b9ad5ef0328de1b35cc9bfa723a37db5daf9434" },
   "cmp-buffer": { "branch": "main", "commit": "b74fab3656eea9de20a9b8116afa3cfc4ec09657" },
   "cmp-path": { "branch": "main", "commit": "c642487086dbd9a93160e1679a1327be111cbc25" },
   "dressing.nvim": { "branch": "master", "commit": "2d7c2db2507fa3c4956142ee607431ddb2828639" },

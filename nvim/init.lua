@@ -62,14 +62,6 @@ require("lazy").setup({
     end,
   },
 
-  -- amp plugin 
-  {
-    "sourcegraph/amp.nvim",
-    branch = "main",
-    lazy = false,
-    opts = { auto_start = true, log_level = "info" },
-  },
-
   -- avante plugin
   {
     "yetone/avante.nvim",
@@ -295,21 +287,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
--- Create :AmpX command
-vim.api.nvim_create_user_command('AmpX', function(opts)
-  local prompt = opts.args
-  if prompt == '' then
-    prompt = vim.fn.input('Amp prompt: ')
-  end
-  if prompt ~= '' then
-    -- Run in terminal buffer so it stays within Neovim
-    vim.cmd('botright split | terminal amp -x "' .. prompt .. '"')
-  end
-end, { nargs = '?' })
-
--- Optional: Add a keybinding that calls the command
-vim.keymap.set('n', '<leader>ax', ':AmpX<CR>', { desc = 'Amp execute mode' })
-
 -- ============================================
 -- Avante History Access Keybindings
 -- ============================================
@@ -328,37 +305,6 @@ vim.keymap.set('n', '<leader>ah', ':AvanteHistory<CR>', {
 vim.keymap.set('n', '<leader>an', ':AvanteChatNew<CR>', {
   desc = 'Avante: New chat thread'
 })
-
--- Create a command to open Amp in a right-hand vertical split
-
-vim.api.nvim_create_user_command("AmpChat", function()
-    -- 1. Create a vertical split on the far right
-    -- 'botright' ensures it takes the full height of the editor
-    vim.cmd("botright vsplit")
-    
-    -- 2. Resize to a sidebar width
-    vim.cmd("vertical resize 55")
-    
-    -- 3. Open a fresh buffer for the terminal
-    vim.cmd("enew")
-    
-    -- 4. Set window options (UI cleanup)
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.wo.signcolumn = "no"
-    vim.wo.foldcolumn = "0"
-
-    -- 5. Start Amp ONLY ONCE with the exit strategy
-    vim.fn.termopen("amp --ide .", {
-        on_exit = function()
-            -- Automatically close the split when you quit Amp
-            vim.cmd("bdelete!")
-        end
-    })
-
-    -- 6. Immediately enter insert mode to start chatting
-    vim.cmd("startinsert")
-end, { desc = "Open Amp AI sidebar on the right" })
 
 -------------------------------------------------------------------------------
 -- Nuon LSP Setup 
