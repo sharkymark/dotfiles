@@ -49,9 +49,6 @@ WARP.md
 .clineignore
 .cline*
 
-# https://block.github.io/goose/docs/
-.goose*
-
 # https://claude.com/claude-code
 .claude/
 .claude/settings.local.json

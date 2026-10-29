@@ -962,72 +962,6 @@ copy_nvim_settings() {
     done
 }
 
-copy_amp_settings() {
-    local dotfiles_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local amp_config_dir="$HOME/.config/amp"
-    local amp_share_dir="$HOME/.local/share/amp"
-    local source="$dotfiles_dir/amp/settings.json"
-    local target="$amp_config_dir/settings.json"
-    local session_file="$amp_share_dir/session.json"
-
-    mkdir -p "$amp_config_dir"
-    AMP_FILES_COPIED=0
-    AMP_BACKUPS=0
-
-    if [ -f "$source" ]; then
-        if [ "$DRY_RUN" = true ]; then
-            echo "[DRY RUN] Would copy: $source → $target"
-        else
-            if [ -f "$target" ]; then
-                cp "$target" "$target.backup.$(date +%Y%m%d_%H%M%S)"
-                echo "- backed up existing settings.json"
-                AMP_BACKUPS=$((AMP_BACKUPS + 1))
-            fi
-            if cp "$source" "$target"; then
-                echo "- copied settings.json to $amp_config_dir/"
-                AMP_FILES_COPIED=$((AMP_FILES_COPIED + 1))
-            else
-                echo "- failed to copy settings.json to $amp_config_dir/"
-            fi
-        fi
-    else
-        echo "- amp/settings.json not found in $dotfiles_dir/amp"
-    fi
-
-    # Amp stores the dial default in session.json, not settings.json.
-    if [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] Would set agentMode=low in $session_file"
-    else
-        mkdir -p "$amp_share_dir"
-        if [ -f "$session_file" ]; then
-            if python3 -c '
-import json, sys
-path = sys.argv[1]
-with open(path) as f:
-    data = json.load(f)
-if data.get("agentMode") == "low":
-    sys.exit(0)
-data["agentMode"] = "low"
-data["pluginAgentModeKey"] = None
-with open(path, "w") as f:
-    json.dump(data, f, indent=2)
-    f.write("\n")
-' "$session_file"; then
-                echo "- set agentMode=low in $session_file"
-            else
-                echo "- failed to set agentMode=low in $session_file"
-            fi
-        else
-            printf '%s\n' '{
-  "agentMode": "low",
-  "pluginAgentModeKey": null,
-  "lastFastModeEnabled": false
-}' > "$session_file"
-            echo "- created $session_file with agentMode=low"
-        fi
-    fi
-}
-
 copy_codex_settings() {
     local codex_config_dir="${CODEX_HOME:-$HOME/.codex}"
     local source="$DOTFILES_PATH/codex/config.toml"
@@ -1216,19 +1150,6 @@ else
     record_step "Neovim config" "skipped" "Neovim not installed"
 fi
 
-print_step "copying Amp config"
-if command -v amp &> /dev/null; then
-    copy_amp_settings
-    if [ "$DRY_RUN" = true ]; then
-        record_step "Amp config" "dry-run" "would copy settings.json"
-    else
-        record_step "Amp config" "done" "${AMP_FILES_COPIED} copied, ${AMP_BACKUPS} backed up"
-    fi
-else
-    echo "Amp is not installed. Skipping Amp configuration."
-    record_step "Amp config" "skipped" "Amp not installed"
-fi
-
 print_step "🤖 copying Codex config"
 copy_codex_settings
 
@@ -1316,8 +1237,6 @@ else
     cleanup_backups "$HOME/.config/nvim" "init.lua"
     cleanup_backups "$HOME/.config/nvim" "lazy-lock.json"
     cleanup_backups "$HOME/.config/nvim" ".avante_pref"
-    # Clean up Amp config backups
-    cleanup_backups "$HOME/.config/amp" "settings.json"
     # Clean up Codex config backups
     cleanup_backups "${CODEX_HOME:-$HOME/.codex}" "config.toml"
     cleanup_backups "${CODEX_HOME:-$HOME/.codex}" "AGENTS.md"
@@ -1389,7 +1308,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Keep Nuon extensions current (browse marketplace, GitHub nuon-ext-* backup,
+# Keep Nuon extensions current (browse marketplace for released extensions,
 # then upgrade). Progress bars advance per item; diffs feed TOOL_UPDATES_CHANGES.
 # ---------------------------------------------------------------------------
 
@@ -1463,7 +1382,7 @@ print(blob.strip()[:200] or "unknown error")
     }
 
     # Marketplace browse prints a "Found N extension(s)" line before JSON.
-    # Prefer --output agent ({ok,data}) and fall back to stripping to the first [/{.
+    # Only queue extensions that have an actual published release tag (latest_tag).
     NUON_BROWSE_RAW=$(nuon extensions browse --output agent 2>/dev/null || true)
     NUON_MISSING=$(python3 -c '
 import json, re, sys
@@ -1490,7 +1409,7 @@ for item in items:
     name = item.get("name") or ""
     repo = item.get("repo") or name
     tag = item.get("latest_tag") or ""
-    if name:
+    if name and tag:
         print("%s\t%s\t%s" % (name, repo, tag))
 ' <<< "$NUON_BROWSE_RAW")
     NUON_MISSING_TOTAL=$(printf '%s\n' "$NUON_MISSING" | awk 'NF' | wc -l | tr -d ' ')
@@ -1499,58 +1418,12 @@ for item in items:
     NUON_NAMES=$(nuon_ext_list_names <<< "$NUON_LIST_JSON")
     NUON_TOTAL=$(printf '%s\n' "$NUON_NAMES" | awk 'NF' | wc -l | tr -d ' ')
 
-    # Backup when browse lags: GitHub org repos named nuon-ext-* with nuon-ext.toml.
-    # Skip WIP/demo-style and repos without a manifest. Requires gh.
-    NUON_GH_BACKUP_ADDED=0
-    NUON_GH_SKIPPED_NO_TOML=0
-    if command -v gh &> /dev/null; then
-        NUON_GH_REPOS=$(gh api 'orgs/nuonco/repos?per_page=100&type=all' --paginate --jq '.[] | select(.archived|not) | .name' 2>/dev/null | grep -- '-ext-' || true)
-        NUON_GH_EXTRA=""
-        while IFS= read -r repo_name; do
-            [ -z "$repo_name" ] && continue
-            case "$repo_name" in
-                nuon-ext-*) ;;
-                *) continue ;;
-            esac
-            short_name="${repo_name#nuon-ext-}"
-            case "$short_name" in
-                demo|demo-setup|debug) continue ;;
-            esac
-            if printf '%s\n' "$NUON_NAMES" | awk -F'\t' -v n="$short_name" '$1==n {found=1} END{exit !found}'; then
-                continue
-            fi
-            if printf '%s\n' "$NUON_MISSING" | awk -F'\t' -v n="$short_name" '$1==n {found=1} END{exit !found}'; then
-                continue
-            fi
-            # Installable extensions ship nuon-ext.toml (doctor etc. are stubs without it).
-            if ! gh api "repos/nuonco/${repo_name}/contents/nuon-ext.toml" >/dev/null 2>&1; then
-                NUON_GH_SKIPPED_NO_TOML=$((NUON_GH_SKIPPED_NO_TOML + 1))
-                echo "  - skip $short_name: no nuon-ext.toml"
-                continue
-            fi
-            NUON_GH_EXTRA+="${short_name}"$'\t'"nuonco/${repo_name}"$'\t'$'\n'
-            NUON_GH_BACKUP_ADDED=$((NUON_GH_BACKUP_ADDED + 1))
-        done <<< "$NUON_GH_REPOS"
-        if [ "$NUON_GH_BACKUP_ADDED" -gt 0 ]; then
-            NUON_MISSING=$(printf '%s%s' "$NUON_MISSING" "$NUON_GH_EXTRA")
-            NUON_MISSING_TOTAL=$(printf '%s\n' "$NUON_MISSING" | awk 'NF' | wc -l | tr -d ' ')
-            echo "- GitHub nuon-ext-* backup: $NUON_GH_BACKUP_ADDED not in browse (will install)"
-        else
-            echo "- GitHub nuon-ext-* backup: nothing extra beyond browse/installed"
-        fi
-        if [ "$NUON_GH_SKIPPED_NO_TOML" -gt 0 ]; then
-            echo "- GitHub nuon-ext-* backup: skipped $NUON_GH_SKIPPED_NO_TOML without nuon-ext.toml"
-        fi
-    else
-        echo "- GitHub nuon-ext-* backup skipped: gh not installed"
-    fi
-
     if [ "$NUON_MISSING_TOTAL" -eq 0 ] && [ "$NUON_TOTAL" -eq 0 ]; then
         echo "- no Nuon marketplace extensions found and none installed"
         record_step "Nuon extensions" "skipped" "none available"
     elif [ "$DRY_RUN" = true ]; then
         if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
-            echo "[DRY RUN] Would install $NUON_MISSING_TOTAL missing extension(s) (browse + GitHub backup):"
+            echo "[DRY RUN] Would install $NUON_MISSING_TOTAL missing marketplace extension(s):"
             while IFS=$'\t' read -r name repo tag; do
                 [ -z "$name" ] && continue
                 if [ -n "$tag" ]; then
@@ -1560,7 +1433,7 @@ for item in items:
                 fi
             done <<< "$NUON_MISSING"
         else
-            echo "[DRY RUN] All browse + GitHub nuon-ext-* extensions already installed"
+            echo "[DRY RUN] All released marketplace extensions already installed"
         fi
         if [ "$NUON_TOTAL" -gt 0 ]; then
             echo "[DRY RUN] Would upgrade $NUON_TOTAL installed Nuon extension(s):"
@@ -1569,7 +1442,7 @@ for item in items:
                 echo "  - $name ($ver)"
             done <<< "$NUON_NAMES"
         fi
-        record_step "Nuon extensions" "dry-run" "would install $NUON_MISSING_TOTAL (gh backup $NUON_GH_BACKUP_ADDED), upgrade $NUON_TOTAL"
+        record_step "Nuon extensions" "dry-run" "would install $NUON_MISSING_TOTAL, upgrade $NUON_TOTAL"
     else
         TOOL_UPDATES_CHANGES+="Nuon extensions:"$'\n'
         NUON_INSTALLED=0
@@ -1577,7 +1450,7 @@ for item in items:
         NUON_UNCHANGED=0
         NUON_FAILED=0
 
-        # Install missing extensions (browse marketplace + GitHub nuon-ext-* backup).
+        # Install missing released marketplace extensions.
         if [ "$NUON_MISSING_TOTAL" -gt 0 ]; then
             echo "- installing $NUON_MISSING_TOTAL missing extension(s)"
             NUON_I=0
@@ -1615,8 +1488,8 @@ for item in items:
                 fi
             done <<< "$NUON_MISSING"
         else
-            echo "- all browse + GitHub nuon-ext-* extensions already installed"
-            append_tool_change "marketplace+github: all already installed"
+            echo "- all released marketplace extensions already installed"
+            append_tool_change "marketplace: all already installed"
         fi
 
         # Re-list after installs so upgrades cover newly installed extensions.
@@ -1642,6 +1515,11 @@ for item in items:
                 [ -z "$name" ] && continue
                 NUON_I=$((NUON_I + 1))
                 progress_bar "$NUON_I" "$NUON_TOTAL" "upgrade $name ($ver)"
+                # Source-only extensions without GitHub releases have version "latest"
+                # and cannot be upgraded via GitHub Releases API.
+                if [ "$ver" = "latest" ]; then
+                    continue
+                fi
                 # Per-name upgrade exits 1 when already latest; treat that as success.
                 # Agent envelope / progress may land on stderr; capture both.
                 NUON_OUT=$(nuon extensions upgrade "$name" --output agent 2>&1 || true)
@@ -1649,6 +1527,8 @@ for item in items:
                     if printf '%s' "$NUON_OUT" | grep -Fq 'already at the latest'; then
                         :
                     elif printf '%s' "$NUON_OUT" | grep -Fqi 'already installed'; then
+                        :
+                    elif printf '%s' "$NUON_OUT" | grep -Fqi 'no releases found'; then
                         :
                     else
                         NUON_FAILED=$((NUON_FAILED + 1))

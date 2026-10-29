@@ -1,5 +1,4 @@
 tap "nuonco/tap"
-tap "ampcode/tap"
 
 brew "atuin"
 brew "fish"
@@ -20,7 +19,6 @@ brew "k9s"
 brew "helm"
 brew "node@24"
 brew "nuon"
-brew "ampcode"
 brew "yarn"
 brew "templ"
 brew "tfenv"

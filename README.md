@@ -42,7 +42,6 @@ This script copies configuration files to their appropriate locations:
 - Starship prompt config (if installed), including Nuon `[custom.nuon]` (needs https://github.com/nuonco/nuon-ext-starship; install warns if the extension binary is missing)
 - Cursor CLI config and MCP servers (if installed)
 - Codex settings, MCP servers, and shared agent instructions
-- Amp MCP servers (if installed)
 
 On macOS, also runs Homebrew package installation and system defaults.
 
