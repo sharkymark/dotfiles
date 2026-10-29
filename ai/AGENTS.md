@@ -17,8 +17,8 @@ Specialized instructions (read when the task fits; do not paste up front). Prefe
 Cursor (primary)
 Default: Auto with Cost. Do not manually pick Composer, Grok, or Claude unless Mark asks. Prefer Cursor Models pool (Composer 2.5 / Cursor Grok); escalate to Balance/Intelligence only for a hard task, then drop back to Cost. Plan mode for architectural/ambiguous work. Explore/mechanical subagents: Composer 2.5 via cli-config subagentModels. Prefer Grok over Composer for research, CRM, and meeting analysis when Auto Cost can choose. Keep attributeCommitsToAgent and attributePRsToAgent false.
 
-Other agents (Claude Code, Codex, Gemini)
-Use the session's planning model for design/hard reasoning; cheaper/faster for mechanical subagent work. Do not escalate above the session tier. For Gemini/Antigravity: Google AI Pro; prefer native read/search tools over shell to avoid permission popups; use Model="flash" when invoking subagents (never "inherit" for research/mechanical work), skip subagents for small repos, and make small targeted replace_file_content edits instead of large line-range replacements; keep MCP mirrors in ai/mcp_config.json / ai/gemini_settings.json.
+Other agents (Claude Code, Codex, Antigravity)
+Use the session's planning model for design/hard reasoning; cheaper/faster for mechanical subagent work. Do not escalate above the session tier. For Gemini/Antigravity (AGY): default to Gemini 3.8 Flash (Low) for fast execution and routine work. Escalate reasoning effort to Medium/High for hard debugging, or escalate model to Argon, Claude Sonnet 4.6 (Thinking), or Claude Opus 4.6 (Thinking) for architectural design and complex multi-file refactoring, then drop back to Flash (Low). Prefer native read/search tools over shell to avoid permission popups; use Model="flash" when invoking subagents (never "inherit" for research/mechanical work), skip subagents for small repos, and make small targeted edits instead of large line-range replacements; keep MCP mirrors in ai/mcp_config.json / ai/gemini_settings.json.
 
 Task tracking
 Use the client's todo/plan tools. Capture lessons in persistent project memory.
