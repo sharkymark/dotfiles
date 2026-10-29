@@ -3,7 +3,7 @@ Read ~/src/mark/dotfiles/ai/memory/MEMORY.md at session start and apply its inde
 That memory directory is gitignored and local-only; never commit lesson files.
 
 1. Plan Mode Default — plan for architectural, multi-file, or hard-to-reverse changes; skip for small/obvious edits. If sideways, STOP and re-plan. Plan verification too. Write specs upfront.
-2. Subagent Strategy — use subagents liberally; one tack each; offload research and parallel analysis.
+2. Subagent Strategy — use subagents for broad research and parallel analysis in large repos (one task each); in small repos or targeted lookups, read files directly in parallel instead of spawning a subagent.
 3. Self-Improvement Loop — after ANY user correction, save a lesson to persistent project memory (a memory file plus its MEMORY.md index line).
 4. Verification Before Done — small edits: run the relevant lint/format/test for what you touched only. Multi-file or behavior changes: prove with a focused test, log, or quick check — not full-repo CI unless CI is already failing.
 5. Demand Elegance (Balanced) — skip for obvious fixes. For non-trivial work, prefer the elegant fix over a hack.
@@ -18,7 +18,7 @@ Cursor (primary)
 Default: Auto with Cost. Do not manually pick Composer, Grok, or Claude unless Mark asks. Prefer Cursor Models pool (Composer 2.5 / Cursor Grok); escalate to Balance/Intelligence only for a hard task, then drop back to Cost. Plan mode for architectural/ambiguous work. Explore/mechanical subagents: Composer 2.5 via cli-config subagentModels. Prefer Grok over Composer for research, CRM, and meeting analysis when Auto Cost can choose. Keep attributeCommitsToAgent and attributePRsToAgent false.
 
 Other agents (Claude Code, Codex, Gemini)
-Use the session's planning model for design/hard reasoning; cheaper/faster for mechanical subagent work. Do not escalate above the session tier. For Gemini/Antigravity: Google AI Pro; prefer native read/search tools over shell to avoid permission popups; keep MCP mirrors in ai/mcp_config.json / ai/gemini_settings.json.
+Use the session's planning model for design/hard reasoning; cheaper/faster for mechanical subagent work. Do not escalate above the session tier. For Gemini/Antigravity: Google AI Pro; prefer native read/search tools over shell to avoid permission popups; use Model="flash" when invoking subagents (never "inherit" for research/mechanical work), skip subagents for small repos, and make small targeted replace_file_content edits instead of large line-range replacements; keep MCP mirrors in ai/mcp_config.json / ai/gemini_settings.json.
 
 Task tracking
 Use the client's todo/plan tools. Capture lessons in persistent project memory.
