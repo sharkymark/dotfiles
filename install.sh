@@ -1153,6 +1153,57 @@ fi
 print_step "🤖 copying Codex config"
 copy_codex_settings
 
+# Temporary workaround: remove alongside the pinned agent alias when paste is fixed.
+ensure_cursor_paste_fix() (
+    local version="2026.10.18-ea085cb"
+    local versions_dir="$HOME/.local/share/cursor-agent/versions"
+    local target="$versions_dir/$version"
+    local platform arch work_dir
+    if [ -x "$target/cursor-agent" ]; then
+        echo "- Cursor $version already installed"
+        return 0
+    fi
+    case "$(uname -s)" in
+        Darwin) platform=darwin ;;
+        Linux) platform=linux ;;
+        *) echo "Unsupported platform for temporary Cursor fix" >&2; return 1 ;;
+    esac
+    case "$(uname -m)" in
+        arm64|aarch64) arch=arm64 ;;
+        x86_64|amd64) arch=x64 ;;
+        *) echo "Unsupported architecture for temporary Cursor fix" >&2; return 1 ;;
+    esac
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would install Cursor $version into $target"
+        return 0
+    fi
+    mkdir -p "$versions_dir" || return 1
+    work_dir=$(mktemp -d "$versions_dir/.paste-fix.XXXXXX") || return 1
+    trap 'rm -rf "$work_dir"' EXIT
+    curl -fSL "https://downloads.cursor.com/lab/$version/$platform/$arch/agent-cli-package.tar.gz" \
+        -o "$work_dir/package.tar.gz" || return 1
+    mkdir "$work_dir/package" || return 1
+    tar --strip-components=1 -xzf "$work_dir/package.tar.gz" -C "$work_dir/package" || return 1
+    [ -x "$work_dir/package/cursor-agent" ] || return 1
+    [ "$("$work_dir/package/cursor-agent" --disable-auto-update --version)" = "$version" ] || return 1
+    # Replace only an incomplete installation of this exact pinned version.
+    rm -rf "$target" || return 1
+    mv "$work_dir/package" "$target" || return 1
+    echo "- installed Cursor $version for the temporary agent alias"
+)
+
+print_step "Temporary fix: Cursor image paste"
+if ensure_cursor_paste_fix; then
+    if [ "$DRY_RUN" = true ]; then
+        record_step "Temporary fix: Cursor image paste" "dry-run" "checked pinned version; would install if missing"
+    else
+        record_step "Temporary fix: Cursor image paste" "done" "2026.10.18-ea085cb available for agent alias"
+    fi
+else
+    echo "Temporary Cursor fix failed; the pinned agent alias may be unavailable." >&2
+    record_step "Temporary fix: Cursor image paste" "failed" "could not install pinned version"
+fi
+
 print_step "🖱️  copying Cursor CLI config"
 if command -v cursor-agent &> /dev/null; then
     copy_cursor_settings
