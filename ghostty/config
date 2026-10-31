@@ -1,6 +1,9 @@
 # Ghostty — Mitchell-style setup
 # Reload: Cmd+Shift+, (background-opacity changes need a full restart on macOS)
 
+# Updates managed through Homebrew
+auto-update = off
+
 # Theme and colors
 theme = Catppuccin Mocha
 minimum-contrast = 1.2
